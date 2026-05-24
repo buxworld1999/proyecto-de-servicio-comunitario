@@ -1,4 +1,3 @@
-
 from ssl import ALERT_DESCRIPTION_BAD_CERTIFICATE_STATUS_RESPONSE
 from pydantic._internal._model_construction import set_default_hash_func
 import os
@@ -51,8 +50,60 @@ def login():
         return render_template('index.html', error="Acción no válida.")
 
 
+# ===================================================================
+# DECORADORES Y RUTAS DE PRUEBA (1 AL 10)
+# ===================================================================
+
+@app.route('/prueba1')
+def prueba1():
+    return render_template('prueba1.html')
+
+@app.route('/prueba2')
+def prueba2():
+    return render_template('prueba2.html')
+
+@app.route('/prueba3')
+def prueba3():
+    return render_template('prueba3.html')
+
+@app.route('/prueba4')
+def prueba4():
+    return render_template('prueba4.html')
+
+@app.route('/prueba5')
+def prueba5():
+    return render_template('prueba5.html')
+
+@app.route('/prueba6')
+def prueba6():
+    return render_template('prueba6.html')
+
+@app.route('/prueba7')
+def prueba7():
+    return render_template('prueba7.html')
+
+@app.route('/prueba8')
+def prueba8():
+    return render_template('prueba8.html')
+
+@app.route('/prueba9')
+def prueba9():
+    return render_template('prueba9.html')
+
+@app.route('/prueba10')
+def prueba10():
+    return render_template('prueba10.html')
+
+# ... Tus rutas anteriores (de la 1 a la 10) ...
+
+@app.route('/prueba11')
+def prueba11():
+    return render_template('prueba11.html')
+
+@app.route('/prueba12')
+def prueba12():
+    return render_template('prueba12.html')
+
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
-
-
-
