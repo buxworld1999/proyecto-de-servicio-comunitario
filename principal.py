@@ -1,12 +1,19 @@
-from ssl import ALERT_DESCRIPTION_BAD_CERTIFICATE_STATUS_RESPONSE
-from pydantic._internal._model_construction import set_default_hash_func
+
 import os
+from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, flash
 from supabase import create_client, Client
 
+# Cargar las variables de entorno desde el archivo .env
+load_dotenv()
+
 # Configuración de Supabase
-supabase_url = os.environ.get("SUPABASE_URL", "https://mbvzajmglkvooxqkezbo.supabase.co")
-supabase_key = os.environ.get("SUPABASE_KEY", "sb_publishable_N5GiaDm9d98adS74tb9kEw_ykqAzLZV")
+supabase_url = os.environ.get("SUPABASE_URL")
+supabase_key = os.environ.get("SUPABASE_KEY")
+
+if not supabase_url or not supabase_key:
+    raise ValueError("Faltan credenciales de Supabase. Asegúrate de configurar SUPABASE_URL y SUPABASE_KEY en el entorno.")
+
 supabase: Client = create_client(supabase_url, supabase_key)
 
 app = Flask(__name__)
@@ -19,29 +26,28 @@ def inicio():
 @app.route('/login', methods=['POST'])
 def login():
     v_codigo_usuario = request.form.get('codigo_usuario')
-    v_nombre_completo = request.form.get('nombre_completo')
+    v_cedula_personal = request.form.get('cedula_personal')
     v_clave = request.form.get('clave')
     v_accion = request.form.get('accion')
     
     if v_accion == 'login':
-        # Buscar usuario en Supabase por nombre completo
-        response = supabase.table("usuario").select("nombre_completo, contrasena_hash").eq("nombre_completo", v_nombre_completo).eq("contrasena_hash", v_clave).execute()
+        # Buscar usuario en Supabase usando las columnas correctas de la tabla usuario
+        response = supabase.table("usuario").select("codigo_usuario, clave_hash").eq("codigo_usuario", v_codigo_usuario).eq("clave_hash", v_clave).execute()
         usuario = response.data
         if usuario:
             return render_template('menu.html', nombres=usuario)
         else:
             return render_template('index.html', error="Contraseña incorrecta o usuario no existe.")
-            
     elif v_accion == 'crear':
-        if not v_codigo_usuario or not v_clave or not v_nombre_completo:
+        if not v_codigo_usuario or not v_clave or not v_cedula_personal:
             return render_template('index.html', error="Faltan datos para crear el usuario.")
             
         try:
             # Crear usuario en Supabase
             response = supabase.table("usuario").insert({
                 "codigo_usuario": v_codigo_usuario,
-                "contrasena_hash": v_clave,
-                "nombre_completo": v_nombre_completo,
+                "clave_hash": v_clave,
+                "cedula_personal": v_cedula_personal,  # Se asume que este campo guarda la cédula
                 "rol": "usuario",
                 "estado": "A"
             }).execute()
@@ -53,12 +59,13 @@ def login():
         return render_template('index.html', error="Acción no válida.")
 
 
+
 # ===================================================================
 # DECORADORES Y RUTAS DE PRUEBA (1 AL 12)
 # ===================================================================
 
-@app.route('/prueba1', methods=['GET', 'POST'])
-def prueba1():
+@app.route('/registro_estu', methods=['GET', 'POST'])
+def registro_estudiantes():
     """
     Ruta de la Prueba 1: Captura el formulario y registra un estudiante
     en la tabla 'estudiante' de Supabase controlando la longitud de los tipos char(1).
@@ -94,9 +101,9 @@ def prueba1():
             # Captura de errores específicos detallados
             flash(f"Error al registrar estudiante: {str(e)}")
             
-        return redirect(url_for('prueba1'))
+        return redirect(url_for('registro_estudiantes'))
 
-    return render_template('prueba1.html')
+    return render_template('registro_estudiantes.html')
 
 @app.route('/prueba2')
 def prueba2():

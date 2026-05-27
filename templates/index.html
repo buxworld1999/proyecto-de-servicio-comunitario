@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
-    <title>Login</title>
+    <title>Acceso al Sistema</title>
     <link rel="stylesheet" href="static/index.css">
-    <link rel="icon" href="static/logo_login.png" type="image/png">
+    <link rel="icon" href="static/fondo_escuela.jpg" type="image/png">
 </head>
 
 <body>
@@ -14,26 +14,42 @@
     <div class="error-message">{{ error }}</div>
     {% endif %}
 
-    <div class="login-container">
+    <!-- Formulario de Iniciar Sesión -->
+    <div class="login-container" id="login-container">
         <h1>Iniciar Sesión</h1>
         <form novalidate action="/login" method="POST">
-            <input type="text" placeholder="Indique su nombre completo" id="nombre_completo" name="nombre_completo" required>
-            <input type="password" placeholder="Indique su clave" id="clave" name="clave" required>
-            <p></p>
+            <input type="text" placeholder="Código de Usuario" id="codigo_usuario_login" name="codigo_usuario" required>
+            <input type="password" placeholder="Contraseña" id="clave_login" name="clave" required>
             <button type="submit" name="accion" value="login" class="accept-button">Iniciar</button>
-        </form>
-
-        <hr style="margin: 20px 0; border-color: #444;">
-        
-        <h1>Crear Nuevo Usuario</h1>
-        <form novalidate action="/login" method="POST">
-            <input type="text" placeholder="Indique su Nro de cédula" name="codigo_usuario" required>
-            <input type="text" placeholder="Indique su nombre completo" name="nombre_completo" required>
-            <input type="password" placeholder="Cree una clave" name="clave" required>
-            <p></p>
-            <button type="submit" name="accion" value="crear" class="accept-button">Crear Usuario</button>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; cursor: pointer; font-size: 0.95rem; text-decoration: underline;" onclick="toggleForms()">¿No tienes cuenta? Regístrate aquí</div>
         </form>
     </div>
+
+    <!-- Formulario de Registro -->
+    <div class="login-container" id="register-container" style="display: none;">
+        <h1>Registrarse</h1>
+        <form novalidate action="/login" method="POST">
+            <input type="text" placeholder="Código de Usuario" id="codigo_usuario_reg" name="codigo_usuario" required>
+            <input type="text" placeholder="Cédula de Identidad (Ej. V12345678)" id="cedula_personal" name="cedula_personal" maxlength="10" required>
+            <input type="password" placeholder="Contraseña" id="clave_reg" name="clave" required>
+            <button type="submit" name="accion" value="crear" class="accept-button" style="background: linear-gradient(to right, #10b981, #059669); box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.39);">Registrar Usuario</button>
+            <div style="text-align: center; margin-top: 20px; color: #94a3b8; cursor: pointer; font-size: 0.95rem; text-decoration: underline;" onclick="toggleForms()">¿Ya tienes cuenta? Inicia sesión</div>
+        </form>
+    </div>
+
+    <script>
+        function toggleForms() {
+            const login = document.getElementById('login-container');
+            const register = document.getElementById('register-container');
+            if (login.style.display === 'none') {
+                login.style.display = 'block';
+                register.style.display = 'none';
+            } else {
+                login.style.display = 'none';
+                register.style.display = 'block';
+            }
+        }
+    </script>
 </body>
 
 </html>

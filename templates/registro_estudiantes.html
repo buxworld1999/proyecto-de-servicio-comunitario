@@ -4,82 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <title>U.E.E Carmen Ruíz - Registro</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
-    <style>
-        body {
-            background: linear-gradient(rgba(10, 10, 10, 0.6), rgba(10, 10, 10, 0.7)),
-            url("{{ url_for('static', filename='fondo_escuela.jpg') }}") no-repeat center center fixed;
-            background-size: cover;
-        }
-
-        .form-container {
-            max-width: 600px;
-            margin: 40px auto;
-            background: rgba(10, 10, 10, 0.9);
-            border: 1px solid rgba(0, 229, 255, 0.3);
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 229, 255, 0.15);
-            backdrop-filter: blur(10px);
-            color: #FFF;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group label {
-            font-size: 0.85em;
-            margin-bottom: 5px;
-            color: #00E5FF;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            padding: 10px;
-            background: #1A1A1A;
-            border: 1px solid rgba(0, 229, 255, 0.25);
-            border-radius: 4px;
-            color: #FFF;
-        }
-
-        .btn-submit {
-            width: 100%;
-            padding: 12px;
-            background: #00E5FF;
-            color: #0A0A0A;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            text-transform: uppercase;
-        }
-
-        .btn-submit:hover {
-            background: #0077CC;
-            color: #FFF;
-        }
-
-        .alert {
-            padding: 10px;
-            background: rgba(0, 229, 255, 0.2);
-            border: 1px solid #00E5FF;
-            color: #00E5FF;
-            border-radius: 4px;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-    </style>
-</head>
+    <link rel="icon" href="static/fondo_escuela.jpg" type="image/png">
+    <link rel="stylesheet" href="static/registro_estu.css">
 
 <body>
 
@@ -94,7 +20,7 @@
         {% endif %}
         {% endwith %}
 
-        <form method="POST" action="/prueba1">
+        <form method="POST" action="/registro_estu">
             <div class="form-grid">
                 <div class="form-group">
                     <label>Cédula</label>
