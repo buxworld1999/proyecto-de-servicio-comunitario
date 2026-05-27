@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="static/index.css">
+    <link rel="icon" href="static/logo_login.png" type="image/png">
+</head>
+
+<body>
+
+    {% if error %}
+    <div class="error-message">{{ error }}</div>
+    {% endif %}
+
+    <div class="login-container">
+        <h1>Iniciar Sesión</h1>
+        <form novalidate action="/login" method="POST">
+            <input type="text" placeholder="Indique su nombre completo" id="nombre_completo" name="nombre_completo" required>
+            <input type="password" placeholder="Indique su clave" id="clave" name="clave" required>
+            <p></p>
+            <button type="submit" name="accion" value="login" class="accept-button">Iniciar</button>
+        </form>
+
+        <hr style="margin: 20px 0; border-color: #444;">
+        
+        <h1>Crear Nuevo Usuario</h1>
+        <form novalidate action="/login" method="POST">
+            <input type="text" placeholder="Indique su Nro de cédula" name="codigo_usuario" required>
+            <input type="text" placeholder="Indique su nombre completo" name="nombre_completo" required>
+            <input type="password" placeholder="Cree una clave" name="clave" required>
+            <p></p>
+            <button type="submit" name="accion" value="crear" class="accept-button">Crear Usuario</button>
+        </form>
+    </div>
+</body>
+
+</html>
