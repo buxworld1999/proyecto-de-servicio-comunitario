@@ -31,13 +31,16 @@ def login():
     v_accion = request.form.get('accion')
     
     if v_accion == 'login':
-        # Buscar usuario en Supabase usando las columnas correctas de la tabla usuario
-        response = supabase.table("usuario").select("codigo_usuario, clave_hash").eq("codigo_usuario", v_codigo_usuario).eq("clave_hash", v_clave).execute()
-        usuario = response.data
-        if usuario:
-            return render_template('menu.html', nombres=usuario)
-        else:
-            return render_template('index.html', error="Contraseña incorrecta o usuario no existe.")
+        try:
+            # Buscar usuario en Supabase usando las columnas correctas de la tabla usuario
+            response = supabase.table("usuario").select("codigo_usuario, clave_hash").eq("codigo_usuario", v_codigo_usuario).eq("clave_hash", v_clave).execute()
+            usuario = response.data
+            if usuario:
+                return render_template('menu.html', nombres=usuario)
+            else:
+                return render_template('index.html', error="Contraseña incorrecta o usuario no existe.")
+        except Exception as e:
+            return render_template('index.html', error=f"Error del servidor (Supabase): {str(e)}")
     elif v_accion == 'crear':
         if not v_codigo_usuario or not v_clave or not v_cedula_personal:
             return render_template('index.html', error="Faltan datos para crear el usuario.")
