@@ -1,7 +1,7 @@
 body {
-    background: linear-gradient(rgba(10, 10, 10, 0.6), rgba(10, 10, 10, 0.7)),
-    url("{{ url_for('static', filename='fondo_escuela.jpg') }}") no-repeat center center fixed;
-    background-size: cover;
+    background: transparent;
+    padding: 20px;
+    font-family: 'Outfit', sans-serif;
 }
 
 .form-container {
