@@ -17,6 +17,9 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 # Módulo RBAC centralizado
 from auth import get_menu_items, login_required, rol_required
 
+# Módulos del Sistema
+
+
 # Cargar variables de entorno
 load_dotenv()
 
@@ -186,17 +189,19 @@ from buscar_estu import buscar_estu as buscar_estu_func
 def ruta_buscar_estu():
     return buscar_estu_func()
 
+from gestion_usuarios import gestion_usuarios as gestion_usuarios_func
 
-# ===================================================================
-# MÓDULOS EN DESARROLLO (protegidos con @login_required)
-# Cada uno devuelve una página placeholder hasta que se implemente.
-# ===================================================================
-
-@app.route('/usuarios')
+@app.route('/usuarios', methods=['GET', 'POST'])
 @login_required
+# ===================================================================
+# ¿QUIÉN PUEDE VER ESTE MÓDULO? (Para aprender)
+# El decorador @rol_required define los roles permitidos en el servidor.
+# Si quieres permitir a otros roles (ej: 'director'), añádelos aquí:
+# @rol_required('admin', 'director')
+# ===================================================================
 @rol_required('admin')
 def usuarios():
-    return _modulo_en_desarrollo("Gestión de Usuarios", "fa-users-gear")
+    return gestion_usuarios_func()
 
 
 
