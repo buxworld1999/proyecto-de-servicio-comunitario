@@ -72,65 +72,13 @@ def inicio():
     """Página de login. Siempre muestra el formulario de acceso."""
     return render_template('index.html')
 
+from login import login as login_func
 
 @app.route('/login', methods=['POST'])
+@login_required
 def login():
-    """
-    Procesa el formulario de inicio de sesión.
-    """
-    v_codigo = request.form.get('codigo_usuario', '').strip()
-    v_clave  = request.form.get('clave', '').strip()
-
-    # Validación básica de campos vacíos
-    if not v_codigo or not v_clave:
-        return render_template('index.html', error="Por favor ingresa tu código y contraseña.")
-
-    try:
-        # ── PASO 1: Verificar credenciales ───────────────────────────
-        response = supabase.table("usuario") \
-            .select("id, codigo_usuario, rol, cedula_personal, estado") \
-            .eq("codigo_usuario", v_codigo) \
-            .eq("clave_hash", v_clave) \
-            .execute()
-
-        if not response.data:
-            return render_template('index.html', error="Código de usuario o contraseña incorrectos.")
-
-        u = response.data[0]
-
-        # ── PASO 2: Verificar cuenta activa ──────────────────────────
-        if u.get('estado') == 'I':
-            return render_template('index.html',
-                error="Tu cuenta está inactiva. Contacta al administrador.")
-
-        # ── PASO 3: Obtener nombre desde tabla 'personal' (JOIN) ─────
-        nombre_display = u['codigo_usuario']
-        try:
-            personal_resp = supabase.table("personal") \
-                .select("nombres, apellidos") \
-                .eq("cedula", u['cedula_personal']) \
-                .execute()
-            if personal_resp.data:
-                p = personal_resp.data[0]
-                nombre_display = f"{p['nombres']} {p['apellidos']}"
-        except Exception:
-            pass
-
-        # ── PASO 4: Establecer sesión (rol normalizado a minúsculas) ─
-        rol_normalizado = (u.get('rol') or 'sin_rol').strip().lower()
-        session.clear()
-        session.permanent     = True
-        session['usuario_id'] = u['id']
-        session['codigo']     = u['codigo_usuario']
-        session['rol']        = rol_normalizado
-        session['nombre']     = nombre_display
-
-        return redirect(url_for('menu'))
-
-    except Exception as e:
-        return render_template('index.html', error=f"Error del servidor: {str(e)}")
-
-
+    return login_func()
+       
 @app.route('/logout')
 def logout():
     """Cierra la sesión activa y redirige al login."""
@@ -193,12 +141,6 @@ from gestion_usuarios import gestion_usuarios as gestion_usuarios_func
 
 @app.route('/usuarios', methods=['GET', 'POST'])
 @login_required
-# ===================================================================
-# ¿QUIÉN PUEDE VER ESTE MÓDULO? (Para aprender)
-# El decorador @rol_required define los roles permitidos en el servidor.
-# Si quieres permitir a otros roles (ej: 'director'), añádelos aquí:
-# @rol_required('admin', 'director')
-# ===================================================================
 @rol_required('admin')
 def usuarios():
     return gestion_usuarios_func()
@@ -246,12 +188,13 @@ def evaluaciones():
 def boletines():
     return _modulo_en_desarrollo("Boletines", "fa-newspaper")
 
+from constancia_estudio import constancia_estudio as constancia_estudio_func
 
-@app.route('/constancias')
+@app.route('/constancias', methods=['GET', 'POST'])
 @login_required
 @rol_required('admin', 'secretaria')
 def constancias():
-    return _modulo_en_desarrollo("Constancias", "fa-file-circle-check")
+    return constancia_estudio_func()
 
 
 @app.route('/citaciones')

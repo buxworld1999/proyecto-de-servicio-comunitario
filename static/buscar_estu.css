@@ -1,0 +1,165 @@
+:root {
+    --color-bg: #1a1a1a;
+    --color-panel: #262626;
+    --color-text: #e0e0e0;
+    --color-accent: #00f2ff;
+    /* Color cian tipo interfaz */
+    --color-border: #404040;
+    --color-error: #ff3838;
+}
+
+body {
+    font-family: 'Segoe UI', 'Roboto', sans-serif;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    margin: 0;
+    padding: 40px;
+    background-image: linear-gradient(rgba(26, 26, 26, 0.9), rgba(26, 26, 26, 0.9)),
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255, 255, 255, 0.03) 2px, rgba(255, 255, 255, 0.03) 4px);
+}
+
+h1 {
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    color: var(--color-accent);
+    text-align: center;
+    margin-bottom: 40px;
+    text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+}
+
+.container {
+    display: flex;
+    gap: 40px;
+    max-width: 1200px;
+    margin: auto;
+}
+
+.col-form,
+.col-tabla {
+    background: var(--color-panel);
+    padding: 25px;
+    border: 1px solid var(--color-border);
+    position: relative;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+}
+
+.col-form {
+    flex: 0 0 35%;
+    height: fit-content;
+}
+
+.col-tabla {
+    flex: 1;
+}
+
+h3 {
+    color: var(--color-accent);
+    font-weight: 300;
+    text-transform: uppercase;
+    margin-top: 0;
+    border-bottom: 1px solid var(--color-accent);
+    padding-bottom: 10px;
+    letter-spacing: 1px;
+}
+
+label {
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #aaa;
+}
+
+input {
+    background: #111;
+    border: 1px solid var(--color-border);
+    color: white;
+    padding: 12px;
+    width: 100%;
+    margin: 15px 0 25px 0;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+input:focus {
+    border-color: var(--color-accent);
+    outline: none;
+    box-shadow: 0 0 8px rgba(0, 242, 255, 0.3);
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 1px solid var(--color-accent);
+    color: var(--color-accent);
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+button:hover {
+    background: var(--color-accent);
+    color: black;
+    box-shadow: 0 0 15px rgba(0, 242, 255, 0.4);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+th {
+    background: #333;
+    color: var(--color-accent);
+    padding: 12px;
+    text-align: left;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.85em;
+    letter-spacing: 1px;
+    border: 1px solid var(--color-border);
+    width: 35%;
+}
+
+td {
+    padding: 12px;
+    border: 1px solid var(--color-border);
+    font-size: 0.95em;
+}
+
+tr:hover {
+    background: #303030;
+}
+
+.error {
+    color: var(--color-error);
+    border: 1px dashed var(--color-error);
+    background: rgba(255, 56, 56, 0.1);
+    padding: 12px;
+    font-weight: bold;
+    margin-top: 20px;
+    font-size: 0.9em;
+    text-align: center;
+}
+
+.link-contenedor {
+    text-align: center;
+    margin-top: 40px;
+}
+
+.link-volver {
+    color: var(--color-accent);
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 0.85em;
+    letter-spacing: 2px;
+    transition: color 0.3s;
+}
+
+.link-volver:hover {
+    color: white;
+    text-shadow: 0 0 5px var(--color-accent);
+}

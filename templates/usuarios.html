@@ -4,46 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Usuarios - U.E.E Carmen Ruíz</title>
-    <link rel="stylesheet" href="static/personal.css">
-    <style>
-        .btn-action {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 6px;
-            color: white;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.85rem;
-            transition: opacity 0.2s;
-        }
-        .btn-action:hover { opacity: 0.85; }
-        .btn-danger { background-color: #ef4444; }
-        .btn-success { background-color: #10b981; }
-        .btn-primary { background-color: #3b82f6; }
-        
-        .alert-info {
-            padding: 12px;
-            background-color: rgba(76, 201, 240, 0.1);
-            border: 1px solid #4cc9f0;
-            color: #4cc9f0;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-    </style>
+    <link rel="stylesheet" href="static/gestion_user.css">
 </head>
+
 <body>
     <div class="container">
         <!-- Panel de Creación -->
         <div class="form-container">
             <h1>Crear Usuario</h1>
-            
+
             {% with messages = get_flashed_messages() %}
-              {% if messages %}
-                <div class="alert-info">
-                  {{ messages[0] }}
-                </div>
-              {% endif %}
+            {% if messages %}
+            <div class="alert-info">
+                {{ messages[0] }}
+            </div>
+            {% endif %}
             {% endwith %}
 
             <form method="POST" action="/usuarios">
@@ -109,7 +84,8 @@
                             <td>{{ u.nombre_personal }}</td>
                             <td><span style="text-transform: uppercase;">{{ u.rol }}</span></td>
                             <td>
-                                <span style="color: {{ '#10b981' if u.estado == 'A' else '#ef4444' }}; font-weight: bold;">
+                                <span
+                                    style="color: {{ '#10b981' if u.estado == 'A' else '#ef4444' }}; font-weight: bold;">
                                     {{ 'Activo' if u.estado == 'A' else 'Inactivo' }}
                                 </span>
                             </td>
@@ -119,7 +95,8 @@
                                     <input type="hidden" name="accion" value="cambiar_estado">
                                     <input type="hidden" name="usuario_id" value="{{ u.id }}">
                                     <input type="hidden" name="estado_actual" value="{{ u.estado }}">
-                                    <button type="submit" class="btn-action {{ 'btn-danger' if u.estado == 'A' else 'btn-success' }}">
+                                    <button type="submit"
+                                        class="btn-action {{ 'btn-danger' if u.estado == 'A' else 'btn-success' }}">
                                         {{ 'Desactivar' if u.estado == 'A' else 'Activar' }}
                                     </button>
                                 </form>
@@ -128,7 +105,8 @@
                                 <form method="POST" action="/usuarios" style="display:inline; margin-left: 10px;">
                                     <input type="hidden" name="accion" value="cambiar_clave">
                                     <input type="hidden" name="usuario_id" value="{{ u.id }}">
-                                    <input type="password" name="nueva_clave" placeholder="Nueva clave" required style="width: 100px; padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: #fff;">
+                                    <input type="password" name="nueva_clave" placeholder="Nueva clave" required
+                                        style="width: 100px; padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: #fff;">
                                     <button type="submit" class="btn-action btn-primary">Cambiar Clave</button>
                                 </form>
                             </td>
