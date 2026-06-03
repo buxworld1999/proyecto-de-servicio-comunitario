@@ -75,7 +75,6 @@ def inicio():
 from login import login as login_func
 
 @app.route('/login', methods=['POST'])
-@login_required
 def login():
     return login_func()
        
