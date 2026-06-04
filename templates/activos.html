@@ -6,62 +6,68 @@
     <title>Control de Activos - Carmen Ruiz</title>
     <style>
         :root {
-            --primary-color: #1a365d;
-            /* Azul formal */
-            --accent-color: #3182ce;
-            /* Azul dinámico */
-            --bg-color: #f7fafc;
-            /* Fondo limpio */
-            --text-color: #2d3748;
-            --border-color: #e2e8f0;
+            --primary-color: #00E5FF;
+            --bg-color: transparent;
+            --text-color: #FFF;
+            --border-color: rgba(0, 229, 255, 0.3);
+            --input-bg: rgba(10, 10, 10, 0.6);
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Outfit', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            padding: 40px;
+            padding: 0;
             line-height: 1.6;
         }
 
-        h1,
-        h2 {
+        h1, h2 {
             color: var(--primary-color);
             text-align: center;
+            margin-bottom: 20px;
         }
 
         /* Formulario Estilizado */
         form {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background: transparent;
+            padding: 20px;
             display: flex;
-            gap: 10px;
+            gap: 15px;
             justify-content: center;
             flex-wrap: wrap;
             margin-bottom: 30px;
         }
 
         input {
-            padding: 10px;
+            padding: 12px;
             border: 1px solid var(--border-color);
-            border-radius: 6px;
+            border-radius: 8px;
             outline: none;
+            background: var(--input-bg);
+            color: var(--text-color);
+            flex: 1 1 200px;
+        }
+        
+        input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
         }
 
         button {
-            background-color: var(--accent-color);
-            color: white;
-            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: #000;
+            font-weight: bold;
+            padding: 12px 25px;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
-            transition: transform 0.2s, background-color 0.2s;
+            transition: 0.3s;
+            text-transform: uppercase;
         }
 
         button:hover {
-            background-color: var(--primary-color);
+            background-color: #00b3cc;
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
             transform: translateY(-2px);
         }
 
@@ -69,32 +75,35 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            background: white;
-            border-radius: 12px;
+            background: transparent;
+            border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
         }
 
         thead {
-            background-color: var(--primary-color);
-            color: white;
+            background-color: rgba(0, 229, 255, 0.1);
+            color: var(--primary-color);
         }
 
-        th,
-        td {
+        th, td {
             padding: 15px;
             text-align: left;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        th {
+            border-bottom: 2px solid var(--border-color);
         }
 
         tbody tr:hover {
-            background-color: #edf2f7;
-            transition: background 0.3s;
+            background-color: rgba(0, 229, 255, 0.05);
         }
 
         h2 {
             margin-top: 30px;
             text-align: right;
+            padding-right: 20px;
         }
     </style>
 </head>

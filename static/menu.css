@@ -694,8 +694,8 @@ body {
 
 .iframe-content {
     width: 100%;
-    height: calc(100vh - 72px - 57px);
+    height: calc(100vh - 72px - 48px); /* 48px to account for the 24px padding top and bottom of content-area */
     border: none;
     display: block;
-    background: white;
+    background: transparent;
 }

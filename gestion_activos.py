@@ -11,7 +11,7 @@ def activos_institucion():
         datos_activo = {
             "nombre": request.form.get('nombre').strip(),
             "propietario": request.form.get('propietario').strip(),
-            "encargado": request.form.get('encargado').strip(),
+            "ubicacion": request.form.get('ubicacion').strip(),
             "cantidad": int(request.form.get('cantidad', 0)),
             "valor_unitario": float(request.form.get('valor', 0.0))  # El input HTML se llama 'valor'
         }

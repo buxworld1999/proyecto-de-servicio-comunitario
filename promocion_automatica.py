@@ -4,34 +4,9 @@ from supabase import create_client, Client
 
 load_dotenv()
 
-# Es vital usar la Service Role Key para poder ignorar las políticas de seguridad
-# y realizar operaciones masivas de administración.
-url: str = os.environ.get("SUPABASE_URL")
-service_key: str = os.environ.get("SUPABASE_SERVICE_KEY")
-
-supabase_client: Client = None
-
-def get_supabase_client() -> Client:
-    global supabase_client
-    if supabase_client is not None:
-        return supabase_client
-    if not service_key or service_key == "Pega_aqui_tu_service_role_key":
-        raise ValueError(
-            "Debes colocar tu 'service_role secret' en el archivo .env "
-            "dentro de la variable SUPABASE_SERVICE_KEY para poder ejecutar esta acción."
-        )
-    if not url:
-        raise ValueError("Falta la variable SUPABASE_URL en el archivo .env")
-    supabase_client = create_client(url, service_key)
-    return supabase_client
+from db import supabase
 
 def promover_ano():
-    try:
-        supabase = get_supabase_client()
-    except Exception as e:
-        print(f"[ERROR CRITICO]: {str(e)}")
-        return f"[ERROR CRITICO]: {str(e)}"
-
     mensajes = []
     def log(msg):
         print(msg)

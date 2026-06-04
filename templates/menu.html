@@ -207,12 +207,6 @@
 
             <!-- IFRAME — Visible cuando el usuario abre un módulo -->
             <div class="content-card" id="content-iframe-wrapper" style="display: none;">
-                <div class="iframe-toolbar">
-                    <button class="btn-back" id="btn-back-inicio" title="Volver al inicio">
-                        <i class="fa-solid fa-arrow-left"></i>
-                        Volver al inicio
-                    </button>
-                </div>
                 <iframe name="contenido" id="iframe-contenido" class="iframe-content"
                     title="Contenido del módulo seleccionado">
                 </iframe>
@@ -320,14 +314,7 @@
         });
 
 
-        // ============================================================
-        // EVENTOS — Botón "← Volver al inicio" sobre el iframe
-        // ============================================================
 
-        document.getElementById("btn-back-inicio").addEventListener("click", function () {
-            setActiveMenuItem(document.getElementById("nav-inicio"));
-            mostrarBienvenida();
-        });
 
 
         // ============================================================

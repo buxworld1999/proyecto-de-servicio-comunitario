@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Materias - U.E.E Carmen Ruíz</title>
+    <link rel="stylesheet" href="static/materias.css">
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h1>Registrar Materia</h1>
+            <form method="POST" action="/materias">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Código</label>
+                        <input type="text" name="codigo" maxlength="10" placeholder="Ej: MAT-101" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre de la Materia</label>
+                        <input type="text" name="nombre" maxlength="100" placeholder="Ej: Matemáticas" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Horas Semanales</label>
+                        <input type="number" name="horas_semanales" value="4" min="1" max="40" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Estado</label>
+                        <select name="activo">
+                            <option value="true">Activo</option>
+                            <option value="false">Inactivo</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Descripción</label>
+                        <textarea name="descripcion" rows="4" placeholder="Descripción de la materia (opcional)"></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit">Guardar Materia</button>
+            </form>
+        </div>
+
+        <div class="table-container">
+            <h2>Materias Registradas</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Horas Semanales</th>
+                            <th>Estado</th>
+                            <th>Fecha de Creación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for materia in lista_materias %}
+                        <tr>
+                            <td>{{ materia.codigo }}</td>
+                            <td>{{ materia.nombre }}</td>
+                            <td>{{ materia.horas_semanales }}</td>
+                            <td>{{ 'Activo' if materia.activo else 'Inactivo' }}</td>
+                            <td>{{ materia.fecha_creacion.strftime('%d/%m/%Y') if materia.fecha_creacion else '' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" style="text-align: center;">No hay materias registradas</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -116,6 +116,7 @@ from regis_estudiante import registro_estudiantes as registrar_estudiantes_func
 
 @app.route('/registro_estu', methods=['GET', 'POST'])
 @login_required
+@rol_required('admin', 'director', 'coordinador', 'secretaria')
 def registro_estudiantes():
     return registrar_estudiantes_func()
 
@@ -124,6 +125,7 @@ from registrar_personal import personal as registrar_personal_func
 
 @app.route('/personal', methods=['GET', 'POST'])
 @login_required
+@rol_required('admin', 'director', 'coordinador', 'secretaria')
 def personal():
     return registrar_personal_func()
 
@@ -242,7 +244,7 @@ def labor_social():
 @login_required
 @rol_required('admin', 'director', 'coordinador', 'docente')
 def materias():
-    return _modulo_en_desarrollo("Materias", "fa-book-open")
+    return render_template('materias.html')
 
 
 @app.route('/asignacion_docente')
