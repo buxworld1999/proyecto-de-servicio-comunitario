@@ -145,12 +145,22 @@ def usuarios():
     return gestion_usuarios_func()
 
 
+from matricula import matricula_view
 
-@app.route('/matricula')
+@app.route('/matricula', methods=['GET', 'POST'])
 @login_required
 @rol_required('admin', 'director', 'coordinador', 'secretaria')
-def matricula():
-    return _modulo_en_desarrollo("Proceso de Matrícula", "fa-file-signature")
+def proceso_matricula():
+    return matricula_view()
+
+
+from configuracion_ano import configuracion_ano_view
+
+@app.route('/configuracion_ano', methods=['GET', 'POST'])
+@login_required
+@rol_required('admin', 'director')
+def configuracion_ano():
+    return configuracion_ano_view()
 
 
 from secciones import secciones_view

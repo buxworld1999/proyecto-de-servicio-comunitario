@@ -6,42 +6,46 @@ def secciones_view():
     Ruta para visualizar a los estudiantes organizados por Año y Sección.
     """
     try:
-        # Obtenemos directamente a los estudiantes (ya traen anio y seccion)
-        response = supabase.table("estudiante").select(
-            "cedula, nombres, apellidos, genero, anio, seccion"
+        # Hacemos JOIN entre matricula, estudiante y seccion
+        response = supabase.table("matricula").select(
+            "codigo_ano_escolar, estudiante (cedula, nombres, apellidos, genero), seccion (codigo_grado, letra)"
         ).execute()
         
         datos = response.data or []
         
-        # Agrupar los datos: 
-        # estructura = { "1er Año": { "A": [est1, est2], "B": [...] }, "2do Año": ... }
         agrupacion = {}
         
-        # Años predefinidos para mantener el orden
-        anios_orden = ["1er Año", "2do Año", "3er Año", "4to Año", "5to Año"]
-        for anio in anios_orden:
-            agrupacion[anio] = {}
+        anios_orden = ["1", "2", "3", "4", "5"]
+        nombres_anios = {"1": "1er Año", "2": "2do Año", "3": "3er Año", "4": "4to Año", "5": "5to Año"}
+        
+        for num in anios_orden:
+            agrupacion[nombres_anios[num]] = {}
             
         for registro in datos:
-            # Si el estudiante no tiene año o sección, lo saltamos o lo agrupamos en "No Asignado"
-            anio = registro.get("anio")
+            # Obtener datos de las relaciones
+            estudiante = registro.get("estudiante")
             seccion = registro.get("seccion")
             
-            if not anio or not seccion:
+            if not estudiante or not seccion:
                 continue
                 
+            grado_num = seccion.get("codigo_grado")
+            letra = seccion.get("letra")
+            
+            anio = nombres_anios.get(grado_num, "Desconocido")
+            
             if anio not in agrupacion:
                 agrupacion[anio] = {}
                 
-            if seccion not in agrupacion[anio]:
-                agrupacion[anio][seccion] = []
+            if letra not in agrupacion[anio]:
+                agrupacion[anio][letra] = []
                 
-            nombre_completo = f"{registro.get('nombres', '')} {registro.get('apellidos', '')}".strip()
+            nombre_completo = f"{estudiante.get('nombres', '')} {estudiante.get('apellidos', '')}".strip()
                 
-            agrupacion[anio][seccion].append({
-                "cedula": registro.get("cedula"),
+            agrupacion[anio][letra].append({
+                "cedula": estudiante.get("cedula"),
                 "nombre_completo": nombre_completo,
-                "genero": registro.get("genero", "N/A")
+                "genero": estudiante.get("genero", "N/A")
             })
             
         # Ordenar las secciones alfabéticamente dentro de cada año

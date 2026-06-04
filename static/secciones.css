@@ -248,5 +248,98 @@ tbody tr:hover {
     .tab-link {
         padding: 10px 15px;
         font-size: 0.95rem;
+}
+
+/* Layout Sidebar-Contenido para Secciones */
+.layout-secciones {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 25px;
+    align-items: flex-start;
+}
+
+.sidebar-secciones {
+    width: 250px;
+    flex-shrink: 0;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 15px;
+    padding: 20px;
+}
+
+.sidebar-titulo {
+    color: #4cc9f0;
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+    text-align: center;
+    letter-spacing: 1px;
+    border-bottom: 1px solid rgba(76, 201, 240, 0.3);
+    padding-bottom: 10px;
+}
+
+.lista-secciones {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.seccion-tab-link {
+    width: 100%;
+    text-align: left;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(76, 201, 240, 0.3);
+    color: #a9d6e5;
+    padding: 12px 20px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: block;
+}
+
+.seccion-tab-link:hover {
+    background: rgba(76, 201, 240, 0.1);
+    transform: translateX(5px);
+    box-shadow: -4px 4px 10px rgba(76, 201, 240, 0.2);
+    color: #fff;
+}
+
+.seccion-tab-link.active {
+    background: #4cc9f0;
+    color: #000;
+    border-color: #4cc9f0;
+    box-shadow: 0 0 15px rgba(76, 201, 240, 0.4);
+}
+
+.contenido-secciones {
+    flex-grow: 1;
+    min-width: 0; /* previene desbordamiento en flex */
+}
+
+/* Responsivo para el layout sidebar-contenido */
+@media (max-width: 900px) {
+    .layout-secciones {
+        flex-direction: column;
+    }
+    
+    .sidebar-secciones {
+        width: 100%;
+    }
+    
+    .lista-secciones {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .seccion-tab-link {
+        width: auto;
+        text-align: center;
+    }
+    
+    .seccion-tab-link:hover {
+        transform: translateY(-2px);
     }
 }

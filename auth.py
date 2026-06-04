@@ -17,12 +17,12 @@ PERMISOS = {
     'admin': [
         'usuarios', 'personal', 'estudiantes', 'matricula',
         'evaluaciones', 'constancias', 'citaciones', 'labor_social',
-        'materias', 'asignacion_docente', 'reportes'
+        'materias', 'asignacion_docente', 'reportes', 'configuracion'
     ],
     'director': [
         'personal', 'estudiantes', 'matricula',
         'evaluaciones', 'citaciones', 'labor_social',
-        'materias', 'asignacion_docente', 'reportes'
+        'materias', 'asignacion_docente', 'reportes', 'configuracion'
     ],
     'coordinador': [
         'personal', 'estudiantes', 'matricula',
@@ -148,6 +148,13 @@ MODULOS_ITEMS = {
             'icono': 'fa-solid fa-chart-bar'
         },
     ],
+    'configuracion': [
+        {
+            'label': 'Configuración de Año',
+            'url':   '/configuracion_ano',
+            'icono': 'fa-solid fa-gears'
+        },
+    ],
 }
 
 
@@ -167,6 +174,7 @@ MENU_GRUPOS = [
     {'titulo': 'Labor Social',   'modulos': ['labor_social']},
     {'titulo': 'Académico',      'modulos': ['materias', 'asignacion_docente']},
     {'titulo': 'Reportes',       'modulos': ['reportes']},
+    {'titulo': 'Sistema',        'modulos': ['configuracion']},
 ]
 
 

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Configuración de Año</title>
+    <link rel="stylesheet" href="static/registro_estu.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="form-container">
+        <h2 style="text-align:center; margin-bottom:20px; color: #00E5FF;">
+            <i class="fa-solid fa-triangle-exclamation"></i> Panel de Control: Apertura de Año
+        </h2>
+        
+        <div style="background-color: rgba(255, 193, 7, 0.2); color: #FFC107; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #FFC107;">
+            <strong>¡Atención Administrador!</strong> Este botón ejecuta un proceso masivo irreversible:
+            <ul style="margin-top: 10px; margin-left: 20px;">
+                <li>Cierra el año escolar actual.</li>
+                <li>Crea el nuevo año escolar.</li>
+                <li>Genera todas las secciones (1A hasta 5F).</li>
+                <li>Mueve a <strong>todos</strong> los alumnos de 1ero a 4to año a su siguiente grado.</li>
+                <li>Gradúa a los estudiantes de 5to año.</li>
+            </ul>
+            <br>
+            Solo debe presionarse <strong>UNA VEZ</strong> al finalizar el año escolar.
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        {% if resultado_log %}
+        <div style="margin-top: 20px; margin-bottom: 20px;">
+            <h3 style="margin-bottom: 10px; color: #00E5FF;">Registro del Sistema:</h3>
+            <pre style="background: #1A1A1A; color: #00ff00; padding: 15px; border-radius: 5px; overflow-x: auto; font-family: monospace; line-height: 1.5; border: 1px solid rgba(0, 229, 255, 0.25);">{{ resultado_log }}</pre>
+        </div>
+        {% endif %}
+
+        <form method="POST" action="/configuracion_ano" onsubmit="return confirm('¿ESTÁ ABSOLUTAMENTE SEGURO de querer ejecutar la promoción automática? Esto moverá a toda la escuela de grado.');">
+            <button type="submit" class="btn-submit" style="background-color: #dc3545; color: white;">
+                <i class="fa-solid fa-forward-fast"></i> EJECUTAR PROMOCIÓN AUTOMÁTICA
+            </button>
+        </form>
+    </div>
+</body>
+</html>
