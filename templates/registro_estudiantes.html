@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>U.E.E Carmen Ruíz - Registro</title>
+    <link rel="icon" href="static/fondo_escuela.jpg" type="image/png">
+    <link rel="stylesheet" href="static/registro_estu.css">
+    <style>
+        /* Estilos rápidos de separación para los grupos de campos */
+        fieldset {
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        legend {
+            font-weight: bold;
+            padding: 0 10px;
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="form-container">
+        <h2 style="text-align:center; margin-bottom:20px;">Registro Completo de Estudiantes</h2>
+
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="/registro_estu">
+
+            <fieldset>
+                <legend>1. Identificación y Datos Personales</legend>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Cédula</label>
+                        <input type="text" name="cedula" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nacionalidad</label>
+                        <input type="text" name="nacionalidad" placeholder="Ej: Venezolana" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nombres</label>
+                        <input type="text" name="nombres" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Apellidos</label>
+                        <input type="text" name="apellidos" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Género</label>
+                        <select name="genero" required>
+                            <option value="M">Masculino</option>
+                            <option value="F">Femenino</option>
+                        </select>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>2. Información de Nacimiento</legend>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Fecha de Nacimiento</label>
+                        <input type="date" name="fecha_nacimiento" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Lugar de Nacimiento</label>
+                        <input type="text" name="lugar_nacimiento">
+                    </div>
+                    <div class="form-group">
+                        <label>Estado de Nacimiento</label>
+                        <input type="text" name="estado_nacimiento">
+                    </div>
+                    <div class="form-group">
+                        <label>Municipio de Nacimiento</label>
+                        <input type="text" name="municipio_nacimiento">
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>3. Contacto y Ubicación</legend>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="text" name="telefono">
+                    </div>
+                    <div class="form-group">
+                        <label>Correo Electrónico</label>
+                        <input type="email" name="correo">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top:10px;">
+                    <label>Dirección de Habitación</label>
+                    <textarea name="direccion" rows="2"></textarea>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>4. Datos Antropométricos y Salud</legend>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Estatura (metros)</label>
+                        <input type="number" step="0.01" name="estatura" placeholder="Ej: 1.65">
+                    </div>
+                    <div class="form-group">
+                        <label>Peso (kg)</label>
+                        <input type="number" step="0.1" name="peso" placeholder="Ej: 55.4">
+                    </div>
+                    <div class="form-group">
+                        <label>Talla de Camisa</label>
+                        <input type="text" name="talla_camisa" placeholder="Ej: S, M, 14">
+                    </div>
+                    <div class="form-group">
+                        <label>Talla de Pantalón</label>
+                        <input type="text" name="talla_pantalon" placeholder="Ej: 30, 12">
+                    </div>
+                    <div class="form-group">
+                        <label>Talla de Zapatos</label>
+                        <input type="text" name="talla_zapatos" placeholder="Ej: 37">
+                    </div>
+                </div>
+                <div class="form-grid" style="margin-top:10px;">
+                    <div class="form-group">
+                        <label>Condiciones Médicas</label>
+                        <textarea name="conditions_medicas" rows="2" placeholder="Alergias, asma, etc."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Medicamentos</label>
+                        <textarea name="medicamentos" rows="2" placeholder="Tratamientos fijos..."></textarea>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>5. Historial Académico e Ingreso</legend>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Plantel de Procedencia</label>
+                        <input type="text" name="plantel_procedencia">
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha de Ingreso</label>
+                        <input type="date" name="fecha_ingreso">
+                    </div>
+                    <div class="form-group">
+                        <label>Estado Estudiantil</label>
+                        <select name="estado_estudiante">
+                            <option value="A">Activo</option>
+                            <option value="I">Inactivo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Año de Estudio</label>
+                        <select name="anio" required>
+                            <option value="1er Año">1er Año</option>
+                            <option value="2do Año">2do Año</option>
+                            <option value="3er Año">3er Año</option>
+                            <option value="4to Año">4to Año</option>
+                            <option value="5to Año">5to Año</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Sección</label>
+                        <select name="seccion" required>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="C">C</option>
+                            <option value="D">D</option>
+                            <option value="E">E</option>
+                            <option value="F">F</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-grid"
+                    style="margin-top:10px; background-color: #f9f9f9; padding: 10px; border-radius: 4px;">
+                    <div class="form-group">
+                        <label>Fecha de Retiro (Si aplica)</label>
+                        <input type="date" name="fecha_retiro">
+                    </div>
+                    <div class="form-group">
+                        <label>Motivo de Retiro</label>
+                        <input type="text" name="motivo_retiro" placeholder="Ej: Traslado">
+                    </div>
+                </div>
+            </fieldset>
+
+            <button type="submit" class="btn-submit"
+                style="width: 100%; padding: 12px; font-size: 16px; margin-top: 10px;">Guardar Estudiante</button>
+        </form>
+    </div>
+
+</body>
+
+</html>

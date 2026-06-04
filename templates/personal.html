@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Trabajador - U.E.E Carmen Ruíz</title>
+    <link rel="stylesheet" href="static/personal.css">
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <h1>Registrar Trabajador</h1>
+            <form method="POST" action="/personal">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Cédula</label>
+                        <input type="text" name="cedula" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nombres</label>
+                        <input type="text" name="nombres" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Apellidos</label>
+                        <input type="text" name="apellidos" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Especialidad</label>
+                        <input type="text" name="especialidad" placeholder="Ej: Cocinero" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel" name="telefono">
+                    </div>
+                    <div class="form-group">
+                        <label>Correo</label>
+                        <input type="email" name="correo">
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha de Nacimiento</label>
+                        <input type="date" name="fecha_nacimiento" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Género</label>
+                        <select name="genero" required>
+                            <option value="M">Masculino</option>
+                            <option value="F">Femenino</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha de Ingreso</label>
+                        <input type="date" name="fecha_ingreso" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Turno</label>
+                        <input type="text" name="turno" placeholder="Ej: Diurno" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Carga de Horario</label>
+                        <input type="number" name="carga_horaria" placeholder="Horas semanales" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Estado Trabajador</label>
+                        <select name="estado">
+                            <option value="A">Activo</option>
+                            <option value="I">Inactivo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Observaciones</label>
+                        <textarea name="observaciones" rows="3" placeholder="Observaciones"></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit">Guardar Trabajador</button>
+            </form>
+        </div>
+
+        <div class="table-container">
+            <h2>Personal Registrado</h2>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Cédula</th>
+                            <th>Nombres</th>
+                            <th>Apellidos</th>
+                            <th>Especialidad</th>
+                            <th>Turno</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for persona in lista_personal %}
+                        <tr>
+                            <td>{{ persona.cedula }}</td>
+                            <td>{{ persona.nombres }}</td>
+                            <td>{{ persona.apellidos }}</td>
+                            <td>{{ persona.especialidad }}</td>
+                            <td>{{ persona.turno }}</td>
+                            <td>{{ 'Activo' if persona.estado == 'A' else 'Inactivo' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" style="text-align: center;">No hay personal registrado</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

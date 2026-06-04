@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Constancia de Estudio</title>
+    <link rel="stylesheet" href="static/constancia_estu.css">
+
+</head>
+
+<body>
+
+    <div class="card-buscador">
+
+
+        <h2>Constancia de Estudio</h2>
+        <h3>Buscar Alumno por Cédula</h3>
+
+        <form method="POST" action="/constancias" class="formulario-buscar">
+            <input type="text" name="cedula_estudiante" class="input-cedula" placeholder="Ej: 27123456" required>
+            <button type="submit" class="btn-buscar">Buscar</button>
+        </form>
+
+        {% if error_busqueda %}
+        <p style="color: #dc3545; font-weight: bold; margin-top: 15px; font-size: 14px;">⚠️ {{ error_busqueda }}</p>
+        {% endif %}
+
+        {% if alumno %}
+        <div class="seccion-opciones animacion-fade">
+            <h4 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 14px;">⚙️ Opciones de Autoridad</h4>
+            <div class="grupo-opcion">
+                <label>Nombre de la Autoridad:</label>
+                <input type="text" class="input-opcion" value="Gabriel Inojosa"
+                    oninput="document.getElementById('doc-director-nombre').innerText = this.value; document.getElementById('doc-director-firma').innerText = this.value;">
+            </div>
+            <div class="grupo-opcion">
+                <label>Cédula de la Autoridad:</label>
+                <input type="text" class="input-opcion" value="11.843.656"
+                    oninput="document.getElementById('doc-director-cedula').innerText = this.value;">
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if alumno %}
+    <div class="panel-impresion animacion-fade">
+        <span style="font-size: 14px; color: #856404; font-weight: bold;">Estudiante encontrado: {{ alumno.nombres|trim
+            }} {{ alumno.apellidos|trim }}</span><br>
+        <small style="color: #6c757d;">Puedes editar la sección, grado y fecha dándoles clic en la hoja.</small><br>
+
+        <button type="button" class="btn-imprimir" onclick="registrarImpresion()">🖨️ Imprimir Constancia (PDF)</button>
+    </div>
+
+    <div class="hoja-carta animacion-fade">
+
+        <div class="membrete-oficial">
+            REPÚBLICA BOLIVARIANA DE VENEZUELA<br>
+            MINISTERIO DEL PODER POPULAR PARA LA EDUCACIÓN<br>
+            ZONA EDUCATIVA DEL ESTADO MIRANDA<br>
+            UNIDAD EDUCATIVA ESTATAL "CARMEN RUIZ"<br>
+            Charallave - ESTADO MIRANDA
+        </div>
+
+        <div class="titulo-oficial">
+            CONSTANCIA DE ESTUDIO
+        </div>
+
+        <div class="cuerpo-oficial">
+            <p>Quien suscribe, <b><span id="doc-director-nombre">Gabriel Inojosa</span></b>, Director de la <b>Unidad
+                    Educativa ESTATAL "CARMEN RUIZ"</b>, titular de la Cédula de Identidad N° V-<b><span
+                        id="doc-director-cedula">11.843.656</span></b>, por medio de la presente hace constar que el
+                (la) alumno (a): <span
+                    style="text-transform: uppercase; font-weight: bold; text-decoration: underline;">{{
+                    alumno.nombres|trim }} {{ alumno.apellidos|trim }}</span>, titular de la Cédula de Identidad o
+                Escolar N° V-<b>{{ alumno.cedula_formateada|trim if alumno.cedula_formateada else alumno.cedula|trim
+                    }}</b>; natural de <b style="text-transform: uppercase;">{{ alumno.lugar_nacimiento|trim if
+                    alumno.lugar_nacimiento else 'SAN FERNANDO' }}</b>, Estado <b style="text-transform: uppercase;">{{
+                    alumno.estado_nacimiento|trim if alumno.estado_nacimiento else 'APURE' }}</b>, donde nació el día
+                <select class="linea-relleno">{% for d in range(1, 32) %}<option value="{{ d }}" {% if alumno.dia_nac==d
+                        %}selected{% elif not alumno.dia_nac and d==21 %}selected{% endif %}>{{ d }}</option>{% endfor
+                    %}</select> del mes de <select class="linea-relleno">{% set meses = ["Enero", "Febrero", "Marzo",
+                    "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"] %}{%
+                    for m in meses %}<option value="{{ m }}" {% if alumno.mes_nac==m %}selected{% elif not
+                        alumno.mes_nac and m=="Enero" %}selected{% endif %}>{{ m }}</option>{% endfor %}</select> del
+                año <select class="linea-relleno">{% for a in range(1989, 2100) %}<option value="{{ a }}" {% if
+                        alumno.anio_nac==a %}selected{% elif not alumno.anio_nac and a==2005 %}selected{% endif %}>{{ a
+                        }}</option>{% endfor %}</select>, cursa en este Plantel el <select class="linea-relleno"
+                    style="padding: 0;">
+                    <option value="1">1er Grado de Educación Primaria</option>
+                    <option value="2">2do Grado de Educación Primaria</option>
+                    <option value="3">3er Grado de Educación Primaria</option>
+                    <option value="4">4to Grado de Educación Primaria</option>
+                    <option value="5">5to Grado de Educación Primaria</option>
+                    <option value="6">6to Grado de Educación Primaria</option>
+                    <option value="7">1er Año de Educación Media General</option>
+                    <option value="8">2do Año de Educación Media General</option>
+                    <option value="9">3er Año de Educación Media General</option>
+                    <option value="10" selected>4to Año de Educación Media General</option>
+                    <option value="11">5to Año de Educación Media General</option>
+                </select>,Sección:"<input type="text" class="linea-relleno" value="A" style="width: 25px;">",durante
+                el Año Escolar<input type="text" class="linea-relleno" value="2025-2026" style="width: 95px;">.
+            </p>
+
+            <p>Constancia que se expide a petición de la parte interesada, en Charallave a los <select
+                    class="linea-relleno" id="emision-dia">{% for d in range(1, 32) %}<option value="{{ d }}">{{ d }}
+                    </option>{% endfor %}</select> días del mes de <select class="linea-relleno" id="emision-mes">{% for
+                    m in meses %}<option value="{{ m }}">{{ m }}</option>{% endfor %}</select> del año <select
+                    class="linea-relleno" id="emision-anio">{% for a in range(2026, 2100) %}<option value="{{ a }}">{{ a
+                        }}</option>{% endfor %}</select>.</p>
+        </div>
+
+        <div class="footer-constancia">
+            <div style="width: 100px;"></div>
+
+            <div class="firma-oficial">
+                Atentamente,<br><br><br><br>
+                _______________________________________<br>
+                <b><span id="doc-director-firma">Gabriel Inojosa</span></b><br>
+                Director
+            </div>
+
+        </div>
+
+    </div>
+    {% endif %}
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const fechaActual = new Date();
+            const diaActual = fechaActual.getDate();
+            const mesIndex = Math.min(fechaActual.getMonth(), 11);
+            const anioActual = fechaActual.getFullYear();
+            const mesesAnio = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+            const selectDia = document.getElementById("emision-dia");
+            const selectMes = document.getElementById("emision-mes");
+            const selectAnio = document.getElementById("emision-anio");
+
+            if (selectDia) selectDia.value = diaActual;
+            if (selectMes) selectMes.value = mesesAnio[mesIndex];
+            if (selectAnio) selectAnio.value = anioActual;
+        });
+
+        // ==========================================
+        // (Chismosooooooooooooo)
+        // ==========================================
+        function registrarImpresion() {
+            window.print();
+        }
+    </script>
+</body>
+
+</html>

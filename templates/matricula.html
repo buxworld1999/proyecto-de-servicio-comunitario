@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Proceso de Matrícula</title>
+    <link rel="stylesheet" href="static/registro_estu.css">
+</head>
+<body>
+    <div class="form-container">
+        <h2 style="text-align:center; margin-bottom:20px;">Proceso de Matrícula Oficial</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="/matricula">
+            <div class="form-group">
+                <label>Estudiante</label>
+                <select name="cedula" required>
+                    <option value="">-- Seleccione el estudiante --</option>
+                    {% for est in estudiantes %}
+                        <option value="{{ est.cedula }}">{{ est.nombres }} {{ est.apellidos }} (V-{{ est.cedula }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Año Escolar</label>
+                <select name="codigo_ano_escolar" required>
+                    {% for ano in anos %}
+                        <option value="{{ ano.codigo }}">{{ ano.descripcion }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Sección Oficial</label>
+                <select name="codigo_seccion" required>
+                    <option value="">-- Seleccione --</option>
+                    {% for sec in secciones %}
+                        <option value="{{ sec.codigo }}">Año {{ sec.codigo_grado }} - Sección "{{ sec.letra }}" (Código: {{ sec.codigo }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label>Condición de Ingreso</label>
+                <select name="condicion_ingreso">
+                    <option value="N">Nuevo Ingreso</option>
+                    <option value="R">Regular</option>
+                    <option value="T">Traslado</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn-submit">
+                Matricular Estudiante
+            </button>
+        </form>
+    </div>
+</body>
+</html>

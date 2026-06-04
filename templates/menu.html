@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRISMA — Dashboard | Unidad Educativa Carmen Ruíz</title>
+    <meta name="description" content="Sistema de Gestión Escolar PRISMA — Panel de control administrativo">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='menu.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="{{ url_for('static', filename='fondo_escuela.jpg') }}" type="image/jpeg">
+</head>
+
+<body>
+
+    <!-- ============================================================ -->
+    <!-- TOPBAR / HEADER                                              -->
+    <!-- ============================================================ -->
+    <header class="topbar">
+
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='fondo_escuela.jpg') }}" class="logo-img"
+                alt="Logo Unidad Educativa Carmen Ruíz">
+            <div class="logo-text">
+                <h1>PRISMA</h1>
+                <span>Unidad Educativa Carmen Ruíz</span>
+            </div>
+        </div>
+
+        <div class="right-header">
+
+            <!-- Caja del usuario logueado -->
+            <div class="user-box">
+                <div class="user-avatar">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <div class="user-info">
+                    <span class="user-name">{{ usuario_nombre }}</span>
+                    <span class="role-badge role-{{ usuario_rol }}">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        {{ usuario_rol | upper }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Botón de modo oscuro/claro -->
+            <button id="themeToggle" class="theme-btn" title="Cambiar tema" aria-label="Alternar tema oscuro">
+                <i class="fa-solid fa-moon"></i>
+            </button>
+
+        </div>
+
+    </header>
+
+    <!-- ============================================================ -->
+    <!-- LAYOUT PRINCIPAL                                             -->
+    <!-- ============================================================ -->
+    <div class="main-layout">
+
+        <!-- ========================================================= -->
+        <!-- SIDEBAR — Menú dinámico según rol                         -->
+        <!-- ========================================================= -->
+        <aside class="sidebar" id="sidebar">
+
+            <!-- Cabecera del sidebar -->
+            <div class="sidebar-header">
+                <i class="fa-solid fa-grip-vertical sidebar-icon"></i>
+                <span class="sidebar-label">MENÚ PRINCIPAL</span>
+            </div>
+
+            <!-- Navegación scrollable -->
+            <nav class="sidebar-nav" id="sidebar-nav">
+
+                <!-- Inicio siempre visible -->
+                <a href="#inicio" class="menu-item active" id="nav-inicio" aria-label="Ir al inicio">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Inicio</span>
+                </a>
+
+                <!-- ================================================= -->
+                <!-- MENÚ DINÁMICO JINJA2 — GENERADO POR ROL           -->
+                <!--                                                     -->
+                <!-- Flask envía: menu_items = [                        -->
+                <!--   { 'titulo': 'Matrícula',                         -->
+                <!--     'items': [                                      -->
+                <!--       { 'label': '...', 'url': '...', 'icono': '...' } -->
+                <!--     ]                                               -->
+                <!--   }, ...                                            -->
+                <!-- ]                                                   -->
+                <!-- ================================================= -->
+
+                {% if menu_items %}
+
+                {% for grupo in menu_items %}
+
+                {# ── Título separador del grupo ── #}
+                <div class="menu-section-title">{{ grupo.titulo }}</div>
+
+                {# ── Ítems del grupo ── #}
+                {% for item in grupo['items'] %}
+                <a href="{{ item.url }}" target="contenido" class="menu-item" id="nav-{{ item.url | replace('/', '') }}"
+                    aria-label="{{ item.label }}">
+                    <i class="{{ item.icono }}"></i>
+                    <span>{{ item.label }}</span>
+                </a>
+                {% endfor %}
+
+                {% endfor %}
+
+                {% else %}
+                {# Fallback si el rol no tiene módulos asignados #}
+                <div class="menu-empty">
+                    <i class="fa-solid fa-lock"></i>
+                    <p>Sin módulos asignados.<br>Contacta al administrador.</p>
+                </div>
+                {% endif %}
+
+            </nav>
+
+            <!-- Botón de logout — fijado al fondo del sidebar -->
+            <div class="sidebar-bottom">
+                <a href="{{ url_for('logout') }}" class="logout-btn" id="btn-logout"
+                    onclick="return confirm('¿Confirmas que deseas cerrar sesión?')" aria-label="Cerrar sesión">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Cerrar Sesión</span>
+                </a>
+            </div>
+
+        </aside>
+
+        <!-- ========================================================= -->
+        <!-- ÁREA DE CONTENIDO PRINCIPAL                               -->
+        <!-- ========================================================= -->
+        <main class="content-area" id="content-area">
+
+            <!-- VISTA BIENVENIDA (visible al cargar la página) -->
+            <div id="vista-bienvenida">
+
+                <!-- Hero de bienvenida -->
+                <div class="hero">
+                    <div class="hero-overlay">
+
+                        <p class="hero-greeting">Bienvenido de vuelta,</p>
+                        <h2 class="hero-name">{{ usuario_nombre.split(' ')[0] }}</h2>
+                        <p class="hero-sub">Sistema de Gestión Escolar PRISMA</p>
+
+                        <div class="hero-badges">
+                            <span class="hero-badge role-{{ usuario_rol }}">
+                                <i class="fa-solid fa-shield-halved"></i>
+                                {{ usuario_rol | upper }}
+                            </span>
+                            <span class="hero-badge-secondary">
+                                <i class="fa-solid fa-id-card"></i>
+                                {{ usuario_codigo }}
+                            </span>
+                            <span class="hero-badge-secondary" id="hora-actual">
+                                <i class="fa-regular fa-clock"></i>
+                                Cargando...
+                            </span>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Tarjetas de acceso rápido (módulos del rol) -->
+                {% if menu_items %}
+                <div class="quick-section">
+
+                    <h3 class="quick-title">
+                        <i class="fa-solid fa-bolt"></i>
+                        Acceso Rápido
+                        <span class="quick-count">
+                            {% set total = namespace(n=0) %}
+                            {% for g in menu_items %}{% set total.n = total.n + g['items']|length %}{% endfor %}
+                            {{ total.n }} módulo{{ 's' if total.n != 1 else '' }} disponible{{ 's' if total.n != 1 else
+                            '' }}
+                        </span>
+                    </h3>
+
+                    <div class="quick-cards" id="quick-cards">
+
+                        {% for grupo in menu_items %}
+                        {% for item in grupo['items'] %}
+                        <a href="{{ item.url }}" target="contenido" class="quick-card"
+                            aria-label="Ir a {{ item.label }}">
+                            <div class="quick-card-icon">
+                                <i class="{{ item.icono }}"></i>
+                            </div>
+                            <div class="quick-card-label">{{ item.label }}</div>
+                            <div class="quick-card-group">{{ grupo.titulo }}</div>
+                            <div class="quick-card-arrow">
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </div>
+                        </a>
+                        {% endfor %}
+                        {% endfor %}
+
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
+            <!-- /vista-bienvenida -->
+
+            <!-- IFRAME — Visible cuando el usuario abre un módulo -->
+            <div class="content-card" id="content-iframe-wrapper" style="display: none;">
+                <div class="iframe-toolbar">
+                    <button class="btn-back" id="btn-back-inicio" title="Volver al inicio">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        Volver al inicio
+                    </button>
+                </div>
+                <iframe name="contenido" id="iframe-contenido" class="iframe-content"
+                    title="Contenido del módulo seleccionado">
+                </iframe>
+            </div>
+
+        </main>
+
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- JAVASCRIPT                                                   -->
+    <!-- ============================================================ -->
+    <script>
+
+        // ============================================================
+        // TEMA OSCURO / CLARO
+        // Persiste la preferencia en localStorage
+        // ============================================================
+
+        const themeBtn = document.getElementById("themeToggle");
+        const savedTheme = localStorage.getItem("prisma_tema");
+
+        if (savedTheme === "dark") {
+            document.body.classList.add("dark");
+            themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+        }
+
+        themeBtn.addEventListener("click", () => {
+            document.body.classList.toggle("dark");
+            const isDark = document.body.classList.contains("dark");
+            themeBtn.innerHTML = isDark
+                ? '<i class="fa-solid fa-sun"></i>'
+                : '<i class="fa-solid fa-moon"></i>';
+            localStorage.setItem("prisma_tema", isDark ? "dark" : "light");
+        });
+
+
+        // ============================================================
+        // GESTIÓN DE VISTAS: bienvenida ↔ iframe
+        // ============================================================
+
+        const vistaBienvenida = document.getElementById("vista-bienvenida");
+        const iframeWrapper = document.getElementById("content-iframe-wrapper");
+
+        function mostrarIframe() {
+            vistaBienvenida.style.display = "none";
+            iframeWrapper.style.display = "block";
+        }
+
+        function mostrarBienvenida() {
+            vistaBienvenida.style.display = "block";
+            iframeWrapper.style.display = "none";
+        }
+
+
+        // ============================================================
+        // GESTIÓN DEL ESTADO ACTIVO EN EL SIDEBAR
+        // ============================================================
+
+        function setActiveMenuItem(targetEl) {
+            document.querySelectorAll(".menu-item").forEach(el => el.classList.remove("active"));
+            if (targetEl) targetEl.classList.add("active");
+        }
+
+
+        // ============================================================
+        // EVENTOS — Links del sidebar con target="contenido"
+        // Clics en items del sidebar con target="contenido"
+        // IMPORTANTE: solo los .menu-item del sidebar actualizan el estado activo,
+        // NO las quick-cards (que también tienen target="contenido")
+        document.querySelectorAll('a.menu-item[target="contenido"]').forEach(link => {
+            link.addEventListener("click", function () {
+                setActiveMenuItem(this);
+                mostrarIframe();
+            });
+        });
+
+
+        // ============================================================
+        // EVENTOS — Tarjetas de acceso rápido
+        // ============================================================
+
+        document.querySelectorAll(".quick-card").forEach(card => {
+            card.addEventListener("click", function () {
+                mostrarIframe();
+                // Sincronizar active en sidebar
+                const href = this.getAttribute("href");
+                document.querySelectorAll('a.menu-item[target="contenido"]').forEach(link => {
+                    if (link.getAttribute("href") === href) {
+                        setActiveMenuItem(link);
+                    }
+                });
+            });
+        });
+
+
+        // ============================================================
+        // EVENTOS — Botón "Inicio" del sidebar
+        // ============================================================
+
+        document.getElementById("nav-inicio").addEventListener("click", function (e) {
+            e.preventDefault();
+            setActiveMenuItem(this);
+            mostrarBienvenida();
+        });
+
+
+        // ============================================================
+        // EVENTOS — Botón "← Volver al inicio" sobre el iframe
+        // ============================================================
+
+        document.getElementById("btn-back-inicio").addEventListener("click", function () {
+            setActiveMenuItem(document.getElementById("nav-inicio"));
+            mostrarBienvenida();
+        });
+
+
+        // ============================================================
+        // RELOJ EN TIEMPO REAL (mostrado en el hero)
+        // ============================================================
+
+        function actualizarHora() {
+            const ahora = new Date();
+            const opciones = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+            const fecha = ahora.toLocaleDateString('es-VE', opciones);
+            const hh = String(ahora.getHours()).padStart(2, '0');
+            const mm = String(ahora.getMinutes()).padStart(2, '0');
+            const el = document.getElementById("hora-actual");
+            if (el) el.innerHTML = `<i class="fa-regular fa-clock"></i> ${fecha} &bull; ${hh}:${mm}`;
+        }
+
+        actualizarHora();
+        setInterval(actualizarHora, 30000);
+
+    </script>
+</body>
+
+</html>

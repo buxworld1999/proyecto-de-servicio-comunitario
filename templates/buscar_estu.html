@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Búsqueda Completa de Estudiantes</title>
+    <link rel="stylesheet" href="static/buscar_estu.css">
+</head>
+
+<body>
+
+    <h1>Sistema de Registro UEECR</h1>
+
+    <div class="container">
+
+        <div class="col-form">
+            <h3>Buscar Estudiante</h3>
+            <form action="/buscar_estu" method="POST">
+                <label for="cedula_buscar">Número de Cédula</label>
+                <input type="text" id="cedula_buscar" name="cedula_buscar" required placeholder="Ej: V-12345678">
+                <button type="submit">Ejecutar Consulta</button>
+            </form>
+
+            {% if error %}
+            <div class="error">{{ error }}</div>
+            {% endif %}
+        </div>
+
+        <div class="col-tabla">
+            <h3>Ficha de Información</h3>
+
+            {% if estudiante %}
+            <table>
+                <tr>
+                    <th>Número de Cédula</th>
+                    <td>{{ estudiante.cedula }}</td>
+                </tr>
+                <tr>
+                    <th>Nacionalidad</th>
+                    <td>{{ estudiante.nacionalidad }}</td>
+                </tr>
+                <tr>
+                    <th>Nombres</th>
+                    <td>{{ estudiante.nombres }}</td>
+                </tr>
+                <tr>
+                    <th>Apellidos</th>
+                    <td>{{ estudiante.apellidos }}</td>
+                </tr>
+                <tr>
+                    <th>Fecha de Nacimiento</th>
+                    <td>{{ estudiante.fecha_nacimiento or 'No registrada' }}</td>
+                </tr>
+                <tr>
+                    <th>Género</th>
+                    <td>
+                        {% if estudiante.genero == 'M' %} Masculino {% elif estudiante.genero == 'F' %} Femenino {% else
+                        %} {{ estudiante.genero }} {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Teléfono</th>
+                    <td>{{ estudiante.telefono or 'No registrado' }}</td>
+                </tr>
+                <tr>
+                    <th>Correo Electrónico</th>
+                    <td>{{ estudiante.correo or 'No registrado' }}</td>
+                </tr>
+                <tr>
+                    <th>Dirección de Habitación</th>
+                    <td>{{ estudiante.direccion or 'No registrada' }}</td>
+                </tr>
+                <tr>
+                    <th>Estado en el Sistema</th>
+                    <td>
+                        {% if estudiante.estado == 'A' %}
+                        <span style="color: #00ff66; font-weight: bold;">ACTIVO</span>
+                        {% else %}
+                        <span style="color: var(--color-error); font-weight: bold;">INACTIVO</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+            {% else %}
+            <p style="color: #777; font-style: italic; text-align: center; margin-top: 40px;">
+                Introduce un número de cédula en el panel izquierdo para consultar los registros de la base de datos.
+            </p>
+            {% endif %}
+        </div>
+
+    </div>
+
+
+
+</body>
+
+</html>

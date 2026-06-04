@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Control de Activos - Carmen Ruiz</title>
+    <style>
+        :root {
+            --primary-color: #1a365d;
+            /* Azul formal */
+            --accent-color: #3182ce;
+            /* Azul dinámico */
+            --bg-color: #f7fafc;
+            /* Fondo limpio */
+            --text-color: #2d3748;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 40px;
+            line-height: 1.6;
+        }
+
+        h1,
+        h2 {
+            color: var(--primary-color);
+            text-align: center;
+        }
+
+        /* Formulario Estilizado */
+        form {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        input {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            outline: none;
+        }
+
+        button {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        /* Tabla Moderna */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        thead {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        th,
+        td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tbody tr:hover {
+            background-color: #edf2f7;
+            transition: background 0.3s;
+        }
+
+        h2 {
+            margin-top: 30px;
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Sistema de Control de Activos: Carmen Ruiz</h1>
+
+    <form method="POST">
+        <input type="text" name="nombre" placeholder="Nombre del activo" required>
+        <input type="text" name="propietario" placeholder="¿A quién pertenece?" required>
+        <input type="text" name="encargado" placeholder="¿Quién es el encargado?" required>
+        <input type="number" name="cantidad" placeholder="Cantidad" required>
+        <input type="number" step="0.01" name="valor" placeholder="Valor Unitario" required>
+
+        <button type="submit">Control de Activos</button>
+    </form>
+
+    <hr>
+
+    <table border="1" cellpadding="10">
+        <thead>
+            <tr>
+                <th>Activo</th>
+                <th>Propietario</th>
+                <th>Encargado</th>
+                <th>Cantidad</th>
+                <th>Valor Unitario</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in activos %}
+            <tr>
+                <td>{{ item.nombre }}</td>
+                <td>{{ item.propietario }}</td>
+                <td>{{ item.encargado }}</td>
+                <td>{{ item.cantidad }}</td>
+                <td>${{ "%.2f"|format(item.valor_unitario) }}</td>
+                <td>${{ "%.2f"|format(item.cantidad * item.valor_unitario) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Valor Total del Inventario: ${{ "%.2f"|format(total) }}</h2>
+</body>
+
+</html>

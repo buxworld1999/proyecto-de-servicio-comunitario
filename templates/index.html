@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRISMA — Acceso al Sistema</title>
+    <meta name="description" content="Sistema de Gestión Escolar PRISMA — Inicio de sesión">
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='fondo_escuela.jpg') }}" type="image/jpeg">
+</head>
+
+<body>
+
+    {% if error %}
+    <div class="error-message" role="alert">{{ error }}</div>
+    {% endif %}
+
+    <!-- Formulario único de Inicio de Sesión -->
+    <div class="login-container" id="login-container">
+
+        <h1>Iniciar Sesión</h1>
+
+        <form novalidate action="/login" method="POST">
+            <input type="text"
+                   placeholder="Código de Usuario"
+                   id="codigo_usuario_login"
+                   name="codigo_usuario"
+                   required
+                   autocomplete="username">
+
+            <input type="password"
+                   placeholder="Contraseña"
+                   id="clave_login"
+                   name="clave"
+                   required
+                   autocomplete="current-password">
+
+            <button type="submit"
+                    class="accept-button"
+                    id="btn-login">
+                Iniciar Sesión
+            </button>
+        </form>
+
+        <p style="text-align:center; margin-top:22px; color:#64748b; font-size:12.5px; line-height:1.6;">
+            Sistema de acceso restringido.<br>
+            Solo personal autorizado de la institución.
+        </p>
+
+    </div>
+
+</body>
+</html>
