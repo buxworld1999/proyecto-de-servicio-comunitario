@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Control de Activos | Institucional</title>
+    <style>
+        :root {
+            --color-bg: #1a1a1a;
+            --color-panel: #262626;
+            --color-text: #e0e0e0;
+            --color-accent: #00f2ff;
+            /* Color cian tipo interfaz */
+            --color-border: #404040;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            margin: 0;
+            padding: 40px;
+            background-image: linear-gradient(rgba(26, 26, 26, 0.9), rgba(26, 26, 26, 0.9)),
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255, 255, 255, 0.03) 2px, rgba(255, 255, 255, 0.03) 4px);
+        }
+
+        h1 {
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            color: var(--color-accent);
+            text-align: center;
+            margin-bottom: 40px;
+            text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+        }
+
+        .container {
+            display: flex;
+            gap: 40px;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .col-form,
+        .col-tabla {
+            background: var(--color-panel);
+            padding: 25px;
+            border: 1px solid var(--color-border);
+            position: relative;
+        }
+
+        .col-form {
+            flex: 0 0 40%;
+        }
+
+        .col-tabla {
+            flex: 1;
+        }
+
+        h3 {
+            color: var(--color-accent);
+            font-weight: 300;
+            text-transform: uppercase;
+            margin-top: 0;
+            border-bottom: 1px solid var(--color-accent);
+            padding-bottom: 10px;
+        }
+
+        input {
+            background: #111;
+            border: 1px solid var(--color-border);
+            color: white;
+            padding: 12px;
+            width: 100%;
+            margin: 15px 0;
+            box-sizing: border-box;
+        }
+
+        input:focus {
+            border-color: var(--color-accent);
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            border: 1px solid var(--color-accent);
+            color: var(--color-accent);
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: var(--color-accent);
+            color: black;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #333;
+            color: var(--color-accent);
+            padding: 12px;
+            text-align: left;
+            font-weight: 400;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        tr:hover {
+            background: #303030;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Sistema de Control de Activos Institucional</h1>
+
+    <div class="container">
+        <div class="col-form">
+            <h3>Registro de Nuevo Activo</h3>
+            <form method="POST">
+                <input type="text" name="nombre" placeholder="Nombre del activo" required>
+                <input type="text" name="propietario" placeholder="Departamento propietario" required>
+                <input type="text" name="encargado" placeholder="Persona encargada" required>
+                <input type="number" name="cantidad" placeholder="Cantidad total" required>
+                <button type="submit">Agregar Activo</button>
+            </form>
+        </div>
+
+        <div class="col-tabla">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Activo</th>
+                        <th>Propietario</th>
+                        <th>Encargado</th>
+                        <th>Cant.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Proyector Epson</td>
+                        <td>Dirección Académica</td>
+                        <td>María González</td>
+                        <td>3</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</body>
+
+</html>

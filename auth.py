@@ -17,21 +17,21 @@ PERMISOS = {
     'admin': [
         'usuarios', 'personal', 'estudiantes', 'matricula',
         'evaluaciones', 'constancias', 'citaciones', 'labor_social',
-        'materias', 'asignacion_docente', 'reportes', 'configuracion'
+        'materias', 'asignacion_docente', 'reportes', 'configuracion', 'activos'
     ],
     'director': [
         'personal', 'estudiantes', 'matricula',
         'evaluaciones', 'citaciones', 'labor_social',
-        'materias', 'asignacion_docente', 'reportes', 'configuracion'
+        'materias', 'asignacion_docente', 'reportes', 'configuracion', 'activos'
     ],
     'coordinador': [
         'personal', 'estudiantes', 'matricula',
         'evaluaciones', 'citaciones', 'labor_social',
-        'materias', 'asignacion_docente', 'reportes'
+        'materias', 'asignacion_docente', 'reportes', 'activos'
     ],
     'secretaria': [
         'personal', 'estudiantes', 'matricula',
-        'constancias', 'citaciones', 'reportes'
+        'constancias', 'citaciones', 'reportes', 'activos'
     ],
     'docente': [
         'estudiantes', 'evaluaciones',
@@ -155,6 +155,13 @@ MODULOS_ITEMS = {
             'icono': 'fa-solid fa-gears'
         },
     ],
+    'activos': [
+        {
+            'label': 'Control de Activos',
+            'url':   '/activos',
+            'icono': 'fa-solid fa-boxes-stacked'
+        },
+    ],
 }
 
 
@@ -173,6 +180,7 @@ MENU_GRUPOS = [
     {'titulo': 'Documentos',     'modulos': ['constancias', 'citaciones']},
     {'titulo': 'Labor Social',   'modulos': ['labor_social']},
     {'titulo': 'Académico',      'modulos': ['materias', 'asignacion_docente']},
+    {'titulo': 'Bienes e Inventario', 'modulos': ['activos']},
     {'titulo': 'Reportes',       'modulos': ['reportes']},
     {'titulo': 'Sistema',        'modulos': ['configuracion']},
 ]

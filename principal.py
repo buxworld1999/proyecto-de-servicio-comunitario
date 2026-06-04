@@ -185,6 +185,22 @@ def anio_escolar():
 def representantes():
     return _modulo_en_desarrollo("Representantes", "fa-people-roof")
 
+# ===================================================================
+# MÓDULO DE ACTIVOS (INVENTARIO DE BIENES DE LA INSTITUCIÓN)
+# ===================================================================
+
+
+from gestion_activos import activos_institucion as activos_institucion_func
+# Nota: Ajusta el "from" según el nombre que le diste al archivo del Paso 1
+
+@app.route('/activos', methods=['GET', 'POST'])
+@login_required
+@rol_required('admin', 'director', 'coordinador', 'secretaria')
+def activos():
+    """
+    Endpoint único para el Sistema de Control de Activos de la institución.
+    """
+    return activos_institucion_func()
 
 @app.route('/evaluaciones')
 @login_required
@@ -236,10 +252,84 @@ def asignacion_docente():
     return _modulo_en_desarrollo("Asignación Docente", "fa-chalkboard-user")
 
 
-@app.route('/reportes')
+# ===================================================================
+# MÓDULO DE REPORTES (CONEXIÓN ACTIVA A SUPABASE)
+# ===================================================================
+
+@app.route('/reportes', methods=['GET', 'POST'])
 @login_required
+@rol_required('admin', 'director', 'coordinador', 'secretaria')
 def reportes():
-    return _modulo_en_desarrollo("Reportes", "fa-chart-bar")
+    """
+    Controlador para el módulo de reportes.
+    Consulta directamente las tablas de Supabase según el formulario enviado.
+    """
+    # Inicializamos variables para mandar a la plantilla en caso de consulta exitosa
+    resultados = None
+    tipo_reporte = None
+
+    if request.method == 'POST':
+        # Identificamos qué formulario se envió por medio de un campo oculto o el botón presionado
+        accion = request.form.get('accion')
+
+        try:
+            # --- CASO 1: REPORTE DE MATRÍCULA ---
+            if accion == 'matricula':
+                grado_seleccionado = request.form.get('grado')
+                
+                # Construimos la consulta base a la tabla estudiante
+                query = supabase.table("estudiante").select("cedula, nacionalidad, nombres, apellidos, genero, estado_estudiante")
+                
+                # Si el usuario seleccionó un grado específico (asumiendo que manejas el campo o filtro similar)
+                # NOTA: Si en tu tabla 'estudiante' guardas el grado o año, puedes aplicar el filtro aquí:
+                # if grado_seleccionado != 'todos':
+                #     query = query.eq("grado", grado_seleccionado)
+                
+                response = query.execute()
+                resultados = response.data
+                tipo_reporte = 'matricula'
+                
+                if not resultados:
+                    flash("No se encontraron estudiantes registrados para los filtros seleccionados.", "warning")
+
+            # --- CASO 2: CONSTANCIAS DE ESTUDIO ---
+            elif accion == 'constancia':
+                v_cedula = request.form.get('cedula_buscar', '').strip()
+                v_motivo = request.form.get('motivo', '').strip() or "Trámite General"
+
+                # Buscamos al estudiante por su cédula
+                response = supabase.table("estudiante") \
+                    .select("cedula, nacionalidad, nombres, apellidos, estado_estudiante") \
+                    .eq("cedula", v_cedula) \
+                    .execute()
+
+                if response.data:
+                    estudiante = response.data[0]
+                    # Validar si está activo
+                    if estudiante.get('estado_estudiante') == 'A':
+                        # Pasamos los datos del estudiante directo a una plantilla de constancia limpia
+                        return render_template(
+                            'constancia_imprimible.html',
+                            estudiante=estudiante,
+                            motivo=v_motivo,
+                            fecha_hoy=os.popen('date +"%d-%m-%Y"').read().strip() # Fecha del sistema
+                        )
+                    else:
+                        flash("El estudiante se encuentra Inactivo (Retirado). No se puede emitir la constancia.", "danger")
+                else:
+                    flash(f"No se encontró ningún estudiante con la cédula '{v_cedula}'.", "danger")
+
+        except Exception as e:
+            flash(f"Error en la base de datos al generar reporte: {str(e)}", "danger")
+
+    # Si es GET o si fue un POST que no redirigió, muestra el panel con los resultados (si existen)
+    return render_template(
+        'reportes.html', 
+        usuario_nombre=session.get('nombre', 'Usuario'),
+        usuario_rol=session.get('rol', ''),
+        resultados=resultados,
+        tipo_reporte=tipo_reporte
+    )
 
 
 def _modulo_en_desarrollo(nombre: str, icono: str) -> str:
