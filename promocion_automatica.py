@@ -9,15 +9,29 @@ load_dotenv()
 url: str = os.environ.get("SUPABASE_URL")
 service_key: str = os.environ.get("SUPABASE_SERVICE_KEY")
 
-if not service_key or service_key == "Pega_aqui_tu_service_role_key":
-    print("[ERROR CRITICO]:")
-    print("Debes colocar tu 'service_role secret' en el archivo .env")
-    print("dentro de la variable SUPABASE_SERVICE_KEY para poder ejecutar este script.")
-    exit(1)
+supabase_client: Client = None
 
-supabase: Client = create_client(url, service_key)
+def get_supabase_client() -> Client:
+    global supabase_client
+    if supabase_client is not None:
+        return supabase_client
+    if not service_key or service_key == "Pega_aqui_tu_service_role_key":
+        raise ValueError(
+            "Debes colocar tu 'service_role secret' en el archivo .env "
+            "dentro de la variable SUPABASE_SERVICE_KEY para poder ejecutar esta acción."
+        )
+    if not url:
+        raise ValueError("Falta la variable SUPABASE_URL en el archivo .env")
+    supabase_client = create_client(url, service_key)
+    return supabase_client
 
 def promover_ano():
+    try:
+        supabase = get_supabase_client()
+    except Exception as e:
+        print(f"[ERROR CRITICO]: {str(e)}")
+        return f"[ERROR CRITICO]: {str(e)}"
+
     mensajes = []
     def log(msg):
         print(msg)
