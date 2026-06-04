@@ -153,11 +153,13 @@ def matricula():
     return _modulo_en_desarrollo("Proceso de Matrícula", "fa-file-signature")
 
 
+from secciones import secciones_view
+
 @app.route('/secciones')
 @login_required
 @rol_required('admin', 'director', 'coordinador', 'secretaria')
 def secciones():
-    return _modulo_en_desarrollo("Secciones", "fa-layer-group")
+    return secciones_view()
 
 
 @app.route('/anio_escolar')

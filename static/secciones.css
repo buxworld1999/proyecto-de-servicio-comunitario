@@ -1,0 +1,252 @@
+/* Estilos para el módulo de Secciones - secciones.css */
+
+/* Reset y base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: transparent;
+    padding: 20px;
+    color: #e0e0e0;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Encabezado */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(76, 201, 240, 0.3);
+}
+
+.header h1 {
+    color: #4cc9f0;
+    font-size: 2.2rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 2px 10px rgba(76, 201, 240, 0.3);
+}
+
+.btn-volver {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #4cc9f0;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    border: 1px solid rgba(76, 201, 240, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-volver:hover {
+    background: rgba(76, 201, 240, 0.1);
+    box-shadow: 0 0 10px rgba(76, 201, 240, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Pestañas (Tabs) */
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+}
+
+.tab-link {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #a9d6e5;
+    padding: 12px 24px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 10px 10px 0 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tab-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.tab-link.active {
+    background: rgba(76, 201, 240, 0.15);
+    border-color: #4cc9f0;
+    border-bottom: 3px solid #4cc9f0;
+    color: #4cc9f0;
+}
+
+/* Contenido de pestañas */
+.tab-content-container {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 0 10px 10px 10px;
+    padding: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #4cc9f0;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    min-height: 400px;
+}
+
+/* Grid de Secciones */
+.secciones-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 30px;
+}
+
+/* Tarjetas de Sección */
+.seccion-card {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.seccion-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+    border-color: rgba(76, 201, 240, 0.3);
+}
+
+.seccion-header {
+    background: rgba(76, 201, 240, 0.1);
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(76, 201, 240, 0.2);
+}
+
+.seccion-header h2 {
+    color: #fff;
+    font-size: 1.3rem;
+    margin: 0;
+}
+
+.badge {
+    background: #4cc9f0;
+    color: #000;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: bold;
+}
+
+/* Tabla interna */
+.table-responsive {
+    overflow-x: auto;
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+/* Scrollbar personalizado para tablas */
+.table-responsive::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.table-responsive::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+.table-responsive::-webkit-scrollbar-thumb {
+    background: rgba(76, 201, 240, 0.5);
+    border-radius: 3px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 12px 20px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+th {
+    background: rgba(0, 0, 0, 0.3);
+    color: #a9d6e5;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+td {
+    color: #fff;
+    font-size: 0.95rem;
+}
+
+tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Estado Vacío */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: rgba(255, 255, 255, 0.5);
+    text-align: center;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    color: rgba(76, 201, 240, 0.3);
+}
+
+.empty-state p {
+    font-size: 1.2rem;
+}
+
+/* Mensajes de Alerta */
+.alert-info {
+    padding: 15px;
+    background-color: rgba(76, 201, 240, 0.1);
+    border: 1px solid #4cc9f0;
+    color: #4cc9f0;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .secciones-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .tab-link {
+        padding: 10px 15px;
+        font-size: 0.95rem;
+    }
+}

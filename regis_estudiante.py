@@ -28,8 +28,9 @@ def registro_estudiantes():
             "telefono":         request.form.get('telefono') or None,
             "correo":           request.form.get('correo') or None,
             "direccion":        request.form.get('direccion') or None,
-            "estado":           estado_filtrado,    # Forzado a longitud 1
-            "foto":             None
+            "estado_estudiante": estado_filtrado,    # Forzado a longitud 1
+            "anio":             request.form.get('anio'),
+            "seccion":          request.form.get('seccion')
         }
 
         try:

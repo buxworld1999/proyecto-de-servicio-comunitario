@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secciones - U.E.E Carmen Ruíz</title>
+    <link rel="stylesheet" href="static/secciones.css">
+    <!-- FontAwesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Encabezado y Navegación -->
+        <div class="header">
+            <h1><i class="fa-solid fa-layer-group"></i> Estudiantes por Secciones</h1>
+            <a href="/menu" class="btn-volver"><i class="fa-solid fa-arrow-left"></i> Volver al Menú</a>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="alert-info">
+            {{ messages[0] }}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Pestañas de Años -->
+        <div class="tabs">
+            {% for anio in agrupacion.keys() %}
+            <button class="tab-link {{ 'active' if loop.first else '' }}" onclick="openTab(event, '{{ anio|replace(' ', '_') }}')">
+                {{ anio }}
+            </button>
+            {% endfor %}
+        </div>
+
+        <!-- Contenido de las pestañas -->
+        <div class="tab-content-container">
+            {% for anio, secciones in agrupacion.items() %}
+            <div id="{{ anio|replace(' ', '_') }}" class="tab-content" style="display: {{ 'block' if loop.first else 'none' }};">
+                
+                {% if not secciones %}
+                <div class="empty-state">
+                    <i class="fa-regular fa-folder-open"></i>
+                    <p>No hay estudiantes registrados en {{ anio }}</p>
+                </div>
+                {% else %}
+                    
+                    <!-- Mostrar secciones del año -->
+                    <div class="secciones-grid">
+                        {% for seccion, estudiantes in secciones.items() %}
+                        <div class="seccion-card">
+                            <div class="seccion-header">
+                                <h2>Sección "{{ seccion }}"</h2>
+                                <span class="badge">{{ estudiantes|length }} estudiantes</span>
+                            </div>
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Cédula</th>
+                                            <th>Nombre Completo</th>
+                                            <th>Género</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for est in estudiantes %}
+                                        <tr>
+                                            <td>{{ est.cedula }}</td>
+                                            <td>{{ est.nombre_completo }}</td>
+                                            <td>
+                                                {% if est.genero == 'M' %}
+                                                <i class="fa-solid fa-mars" style="color: #4cc9f0;" title="Masculino"></i> M
+                                                {% elif est.genero == 'F' %}
+                                                <i class="fa-solid fa-venus" style="color: #f72585;" title="Femenino"></i> F
+                                                {% else %}
+                                                {{ est.genero }}
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                
+                {% endif %}
+            </div>
+            {% endfor %}
+            
+            {% if not agrupacion %}
+            <div class="empty-state">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <p>No se encontraron datos en la base de datos o la tabla 'matricula' aún no ha sido creada.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            
+            // Ocultar todos los contenidos
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            
+            // Quitar clase active de los botones
+            tablinks = document.getElementsByClassName("tab-link");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            
+            // Mostrar la pestaña actual y añadir active
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+    </script>
+</body>
+</html>
