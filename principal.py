@@ -40,6 +40,10 @@ app.secret_key = os.environ.get("SECRET_KEY", "prisma_secret_key_ueecr_2025_segu
 # La sesión dura 8 horas (turno escolar completo)
 app.permanent_session_lifetime = timedelta(hours=8)
 
+# Instalar interceptores de logs para el módulo Terminal Admin
+from admin_terminal import instalar_interceptores, vista_terminal, sse_stream
+instalar_interceptores()
+
 
 # ===================================================================
 # MANEJADORES DE ERROR
@@ -217,13 +221,19 @@ def evaluaciones():
 def boletines():
     return _modulo_en_desarrollo("Boletines", "fa-newspaper")
 
-from constancia_estudio import constancia_estudio as constancia_estudio_func
+from constancia_estudio import constancia_estudio as constancia_estudio_func, descargar_formato
 
 @app.route('/constancias', methods=['GET', 'POST'])
 @login_required
-@rol_required('admin', 'secretaria')
+@rol_required('admin', 'secretaria','director')
 def constancias():
     return constancia_estudio_func()
+
+@app.route('/descargar_formato/<path:nombre_archivo>')
+@login_required
+@rol_required('admin', 'secretaria','director')
+def ruta_descargar_formato(nombre_archivo):
+    return descargar_formato(nombre_archivo)
 
 
 @app.route('/citaciones')
@@ -337,6 +347,25 @@ def reportes():
 def _modulo_en_desarrollo(nombre: str, icono: str) -> str:
     """ Renderiza la plantilla de modulos en desarrollo """
     return render_template('en_desarrollo.html', nombre=nombre, icono=icono)
+
+
+# ===================================================================
+# MÓDULO TERMINAL ADMIN (solo admin)
+# ===================================================================
+
+@app.route('/admin/terminal')
+@login_required
+@rol_required('admin')
+def admin_terminal():
+    """Terminal de logs del servidor en tiempo real."""
+    return vista_terminal()
+
+@app.route('/admin/terminal/stream')
+@login_required
+@rol_required('admin')
+def admin_terminal_stream():
+    """Endpoint SSE que transmite logs en vivo."""
+    return sse_stream()
 
 # ===================================================================
 # PUNTO DE ENTRADA

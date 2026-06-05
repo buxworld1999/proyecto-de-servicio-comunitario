@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal del Sistema — PRISMA Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/admin_terminal.css">
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+    <div class="topbar-dot dot-red"></div>
+    <div class="topbar-dot dot-yellow"></div>
+    <div class="topbar-dot dot-green"></div>
+    <span class="topbar-title">🖥️ PRISMA — Terminal del Sistema</span>
+    <div class="topbar-badge">
+        <div class="badge-live"><div class="pulse"></div> EN VIVO</div>
+        <span class="badge-count" id="badge-count">0 líneas</span>
+        <button class="btn-clear" onclick="limpiarTerminal()">🗑 Limpiar</button>
+
+    </div>
+</div>
+
+<!-- FILTROS -->
+<div class="filterbar">
+    <span style="font-size:11px; color:#484f58; align-self:center; margin-right:4px;">Filtrar:</span>
+    <button class="filter-btn active" data-level="ALL"     onclick="setFiltro(this)">Todo</button>
+    <button class="filter-btn"        data-level="INFO"    onclick="setFiltro(this)">INFO</button>
+    <button class="filter-btn"        data-level="WARNING" onclick="setFiltro(this)">WARNING</button>
+    <button class="filter-btn"        data-level="ERROR"   onclick="setFiltro(this)">ERROR</button>
+    <button class="filter-btn"        data-level="DEBUG"   onclick="setFiltro(this)">DEBUG</button>
+</div>
+
+<!-- TERMINAL -->
+<div class="terminal-wrap">
+    <div class="terminal" id="terminal">
+        {% if logs_iniciales %}
+            {% for log in logs_iniciales %}
+            <div class="log-line" data-level="{{ log.nivel }}">
+                <span class="log-ts">{{ log.ts }}</span>
+                <span class="log-nivel nivel-{{ log.nivel }}">{{ log.nivel }}</span>
+                <span class="log-msg {% if log.nivel == 'ERROR' or log.nivel == 'CRITICAL' %}err{% elif log.nivel == 'WARNING' %}warn{% endif %}">{{ log.msg }}</span>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="terminal-empty" id="empty-msg">
+                <span class="ico">📡</span>
+                Esperando actividad del servidor...
+            </div>
+        {% endif %}
+        <div class="scroll-anchor" id="bottom"></div>
+    </div>
+</div>
+
+<!-- AUTOSCROLL -->
+<div class="autoscroll-bar">
+    <label>
+        <input type="checkbox" id="autoscroll" checked>
+        Auto-scroll al final
+    </label>
+    <label style="margin-left:16px;">
+        <input type="checkbox" id="chk-wrap">
+        Ajustar líneas largas
+    </label>
+    <span id="log-count-display">0 entradas en buffer</span>
+</div>
+
+<script>
+    // ── Estado ──
+    let filtroActivo = 'ALL';
+    let totalLineas  = 0;
+    let autoScroll   = true;
+    const terminal   = document.getElementById('terminal');
+    const bottom     = document.getElementById('bottom');
+    const badgeCount = document.getElementById('badge-count');
+    const logCountDisp = document.getElementById('log-count-display');
+
+    // ── Contar líneas iniciales ──
+    totalLineas = document.querySelectorAll('.log-line').length;
+    actualizarContadores();
+
+    document.getElementById('autoscroll').addEventListener('change', e => {
+        autoScroll = e.target.checked;
+        if (autoScroll) bottom.scrollIntoView({ behavior: 'smooth' });
+    });
+    document.getElementById('chk-wrap').addEventListener('change', e => {
+        document.querySelectorAll('.log-msg').forEach(el => {
+            el.style.whiteSpace = e.target.checked ? 'pre-wrap' : 'nowrap';
+        });
+    });
+
+    // ── Crear una línea de log ──
+    function crearLinea(log) {
+        const line = document.createElement('div');
+        line.className = 'log-line';
+        line.dataset.level = log.nivel || 'INFO';
+
+        const claseMsg = (log.nivel === 'ERROR' || log.nivel === 'CRITICAL') ? 'err'
+                       : log.nivel === 'WARNING' ? 'warn' : '';
+
+        line.innerHTML = `
+            <span class="log-ts">${log.ts || '--:--:--'}</span>
+            <span class="log-nivel nivel-${log.nivel || 'INFO'}">${log.nivel || 'INFO'}</span>
+            <span class="log-msg ${claseMsg}">${escapeHTML(log.msg || '')}</span>
+        `;
+
+        // Aplicar filtro activo
+        if (filtroActivo !== 'ALL' && line.dataset.level !== filtroActivo) {
+            line.style.display = 'none';
+        }
+        return line;
+    }
+
+    function escapeHTML(str) {
+        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // ── Conectar SSE ──
+    const source = new EventSource('/admin/terminal/stream');
+    source.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+        if (data.tipo === 'ping') return;
+
+        const emptyMsg = document.getElementById('empty-msg');
+        if (emptyMsg) emptyMsg.remove();
+
+        const line = crearLinea(data);
+        terminal.insertBefore(line, bottom);
+        totalLineas++;
+        actualizarContadores();
+
+        // Limitar a 500 líneas en DOM
+        const lineas = terminal.querySelectorAll('.log-line');
+        if (lineas.length > 500) lineas[0].remove();
+
+        if (autoScroll) bottom.scrollIntoView({ behavior: 'instant' });
+    };
+
+    source.onerror = () => {
+        const errLine = document.createElement('div');
+        errLine.className = 'log-line';
+        errLine.innerHTML = `<span class="log-ts">${new Date().toLocaleTimeString()}</span>
+            <span class="log-nivel nivel-WARNING">WARN</span>
+            <span class="log-msg warn">Conexión SSE interrumpida. Reconectando…</span>`;
+        terminal.insertBefore(errLine, bottom);
+    };
+
+    // ── Filtros ──
+    function setFiltro(btn) {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        filtroActivo = btn.dataset.level;
+
+        document.querySelectorAll('.log-line').forEach(line => {
+            line.style.display = (filtroActivo === 'ALL' || line.dataset.level === filtroActivo)
+                ? '' : 'none';
+        });
+    }
+
+    // ── Limpiar ──
+    function limpiarTerminal() {
+        document.querySelectorAll('.log-line').forEach(l => l.remove());
+        totalLineas = 0;
+        actualizarContadores();
+        const msg = document.createElement('div');
+        msg.id = 'empty-msg';
+        msg.className = 'terminal-empty';
+        msg.innerHTML = '<span class="ico">🗑️</span>Terminal limpiada. Nuevos logs aparecerán aquí.';
+        terminal.insertBefore(msg, bottom);
+    }
+
+    function actualizarContadores() {
+        badgeCount.textContent = `${totalLineas} líneas`;
+        logCountDisp.textContent = `${totalLineas} entradas en buffer`;
+    }
+
+    // ── Auto-scroll inicial ──
+    bottom.scrollIntoView();
+</script>
+</body>
+</html>

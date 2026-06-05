@@ -17,7 +17,8 @@ PERMISOS = {
     'admin': [
         'usuarios', 'personal', 'estudiantes', 'matricula',
         'evaluaciones', 'constancias', 'citaciones', 'labor_social',
-        'materias', 'asignacion_docente', 'reportes', 'configuracion', 'activos'
+        'materias', 'asignacion_docente', 'reportes', 'configuracion', 'activos',
+        'terminal'
     ],
     'director': [
         'personal', 'estudiantes', 'matricula',
@@ -162,6 +163,13 @@ MODULOS_ITEMS = {
             'icono': 'fa-solid fa-boxes-stacked'
         },
     ],
+    'terminal': [
+        {
+            'label': 'Terminal del Sistema',
+            'url':   '/admin/terminal',
+            'icono': 'fa-solid fa-terminal'
+        },
+    ],
 }
 
 
@@ -182,7 +190,7 @@ MENU_GRUPOS = [
     {'titulo': 'Académico',      'modulos': ['materias', 'asignacion_docente']},
     {'titulo': 'Bienes e Inventario', 'modulos': ['activos']},
     {'titulo': 'Reportes',       'modulos': ['reportes']},
-    {'titulo': 'Sistema',        'modulos': ['configuracion']},
+    {'titulo': 'Sistema',        'modulos': ['configuracion', 'terminal']},
 ]
 
 

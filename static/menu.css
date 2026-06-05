@@ -657,9 +657,9 @@ body {
    ============================================================ */
 
 .content-card {
-    background: var(--card);
-    border-radius: 22px;
-    border: 1px solid var(--border);
+    background: transparent;
+    border-radius: 0;
+    border: none;
     overflow: hidden;
     transition: background 0.3s, border-color 0.3s;
 }
@@ -694,7 +694,7 @@ body {
 
 .iframe-content {
     width: 100%;
-    height: calc(100vh - 72px - 48px); /* 48px to account for the 24px padding top and bottom of content-area */
+    height: calc(100vh - 72px - 48px);
     border: none;
     display: block;
     background: transparent;
