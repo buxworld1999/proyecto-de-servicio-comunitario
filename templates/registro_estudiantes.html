@@ -36,9 +36,29 @@
         {% endif %}
         {% endwith %}
 
-        <form method="POST" action="/registro_estu">
+        <!-- INICIO CARGA MASIVA (TEMPORAL) -->
+        <div style="background: #f0fdf4; border: 1px dashed #22c55e; border-radius: 8px; padding: 20px; text-align: center; margin-bottom: 30px;">
+            <h3 style="margin-top: 0; color: #166534;"><i class="fa-solid fa-file-excel"></i> Carga Masiva de Estudiantes (Temporal)</h3>
+            <p style="color: #15803d; font-size: 14px; margin-bottom: 15px;">
+                Usa esta herramienta temporal para subir tu base de datos de estudiantes rápidamente.
+            </p>
+            <div style="display: flex; justify-content: center; gap: 15px; align-items: center; flex-wrap: wrap;">
+                <a href="{{ url_for('descargar_plantilla_estudiantes') }}" class="btn-submit" style="background-color: #3b82f6; text-decoration: none; display: inline-block; padding: 10px 20px;">
+                    1. Descargar Plantilla Excel
+                </a>
+                <div style="border-left: 2px solid #bbf7d0; height: 40px; margin: 0 10px;"></div>
+                <form method="POST" action="/cargar_estudiantes_masivo" enctype="multipart/form-data" style="display: flex; gap: 10px; align-items: center; margin: 0;">
+                    <input type="file" name="archivo_excel" accept=".xlsx, .xls" required style="border: 1px solid #ccc; padding: 8px; border-radius: 4px; background: white;">
+                    <button type="submit" class="btn-submit" style="background-color: #10b981; margin: 0; padding: 10px 20px;">
+                        2. Subir y Procesar
+                    </button>
+                </form>
+            </div>
+        </div>
+        <!-- FIN CARGA MASIVA -->
 
-            <fieldset>
+        <form method="POST" action="/registro_estu">
+            <h3 style="margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;">Registro Individual</h3>            <fieldset>
                 <legend>1. Identificación y Datos Personales</legend>
                 <div class="form-grid">
                     <div class="form-group">

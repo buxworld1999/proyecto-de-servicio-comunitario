@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
-from promocion_automatica import promover_ano
+from modulos.academico.promocion_automatica import promover_ano
 
 def configuracion_ano_view():
     if request.method == 'POST':

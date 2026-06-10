@@ -1,0 +1,438 @@
+/*
+  academico.css — CSS compartido para el Módulo Académico
+  PRISMA — Sistema de Gestión Escolar | Unidad Educativa Carmen Ruíz
+  Aplica a: momentos, materias, asignacion_docente, registro_notas, boletines, notas_certificadas
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+/* ── RESET & BASE ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Outfit', sans-serif;
+    background: #f0f4f8;
+    color: #1e293b;
+    min-height: 100vh;
+    padding: 0;
+}
+
+/* ── PÁGINA WRAPPER ── */
+.ac-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 20px 40px;
+}
+
+.ac-page-lg {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 20px 40px;
+}
+
+/* ── HEADER DE PÁGINA ── */
+.ac-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.ac-header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.ac-header-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.icon-blue    { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.icon-indigo  { background: linear-gradient(135deg, #6366f1, #4338ca); }
+.icon-emerald { background: linear-gradient(135deg, #10b981, #059669); }
+.icon-amber   { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.icon-rose    { background: linear-gradient(135deg, #f43f5e, #e11d48); }
+.icon-violet  { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+.icon-cyan    { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+
+.ac-header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.2;
+}
+
+.ac-header p {
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+/* ── CARDS ── */
+.ac-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07), 0 0 0 1px rgba(0,0,0,0.04);
+    padding: 24px 28px;
+    margin-bottom: 20px;
+}
+
+.ac-card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f1f5f9;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.ac-card-title i { color: #3b82f6; font-size: 15px; }
+
+/* ── GRID DE FILTROS ── */
+.ac-filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    align-items: end;
+}
+
+.ac-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.ac-field label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+.ac-input,
+.ac-select {
+    padding: 10px 14px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    color: #1e293b;
+    background: #fafafa;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s;
+    width: 100%;
+}
+
+.ac-input:focus,
+.ac-select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,.1);
+    background: #fff;
+}
+
+.ac-select { cursor: pointer; }
+
+/* ── BOTONES ── */
+.ac-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all .2s;
+    white-space: nowrap;
+}
+
+.ac-btn-primary {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(59,130,246,.3);
+}
+.ac-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(59,130,246,.4); }
+
+.ac-btn-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(16,185,129,.3);
+}
+.ac-btn-success:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(16,185,129,.4); }
+
+.ac-btn-danger {
+    background: linear-gradient(135deg, #f43f5e, #e11d48);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(244,63,94,.3);
+}
+.ac-btn-danger:hover { transform: translateY(-1px); }
+
+.ac-btn-ghost {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1.5px solid #e2e8f0;
+}
+.ac-btn-ghost:hover { background: #e2e8f0; }
+
+.ac-btn-sm { padding: 6px 14px; font-size: 12px; }
+.ac-btn-xs { padding: 4px 10px; font-size: 11px; border-radius: 7px; }
+.ac-btn-icon { padding: 8px 12px; }
+.ac-btn-full { width: 100%; justify-content: center; }
+
+/* ── TABLA ── */
+.ac-table-wrap {
+    overflow-x: auto;
+    border-radius: 12px;
+}
+
+.ac-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+}
+
+.ac-table thead tr {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    color: #e2e8f0;
+}
+
+.ac-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    white-space: nowrap;
+}
+
+.ac-table th:first-child { border-radius: 12px 0 0 0; }
+.ac-table th:last-child { border-radius: 0 12px 0 0; }
+
+.ac-table td {
+    padding: 11px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+    color: #334155;
+}
+
+.ac-table tbody tr:hover { background: #f8faff; }
+.ac-table tbody tr:last-child td { border-bottom: none; }
+
+/* ── BADGES ── */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.badge-success { background: #dcfce7; color: #15803d; }
+.badge-danger  { background: #fee2e2; color: #b91c1c; }
+.badge-warning { background: #fef9c3; color: #a16207; }
+.badge-info    { background: #dbeafe; color: #1d4ed8; }
+.badge-neutral { background: #f1f5f9; color: #475569; }
+.badge-purple  { background: #ede9fe; color: #6d28d9; }
+
+/* ── ALERTS / FLASH ── */
+.ac-alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    font-size: 13.5px;
+    font-weight: 500;
+    animation: slideIn .3s ease;
+}
+
+.ac-alert-success { background: #f0fdf4; border: 1.5px solid #86efac; color: #15803d; }
+.ac-alert-danger  { background: #fff1f2; border: 1.5px solid #fca5a5; color: #b91c1c; }
+.ac-alert-warning { background: #fffbeb; border: 1.5px solid #fcd34d; color: #92400e; }
+.ac-alert-info    { background: #eff6ff; border: 1.5px solid #93c5fd; color: #1e40af; }
+
+@keyframes slideIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── ESTADO VACÍO ── */
+.ac-empty {
+    text-align: center;
+    padding: 50px 20px;
+    color: #94a3b8;
+}
+
+.ac-empty i { font-size: 40px; display: block; margin-bottom: 12px; opacity: .4; }
+.ac-empty p { font-size: 14px; }
+
+/* ── GRID DE TARJETAS ESTADÍSTICAS ── */
+.ac-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.ac-stat-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border-left: 4px solid;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.ac-stat-card.blue   { border-color: #3b82f6; }
+.ac-stat-card.green  { border-color: #10b981; }
+.ac-stat-card.amber  { border-color: #f59e0b; }
+.ac-stat-card.red    { border-color: #f43f5e; }
+.ac-stat-card.purple { border-color: #8b5cf6; }
+
+.ac-stat-value { font-size: 28px; font-weight: 800; color: #0f172a; line-height: 1; }
+.ac-stat-label { font-size: 12px; color: #64748b; font-weight: 500; }
+
+/* ── MODAL ── */
+.ac-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.ac-modal-overlay.open { display: flex; }
+
+.ac-modal {
+    background: #fff;
+    border-radius: 20px;
+    padding: 28px;
+    max-width: 560px;
+    width: 92%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    animation: modalIn .25s ease;
+}
+
+@keyframes modalIn { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: scale(1); } }
+
+.ac-modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.ac-modal-footer {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #f1f5f9;
+}
+
+/* ── NOTA INPUT ESPECIAL (planilla de notas) ── */
+.nota-input {
+    width: 70px;
+    padding: 7px 10px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    text-align: center;
+    outline: none;
+    transition: all .2s;
+    color: #1e293b;
+}
+
+.nota-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+}
+
+.nota-input.aprobado { border-color: #10b981; background: #f0fdf4; color: #15803d; }
+.nota-input.reprobado { border-color: #f43f5e; background: #fff1f2; color: #b91c1c; }
+
+/* ── NOTA BADGE ── */
+.nota-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 28px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.nota-badge.alta   { background: #dcfce7; color: #15803d; }
+.nota-badge.media  { background: #fef9c3; color: #a16207; }
+.nota-badge.baja   { background: #fee2e2; color: #b91c1c; }
+.nota-badge.vacia  { background: #f1f5f9; color: #94a3b8; }
+
+/* ── FORMULARIO GRID ── */
+.ac-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.ac-form-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+.ac-form-full { grid-column: 1 / -1; }
+
+@media (max-width: 640px) {
+    .ac-form-grid,
+    .ac-form-grid-3 { grid-template-columns: 1fr; }
+    .ac-filters { grid-template-columns: 1fr; }
+}
+
+/* ── DIVIDER ── */
+.ac-divider {
+    border: none;
+    border-top: 1px solid #f1f5f9;
+    margin: 16px 0;
+}
+
+/* ── PRINT UTILITIES ── */
+@media print {
+    .no-print { display: none !important; }
+    body { background: #fff !important; padding: 0 !important; }
+    .ac-page, .ac-page-lg { padding: 0 !important; max-width: 100% !important; }
+}
+
+/* ── TOOLTIP ── */
+[title] { cursor: help; }

@@ -50,11 +50,12 @@ def login():
         # ── PASO 4: Establecer sesión (rol normalizado a minúsculas) ─
         rol_normalizado = (u.get('rol') or 'sin_rol').strip().lower()
         session.clear()
-        session.permanent     = True
-        session['usuario_id'] = u['id']
-        session['codigo']     = u['codigo_usuario']
-        session['rol']        = rol_normalizado
-        session['nombre']     = nombre_display
+        session.permanent          = True
+        session['usuario_id']      = u['id']
+        session['codigo']          = u['codigo_usuario']
+        session['rol']             = rol_normalizado
+        session['nombre']          = nombre_display
+        session['cedula_personal'] = u.get('cedula_personal')  # Para módulo académico (docente)
 
         return redirect(url_for('menu'))
 

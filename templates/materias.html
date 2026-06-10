@@ -3,74 +3,316 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Materias - U.E.E Carmen Ruíz</title>
-    <link rel="stylesheet" href="static/materias.css">
+    <title>Materias | PRISMA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='academico.css') }}">
 </head>
 <body>
-    <div class="container">
-        <div class="form-container">
-            <h1>Registrar Materia</h1>
-            <form method="POST" action="/materias">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Código</label>
-                        <input type="text" name="codigo" maxlength="10" placeholder="Ej: MAT-101" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Nombre de la Materia</label>
-                        <input type="text" name="nombre" maxlength="100" placeholder="Ej: Matemáticas" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Horas Semanales</label>
-                        <input type="number" name="horas_semanales" value="4" min="1" max="40" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Estado</label>
-                        <select name="activo">
-                            <option value="true">Activo</option>
-                            <option value="false">Inactivo</option>
-                        </select>
-                    </div>
-                    <div class="form-group full-width">
-                        <label>Descripción</label>
-                        <textarea name="descripcion" rows="4" placeholder="Descripción de la materia (opcional)"></textarea>
-                    </div>
-                </div>
-                <button type="submit" class="btn-submit">Guardar Materia</button>
-            </form>
-        </div>
+<div class="ac-page-lg">
 
-        <div class="table-container">
-            <h2>Materias Registradas</h2>
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Código</th>
-                            <th>Nombre</th>
-                            <th>Horas Semanales</th>
-                            <th>Estado</th>
-                            <th>Fecha de Creación</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for materia in lista_materias %}
-                        <tr>
-                            <td>{{ materia.codigo }}</td>
-                            <td>{{ materia.nombre }}</td>
-                            <td>{{ materia.horas_semanales }}</td>
-                            <td>{{ 'Activo' if materia.activo else 'Inactivo' }}</td>
-                            <td>{{ materia.fecha_creacion.strftime('%d/%m/%Y') if materia.fecha_creacion else '' }}</td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="5" style="text-align: center;">No hay materias registradas</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    <div class="ac-header">
+        <div class="ac-header-left">
+            <div class="ac-header-icon icon-blue">
+                <i class="fa-solid fa-book-open"></i>
+            </div>
+            <div>
+                <h1>Materias y Asignaturas</h1>
+                <p>Gestiona el plan de estudios por grado</p>
             </div>
         </div>
+        <a href="{{ url_for('menu') }}" class="ac-btn ac-btn-ghost">
+            <i class="fa-solid fa-arrow-left"></i> Menú
+        </a>
     </div>
+
+    {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in msgs %}
+    <div class="ac-alert ac-alert-{{ 'success' if cat == 'success' else 'danger' if cat == 'danger' else 'warning' }}">
+        <i class="fa-solid {{ 'fa-circle-check' if cat == 'success' else 'fa-circle-exclamation' }}"></i>
+        {{ msg }}
+    </div>
+    {% endfor %}
+    {% endwith %}
+
+    <div class="ac-stats-grid">
+        <div class="ac-stat-card blue">
+            <span class="ac-stat-value">{{ materias | length }}</span>
+            <span class="ac-stat-label">Total materias</span>
+        </div>
+        <div class="ac-stat-card green">
+            <span class="ac-stat-value">{{ total_activas }}</span>
+            <span class="ac-stat-label">Activas</span>
+        </div>
+        <div class="ac-stat-card red">
+            <span class="ac-stat-value">{{ total_inactivas }}</span>
+            <span class="ac-stat-label">Inactivas</span>
+        </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 380px; gap:20px; align-items:start;">
+
+        <!-- LISTA -->
+        <div>
+            <!-- Filtro por grado -->
+            <div class="ac-card" style="padding:16px 20px;">
+                <form method="GET" action="{{ url_for('materias') }}">
+                    <div class="ac-filters">
+                        <div class="ac-field">
+                            <label>Filtrar por Grado</label>
+                            <select name="grado" class="ac-select" onchange="this.form.submit()">
+                                <option value="todos" {% if grado_sel == 'todos' %}selected{% endif %}>— Todos los grados —</option>
+                                {% for g in grados %}
+                                <option value="{{ g.codigo }}" {% if g.codigo == grado_sel %}selected{% endif %}>
+                                    {{ g.nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="ac-card" style="padding:0; overflow:hidden;">
+                <div class="ac-table-wrap">
+                    <table class="ac-table">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Materia</th>
+                                <th>Área</th>
+                                <th>Grado</th>
+                                <th style="text-align:center;">Horas</th>
+                                <th style="text-align:center;">Nota Min.</th>
+                                <th style="text-align:center;">Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for m in materias %}
+                            <tr>
+                                <td><code style="background:#f1f5f9; padding:2px 8px; border-radius:5px; font-size:12px;">{{ m.codigo }}</code></td>
+                                <td>
+                                    <strong style="color:#1e293b;">{{ m.nombre }}</strong>
+                                    {% if m.abreviatura %}
+                                    <span style="font-size:11px; color:#94a3b8;"> ({{ m.abreviatura }})</span>
+                                    {% endif %}
+                                    {% if m.obligatoria %}
+                                    <span class="badge badge-info" style="font-size:9px; margin-left:4px;">Obligatoria</span>
+                                    {% endif %}
+                                </td>
+                                <td style="font-size:12px; color:#64748b;">{{ m.area_formacion or '—' }}</td>
+                                <td>{{ grados_dict.get(m.codigo_grado, m.codigo_grado or '—') }}</td>
+                                <td style="text-align:center;">
+                                    <span class="badge badge-neutral">{{ m.horas_semanales or '—' }}h</span>
+                                </td>
+                                <td style="text-align:center; font-weight:700;">
+                                    {{ "%.0f"|format(m.nota_minima_aprobacion) if m.nota_minima_aprobacion is not none else '10' }}
+                                </td>
+                                <td style="text-align:center;">
+                                    <span class="badge {{ 'badge-success' if m.estado == 'A' else 'badge-danger' }}">
+                                        {{ 'Activa' if m.estado == 'A' else 'Inactiva' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div style="display:flex; gap:6px;">
+                                        <!-- Editar -->
+                                        <button class="ac-btn ac-btn-ghost ac-btn-xs"
+                                            onclick="abrirEditar({{ m | tojson }})">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </button>
+                                        <!-- Toggle estado -->
+                                        <form method="POST" action="{{ url_for('materias', grado=grado_sel) }}" style="margin:0;">
+                                            <input type="hidden" name="accion" value="cambiar_estado">
+                                            <input type="hidden" name="codigo" value="{{ m.codigo }}">
+                                            <input type="hidden" name="estado_actual" value="{{ m.estado }}">
+                                            <button type="submit" class="ac-btn ac-btn-xs {{ 'ac-btn-danger' if m.estado == 'A' else 'ac-btn-success' }}"
+                                                title="{{ 'Desactivar' if m.estado == 'A' else 'Activar' }}"
+                                                onclick="return confirm('¿Cambiar estado de la materia {{ m.nombre }}?')">
+                                                <i class="fa-solid {{ 'fa-eye-slash' if m.estado == 'A' else 'fa-eye' }}"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="8">
+                                    <div class="ac-empty">
+                                        <i class="fa-solid fa-book-open"></i>
+                                        <p>No hay materias registradas para el grado seleccionado.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL NUEVA MATERIA -->
+        <div>
+            <div class="ac-card" style="position:sticky; top:20px;">
+                <div class="ac-card-title">
+                    <i class="fa-solid fa-plus-circle"></i>
+                    Nueva Materia
+                </div>
+
+                <form method="POST" action="{{ url_for('materias', grado=grado_sel) }}">
+                    <input type="hidden" name="accion" value="crear">
+
+                    <div class="ac-field" style="margin-bottom:12px;">
+                        <label>Código <span style="color:#f43f5e;">*</span></label>
+                        <input type="text" name="codigo" class="ac-input" required
+                            placeholder="Ej: MAT101" style="text-transform:uppercase;">
+                    </div>
+                    <div class="ac-field" style="margin-bottom:12px;">
+                        <label>Nombre <span style="color:#f43f5e;">*</span></label>
+                        <input type="text" name="nombre" class="ac-input" required
+                            placeholder="Ej: Matemáticas">
+                    </div>
+                    <div class="ac-form-grid" style="margin-bottom:12px;">
+                        <div class="ac-field">
+                            <label>Abreviatura</label>
+                            <input type="text" name="abreviatura" class="ac-input" placeholder="MAT">
+                        </div>
+                        <div class="ac-field">
+                            <label>Grado</label>
+                            <select name="codigo_grado" class="ac-select">
+                                <option value="">— General —</option>
+                                {% for g in grados %}
+                                <option value="{{ g.codigo }}" {% if g.codigo == grado_sel %}selected{% endif %}>
+                                    {{ g.nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="ac-field" style="margin-bottom:12px;">
+                        <label>Área de Formación</label>
+                        <select name="area_formacion" class="ac-select">
+                            <option value="">— Selecciona —</option>
+                            <option>Matemática</option>
+                            <option>Lenguaje y Comunicación</option>
+                            <option>Ciencias Naturales</option>
+                            <option>Ciencias Sociales</option>
+                            <option>Educación Física</option>
+                            <option>Inglés</option>
+                            <option>Arte y Patrimonio</option>
+                            <option>Informática</option>
+                            <option>Filosofía</option>
+                        </select>
+                    </div>
+                    <div class="ac-form-grid" style="margin-bottom:12px;">
+                        <div class="ac-field">
+                            <label>Horas/Semana</label>
+                            <input type="number" name="horas_semanales" class="ac-input" value="4" min="1" max="10">
+                        </div>
+                        <div class="ac-field">
+                            <label>Nota Mínima</label>
+                            <input type="number" name="nota_minima_aprobacion" class="ac-input" value="10" min="0" max="20" step="0.5">
+                        </div>
+                    </div>
+                    <div class="ac-form-grid" style="margin-bottom:12px;">
+                        <div class="ac-field">
+                            <label>Tipo Evaluación</label>
+                            <select name="tipo_evaluacion" class="ac-select">
+                                <option value="C">Cuantitativa</option>
+                                <option value="Q">Cualitativa</option>
+                            </select>
+                        </div>
+                        <div class="ac-field" style="justify-content:center;">
+                            <label>Opciones</label>
+                            <div style="display:flex; gap:12px; margin-top:8px;">
+                                <label style="display:flex; align-items:center; gap:6px; font-size:12px;">
+                                    <input type="checkbox" name="obligatoria" value="1" checked> Obligatoria
+                                </label>
+                                <label style="display:flex; align-items:center; gap:6px; font-size:12px;">
+                                    <input type="checkbox" name="se_repara" value="1" checked> Se Repara
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="ac-btn ac-btn-success ac-btn-full">
+                        <i class="fa-solid fa-save"></i> Crear Materia
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAL EDITAR -->
+<div class="ac-modal-overlay" id="modal-editar">
+    <div class="ac-modal" style="max-width:520px;">
+        <div class="ac-modal-title">
+            <i class="fa-solid fa-pen" style="color:#3b82f6;"></i>
+            Editar Materia
+        </div>
+        <form method="POST" action="{{ url_for('materias', grado=grado_sel) }}" id="form-editar">
+            <input type="hidden" name="accion" value="editar">
+            <input type="hidden" name="codigo" id="e-codigo">
+
+            <div class="ac-form-grid">
+                <div class="ac-field ac-form-full">
+                    <label>Nombre</label>
+                    <input type="text" name="nombre" id="e-nombre" class="ac-input" required>
+                </div>
+                <div class="ac-field">
+                    <label>Abreviatura</label>
+                    <input type="text" name="abreviatura" id="e-abreviatura" class="ac-input">
+                </div>
+                <div class="ac-field">
+                    <label>Grado</label>
+                    <select name="codigo_grado" id="e-grado" class="ac-select">
+                        <option value="">— General —</option>
+                        {% for g in grados %}
+                        <option value="{{ g.codigo }}">{{ g.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="ac-field">
+                    <label>Horas/Semana</label>
+                    <input type="number" name="horas_semanales" id="e-horas" class="ac-input" min="1" max="10">
+                </div>
+                <div class="ac-field">
+                    <label>Nota Mínima</label>
+                    <input type="number" name="nota_minima_aprobacion" id="e-nota-min" class="ac-input" min="0" max="20" step="0.5">
+                </div>
+            </div>
+
+            <div class="ac-modal-footer">
+                <button type="button" class="ac-btn ac-btn-ghost" onclick="cerrarModal()">Cancelar</button>
+                <button type="submit" class="ac-btn ac-btn-primary">
+                    <i class="fa-solid fa-save"></i> Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function abrirEditar(m) {
+    document.getElementById('e-codigo').value      = m.codigo;
+    document.getElementById('e-nombre').value      = m.nombre;
+    document.getElementById('e-abreviatura').value = m.abreviatura || '';
+    document.getElementById('e-horas').value       = m.horas_semanales || 4;
+    document.getElementById('e-nota-min').value    = m.nota_minima_aprobacion || 10;
+    const gradoSel = document.getElementById('e-grado');
+    for (let opt of gradoSel.options) {
+        opt.selected = (opt.value === (m.codigo_grado || ''));
+    }
+    document.getElementById('modal-editar').classList.add('open');
+}
+
+function cerrarModal() {
+    document.getElementById('modal-editar').classList.remove('open');
+}
+
+document.getElementById('modal-editar').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModal();
+});
+</script>
 </body>
 </html>

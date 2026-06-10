@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Momentos Evaluativos | PRISMA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='academico.css') }}">
+</head>
+<body>
+<div class="ac-page">
+
+    <!-- HEADER -->
+    <div class="ac-header">
+        <div class="ac-header-left">
+            <div class="ac-header-icon icon-indigo">
+                <i class="fa-solid fa-calendar-check"></i>
+            </div>
+            <div>
+                <h1>Momentos Evaluativos</h1>
+                <p>Configura y gestiona los tres lapsos del año escolar</p>
+            </div>
+        </div>
+        <a href="{{ url_for('menu') }}" class="ac-btn ac-btn-ghost no-print">
+            <i class="fa-solid fa-arrow-left"></i> Menú
+        </a>
+    </div>
+
+    <!-- FLASH MESSAGES -->
+    {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in msgs %}
+    <div class="ac-alert ac-alert-{{ 'success' if cat == 'success' else 'danger' if cat == 'danger' else 'warning' }}">
+        <i class="fa-solid {{ 'fa-circle-check' if cat == 'success' else 'fa-circle-exclamation' }}"></i>
+        {{ msg }}
+    </div>
+    {% endfor %}
+    {% endwith %}
+
+    <!-- SELECTOR DE AÑO ESCOLAR -->
+    <div class="ac-card">
+        <div class="ac-card-title">
+            <i class="fa-solid fa-calendar-alt"></i>
+            Año Escolar
+        </div>
+        <div class="ac-filters">
+            <div class="ac-field">
+                <label>Seleccionar Año Escolar</label>
+                <select class="ac-select" id="sel-ano" onchange="filtrarAno(this.value)">
+                    {% for ano in anos %}
+                    <option value="{{ ano.codigo }}" {% if ano.codigo == ano_seleccionado %}selected{% endif %}>
+                        {{ ano.codigo }} — {{ ano.descripcion }}
+                        {% if ano.activo %}(ACTIVO){% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="ac-stats-grid">
+        <div class="ac-stat-card blue">
+            <span class="ac-stat-value">{{ momentos_raw | length }}</span>
+            <span class="ac-stat-label">Momentos configurados</span>
+        </div>
+        <div class="ac-stat-card green">
+            <span class="ac-stat-value">{{ total_abiertos }}</span>
+            <span class="ac-stat-label">Abiertos</span>
+        </div>
+        <div class="ac-stat-card red">
+            <span class="ac-stat-value">{{ total_cerrados }}</span>
+            <span class="ac-stat-label">Cerrados</span>
+        </div>
+    </div>
+
+    <!-- CONFIGURACIÓN DE MOMENTOS -->
+    <div class="ac-card">
+        <div class="ac-card-title">
+            <i class="fa-solid fa-sliders"></i>
+            Configurar Momentos para: <strong style="color:#3b82f6; margin-left:6px;">{{ ano_seleccionado }}</strong>
+        </div>
+
+        <form method="POST" action="{{ url_for('momentos', ano=ano_seleccionado) }}">
+            <input type="hidden" name="accion" value="guardar">
+            <input type="hidden" name="codigo_ano_escolar" value="{{ ano_seleccionado }}">
+
+            {% set nombres_default = {1: 'Primer Momento', 2: 'Segundo Momento', 3: 'Tercer Momento'} %}
+
+            {% for num in [1, 2, 3] %}
+            {% set m = momentos_dict.get(num, {}) %}
+            <div style="background:#f8faff; border:1.5px solid #e2e8f0; border-radius:12px; padding:20px; margin-bottom:16px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div style="width:36px; height:36px; background:linear-gradient(135deg,#6366f1,#4338ca); border-radius:10px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:16px;">
+                            {{ num }}
+                        </div>
+                        <strong style="font-size:16px; color:#0f172a;">Momento {{ num }}</strong>
+                    </div>
+                    {% if m %}
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span class="badge {{ 'badge-success' if m.estado == 'A' else 'badge-danger' }}">
+                            <i class="fa-solid {{ 'fa-lock-open' if m.estado == 'A' else 'fa-lock' }}"></i>
+                            {{ 'Abierto' if m.estado == 'A' else 'Cerrado' }}
+                        </span>
+                        <form method="POST" action="{{ url_for('momentos', ano=ano_seleccionado) }}" style="margin:0;">
+                            <input type="hidden" name="accion" value="cambiar_estado">
+                            <input type="hidden" name="numero" value="{{ num }}">
+                            <input type="hidden" name="estado_actual" value="{{ m.estado }}">
+                            <button type="submit" class="ac-btn ac-btn-ghost ac-btn-sm"
+                                onclick="return confirm('¿Confirmar cambio de estado del Momento {{ num }}?')">
+                                <i class="fa-solid {{ 'fa-lock' if m.estado == 'A' else 'fa-lock-open' }}"></i>
+                                {{ 'Cerrar' if m.estado == 'A' else 'Abrir' }}
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="ac-form-grid ac-form-grid-3">
+                    <div class="ac-field">
+                        <label>Nombre del Momento</label>
+                        <input type="text" name="nombre_{{ num }}" class="ac-input"
+                            value="{{ m.nombre if m else nombres_default[num] }}"
+                            placeholder="{{ nombres_default[num] }}">
+                    </div>
+                    <div class="ac-field">
+                        <label>Fecha Inicio</label>
+                        <input type="date" name="fecha_inicio_{{ num }}" class="ac-input"
+                            value="{{ m.fecha_inicio if m else '' }}">
+                    </div>
+                    <div class="ac-field">
+                        <label>Fecha Fin</label>
+                        <input type="date" name="fecha_fin_{{ num }}" class="ac-input"
+                            value="{{ m.fecha_fin if m else '' }}">
+                    </div>
+                    <div class="ac-field">
+                        <label>Porcentaje (%)</label>
+                        <input type="number" name="porcentaje_{{ num }}" class="ac-input"
+                            value="{{ m.porcentaje if m else '33.33' }}"
+                            step="0.01" min="0" max="100">
+                    </div>
+                    <div class="ac-field" style="grid-column: span 2;">
+                        <label>Observaciones</label>
+                        <input type="text" name="observaciones_{{ num }}" class="ac-input"
+                            value="{{ m.observaciones if m else '' }}"
+                            placeholder="Opcional...">
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div style="margin-top:8px;">
+                <button type="submit" class="ac-btn ac-btn-success ac-btn-full">
+                    <i class="fa-solid fa-save"></i>
+                    Guardar Configuración de los 3 Momentos
+                </button>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<script>
+function filtrarAno(ano) {
+    window.location.href = '{{ url_for("momentos") }}?ano=' + ano;
+}
+</script>
+</body>
+</html>

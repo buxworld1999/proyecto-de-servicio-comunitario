@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificación de Calificaciones | PRISMA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Arial:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* ══════════════════════════════════════════════════════
+           ESTILOS BASE — Réplica fiel del formato MPPE 31059/31060
+        ══════════════════════════════════════════════════════ */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 9pt;
+            background: #ccc;
+            padding: 20px;
+        }
+
+        /* BARRA DE CONTROL (no se imprime) */
+        .barra-control {
+            max-width: 900px;
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-ctrl {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .btn-imprimir { background: #1d4ed8; color: #fff; }
+        .btn-volver   { background: #fff; color: #374151; border: 1.5px solid #d1d5db; }
+        .btn-mencion  { background: #059669; color: #fff; }
+
+        /* HOJA DEL CERTIFICADO */
+        .hoja {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            box-shadow: 0 6px 30px rgba(0,0,0,.2);
+            padding: 18mm 16mm 14mm;
+        }
+
+        /* ═══ ENCABEZADO MPPE ═══ */
+        .enc-mppe {
+            display: grid;
+            grid-template-columns: 90px 1fr 90px;
+            align-items: center;
+            margin-bottom: 4px;
+            border-bottom: 2.5px solid #000;
+            padding-bottom: 6px;
+        }
+
+        .enc-escudo {
+            width: 76px;
+            height: 76px;
+            border: 2px solid #000;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+
+        .enc-centro {
+            text-align: center;
+            padding: 0 8px;
+        }
+
+        .enc-republica {
+            font-size: 8pt;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        .enc-ministerio {
+            font-size: 7.5pt;
+            text-transform: uppercase;
+            letter-spacing: .02em;
+            margin: 2px 0;
+        }
+
+        .enc-tipo-doc {
+            font-size: 14pt;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            margin-top: 4px;
+            color: #000;
+        }
+
+        .enc-codigo {
+            font-size: 9pt;
+            font-weight: 700;
+        }
+
+        .enc-plan {
+            font-size: 8.5pt;
+            margin-top: 2px;
+        }
+
+        /* ═══ SECCIONES NUMERADAS ═══ */
+        .seccion-titulo {
+            background: #000;
+            color: #fff;
+            font-weight: 700;
+            font-size: 8.5pt;
+            padding: 3px 6px;
+            margin-top: 6px;
+            margin-bottom: 0;
+            text-transform: uppercase;
+            letter-spacing: .03em;
+        }
+
+        /* ═══ GRILLA DE DATOS (líneas punteadas) ═══ */
+        .data-grid {
+            border: 1px solid #000;
+            border-top: none;
+        }
+
+        .data-fila {
+            display: flex;
+            align-items: stretch;
+            border-bottom: 1px solid #999;
+            min-height: 18px;
+        }
+
+        .data-fila:last-child { border-bottom: none; }
+
+        .data-campo {
+            padding: 2px 5px;
+            font-size: 7.5pt;
+            color: #555;
+            white-space: nowrap;
+            border-right: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .data-valor {
+            padding: 2px 5px;
+            font-size: 8.5pt;
+            font-weight: 700;
+            color: #000;
+            flex: 1;
+            border-right: 1px solid #ccc;
+            display: flex;
+            align-items: center;
+            border-bottom-width: 0;
+        }
+
+        .data-valor:last-child { border-right: none; }
+
+        .data-linea {
+            flex: 1;
+            border-bottom: 1px dashed #aaa;
+            margin: auto 4px 4px;
+            min-width: 60px;
+        }
+
+        /* ═══ TABLA DEL PLAN DE ESTUDIOS ═══ */
+        .plan-titulo-bloque {
+            background: #d0d0d0;
+            font-weight: 700;
+            font-size: 8pt;
+            padding: 2px 6px;
+            border: 1px solid #000;
+            border-top: none;
+            text-transform: uppercase;
+        }
+
+        .plan-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+
+        .plan-ano {
+            border: 1px solid #000;
+            border-top: none;
+        }
+
+        .plan-ano:nth-child(2) { border-left: none; }
+
+        .plan-ano-titulo {
+            background: #888;
+            color: #fff;
+            font-weight: 700;
+            font-size: 8pt;
+            padding: 2px 6px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #000;
+            text-align: center;
+        }
+
+        .plan-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 7.5pt;
+        }
+
+        .plan-table thead tr {
+            background: #e8e8e8;
+        }
+
+        .plan-table th {
+            padding: 2px 4px;
+            border: 1px solid #999;
+            font-weight: 700;
+            font-size: 7pt;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .plan-table th:first-child { text-align: left; }
+
+        .plan-table td {
+            padding: 2px 4px;
+            border: 1px solid #bbb;
+            font-size: 7.5pt;
+            vertical-align: middle;
+        }
+
+        .plan-table td:first-child {
+            font-size: 8pt;
+        }
+
+        .plan-table td.nota-num {
+            text-align: center;
+            font-weight: 700;
+            font-size: 9pt;
+        }
+
+        .plan-table td.nota-letra {
+            text-align: center;
+            font-size: 7.5pt;
+        }
+
+        .plan-table td.nota-ap { color: #15803d; }
+        .plan-table td.nota-re { color: #b91c1c; }
+        .plan-table td.vacio   { color: #aaa; text-align: center; font-size: 7pt; }
+
+        /* ═══ NOTA LITERAL ═══ */
+        .nota-a-letras {
+            font-size: 7.5pt;
+            text-align: center;
+        }
+
+        /* ═══ OBSERVACIONES ═══ */
+        .obs-box {
+            border: 1px solid #000;
+            border-top: none;
+            padding: 6px 8px;
+            min-height: 32px;
+            font-size: 8.5pt;
+        }
+
+        /* ═══ FIRMAS ═══ */
+        .firmas-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .firma-bloque {
+            border: 1px solid #000;
+            padding: 8px 10px;
+        }
+
+        .firma-titulo {
+            font-weight: 700;
+            font-size: 8pt;
+            text-transform: uppercase;
+            border-bottom: 1px solid #000;
+            padding-bottom: 3px;
+            margin-bottom: 6px;
+        }
+
+        .firma-campo {
+            font-size: 7.5pt;
+            color: #555;
+            margin-bottom: 2px;
+        }
+
+        .firma-linea {
+            border-bottom: 1px solid #000;
+            min-height: 14px;
+            margin-bottom: 5px;
+        }
+
+        .firma-valor {
+            font-size: 8pt;
+            font-weight: 700;
+            margin-bottom: 5px;
+            min-height: 14px;
+        }
+
+        .sello-box {
+            border: 1px dashed #999;
+            height: 50px;
+            margin: 6px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 7pt;
+            color: #aaa;
+            text-align: center;
+        }
+
+        /* ═══ PIE LEGAL ═══ */
+        .pie-legal {
+            margin-top: 12px;
+            font-size: 7pt;
+            color: #444;
+            text-align: justify;
+            border-top: 1pt solid #000;
+            padding-top: 4px;
+        }
+
+        /* ═══ LUGAR Y FECHA ═══ */
+        .lug-fecha {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 0;
+            font-size: 8pt;
+            border-top: 1px solid #000;
+        }
+
+        .lug-fecha-label { color: #555; white-space: nowrap; }
+
+        /* SELECTOR DE TIPO (no se imprime) */
+        .tipo-selector {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            font-size: 12px;
+            color: #fff;
+        }
+
+        /* ══ PRINT ══ */
+        @media print {
+            .barra-control { display: none !important; }
+            body { background: #fff; padding: 0; }
+            .hoja {
+                box-shadow: none;
+                padding: 10mm 12mm 8mm;
+                max-width: 100%;
+            }
+            @page { size: letter portrait; margin: 0; }
+        }
+
+        /* ══ Código de verificación ══ */
+        .verif-banda {
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            padding: 3px 8px;
+            font-size: 7pt;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     BARRA DE CONTROL (no se imprime)
+═══════════════════════════════════════════════ -->
+<div class="barra-control">
+    <a href="{{ url_for('notas_certificadas') }}" class="btn-ctrl btn-volver">
+        &#8592; Volver
+    </a>
+    <button onclick="window.print()" class="btn-ctrl btn-imprimir">
+        &#128438; Imprimir / Guardar PDF
+    </button>
+
+    <!-- Toggle 31059 / 31060 -->
+    <div class="tipo-selector">
+        <span style="font-weight:700;">Plan de Estudio:</span>
+        <a href="{{ url_for('nota_certificada_ver', cedula=estudiante.cedula, ano=ano_info.codigo, boletin_id=request.args.get('boletin_id',''), tipo='31059') }}"
+           class="btn-ctrl {{ 'btn-imprimir' if tipo == '31059' else 'btn-volver' }}"
+           style="font-size:11px; padding:6px 12px;">
+            EMG — Cód. 31059
+        </a>
+        <a href="{{ url_for('nota_certificada_ver', cedula=estudiante.cedula, ano=ano_info.codigo, boletin_id=request.args.get('boletin_id',''), tipo='31060') }}"
+           class="btn-ctrl {{ 'btn-imprimir' if tipo == '31060' else 'btn-volver' }}"
+           style="font-size:11px; padding:6px 12px; background:{{ '#059669' if tipo=='31060' else '#fff' }}; color:{{ '#fff' if tipo=='31060' else '#374151' }};">
+            EMGCT — Cód. 31060
+        </a>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     HOJA DEL CERTIFICADO
+═══════════════════════════════════════════════ -->
+<div class="hoja">
+
+    <!-- ═══ I. ENCABEZADO MPPE ═══ -->
+    <div class="enc-mppe">
+        <div class="enc-escudo">&#127981;</div>
+        <div class="enc-centro">
+            <div class="enc-republica">República Bolivariana de Venezuela</div>
+            <div class="enc-ministerio">Ministerio del Poder Popular para la Educación</div>
+            <div class="enc-tipo-doc">Certificación de Calificaciones</div>
+            <div class="enc-plan">
+                {% if tipo == '31060' %}
+                I. Plan de Estudio: EDUCACIÓN MEDIA GENERAL CON MENCIÓN CIENCIA Y TECNOLOGÍA
+                {% else %}
+                I. Plan de Estudio: EDUCACIÓN MEDIA GENERAL
+                {% endif %}
+            </div>
+        </div>
+        <div style="text-align:right;">
+            <div class="enc-codigo">
+                Código: {% if tipo == '31060' %}31060{% else %}31059{% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Lugar y Fecha -->
+    <div class="lug-fecha">
+        <span class="lug-fecha-label">Lugar y Fecha de Expedición:</span>
+        <strong>{{ institucion.municipio if institucion.municipio else 'San Fernando' }},
+            Estado {{ institucion.estado if institucion.estado else 'Apure' }},
+            {{ fecha_emision }}</strong>
+    </div>
+
+    <!-- ═══ II. Datos de la Institución ═══ -->
+    <div class="seccion-titulo">II. Datos de la Institución Educativa o Formación Militar</div>
+    <div class="data-grid">
+        <div class="data-fila">
+            <span class="data-campo" style="width:60px;">Código:</span>
+            <span class="data-valor" style="width:120px;">{{ institucion.codigo_dea or '___________' }}</span>
+            <span class="data-campo">Denominación y Epónimo:</span>
+            <span class="data-valor">{{ institucion.nombre or 'Unidad Educativa Carmen Ruíz' }}</span>
+        </div>
+        <div class="data-fila">
+            <span class="data-campo" style="width:60px;">Dirección:</span>
+            <span class="data-valor" style="flex:3;">{{ institucion.direccion or '___________________________________' }}</span>
+            <span class="data-campo">Teléfono:</span>
+            <span class="data-valor">{{ institucion.telefono or '_____________' }}</span>
+        </div>
+        <div class="data-fila">
+            <span class="data-campo" style="width:60px;">Municipio:</span>
+            <span class="data-valor" style="flex:2;">{{ institucion.municipio or '__________________' }}</span>
+            <span class="data-campo">Entidad Federal:</span>
+            <span class="data-valor" style="flex:2;">{{ institucion.estado or '________________' }}</span>
+            <span class="data-campo">CDCEE:</span>
+            <span class="data-valor">{{ institucion.zona_educativa or '_______' }}</span>
+        </div>
+    </div>
+
+    <!-- ═══ III. Datos de Identificación del Estudiante ═══ -->
+    <div class="seccion-titulo">III. Datos de Identificación del Estudiante o Egresado</div>
+    <div class="data-grid">
+        <div class="data-fila">
+            <span class="data-campo" style="width:120px;">Cédula de Identidad:</span>
+            <span class="data-valor" style="width:150px;">{{ estudiante.cedula }}</span>
+            <span class="data-campo">Fecha de Nacimiento:</span>
+            <span class="data-valor">{{ estudiante.fecha_nacimiento or '_______________' }}</span>
+        </div>
+        <div class="data-fila">
+            <span class="data-campo" style="width:65px;">Apellidos:</span>
+            <span class="data-valor" style="flex:2;">{{ (estudiante.apellidos or '') | upper }}</span>
+            <span class="data-campo" style="width:60px;">Nombres:</span>
+            <span class="data-valor" style="flex:2;">{{ (estudiante.nombres or '') | upper }}</span>
+        </div>
+        <div class="data-fila">
+            <span class="data-campo" style="width:120px;">Lugar de Nacimiento:</span>
+            <span class="data-valor">{{ estudiante.lugar_nacimiento or '_____________' }}</span>
+            <span class="data-campo">País:</span>
+            <span class="data-valor">{{ 'Venezuela' }}</span>
+            <span class="data-campo">Estado:</span>
+            <span class="data-valor">{{ estudiante.estado_nacimiento or '________' }}</span>
+            <span class="data-campo">Municipio:</span>
+            <span class="data-valor">{{ estudiante.municipio_nacimiento or '_______' }}</span>
+        </div>
+    </div>
+
+    <!-- ═══ IV. Instituciones donde Cursó ═══ -->
+    <div class="seccion-titulo">IV. Instituciones Educativas donde Cursó sus Estudios</div>
+    <div class="data-grid" style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:7.5pt;">
+            <thead>
+                <tr style="background:#e8e8e8;">
+                    <th style="border:1px solid #999; padding:2px 4px; width:24px;">N°</th>
+                    <th style="border:1px solid #999; padding:2px 4px; text-align:left;">Denominación y Epónimo de la Institución</th>
+                    <th style="border:1px solid #999; padding:2px 4px; width:90px;">Localidad</th>
+                    <th style="border:1px solid #999; padding:2px 4px; width:50px;">E.F.</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="border:1px solid #ccc; padding:2px 4px; text-align:center;">1</td>
+                    <td style="border:1px solid #ccc; padding:2px 4px;">{{ institucion.nombre or '' }}</td>
+                    <td style="border:1px solid #ccc; padding:2px 4px;">{{ institucion.municipio or '' }}</td>
+                    <td style="border:1px solid #ccc; padding:2px 4px;">{{ institucion.estado or '' }}</td>
+                </tr>
+                {% for i in range(2, 6) %}
+                <tr>
+                    <td style="border:1px solid #ccc; padding:2px 4px; text-align:center;">{{ i }}</td>
+                    <td style="border:1px solid #ccc; padding:2px 4px;">&nbsp;</td>
+                    <td style="border:1px solid #ccc; padding:2px 4px;">&nbsp;</td>
+                    <td style="border:1px solid #ccc; padding:2px 4px;">&nbsp;</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ═══ V. PLAN DE ESTUDIO — Notas por Año ═══ -->
+    <div class="seccion-titulo">V. Plan de Estudio</div>
+
+    {% if tipo == '31060' %}
+    <div class="plan-titulo-bloque">COMPONENTE GENERAL</div>
+    {% endif %}
+
+    <!-- Columnas de cabecera de la tabla de notas -->
+    {% set header_cols %}
+    <thead>
+        <tr style="background:#e0e0e0;">
+            <th style="border:1px solid #999; padding:2px 3px; text-align:left; min-width:100px;">Áreas de Formación</th>
+            <th style="border:1px solid #999; padding:2px 2px; width:28px;">N°</th>
+            <th style="border:1px solid #999; padding:2px 2px; width:55px;">Letras</th>
+            <th style="border:1px solid #999; padding:2px 2px; width:28px;">T-E</th>
+            <th style="border:1px solid #999; padding:2px 2px; width:28px;">Mes</th>
+            <th style="border:1px solid #999; padding:2px 2px; width:28px;">Año</th>
+            <th style="border:1px solid #999; padding:2px 2px; width:55px;">Inst.</th>
+        </tr>
+    </thead>
+    {% endset %}
+
+    <!-- Función auxiliar: buscar nota de un área por año -->
+    {# nota_por_area(area, anio) busca en notas_por_anio #}
+
+    <!-- GRILLA 1er y 2do Año -->
+    <div class="plan-grid">
+        <!-- PRIMER AÑO -->
+        <div class="plan-ano">
+            <div class="plan-ano-titulo">PRIMER AÑO</div>
+            <table class="plan-table">
+                {{ header_cols }}
+                <tbody>
+                {% set anio_k = '1' %}
+                {% if tipo == '31060' %}
+                    {% set areas_1 = ['Lengua y Literatura','Idiomas','Matemática','Educación Física','Biología, Ambiente y Tecnología','Física','Química','Geografía, Historia y Soberanía Nacional'] %}
+                {% else %}
+                    {% set areas_1 = ['Castellano','Inglés y otras Lenguas Extranjeras','Matemáticas','Educación Física','Arte y Patrimonio','Ciencias Naturales','Geografía, Historia y Ciudadanía'] %}
+                {% endif %}
+                {% for area in areas_1 %}
+                    {% set nota = notas_por_anio.get(anio_k, {}).get(area) %}
+                    <tr>
+                        <td>{{ area }}</td>
+                        <td class="nota-num {{ 'nota-ap' if nota and nota >= 10 else 'nota-re' if nota else '' }}">
+                            {{ "%.0f"|format(nota) if nota is not none else '' }}
+                        </td>
+                        <td class="nota-letra {{ 'nota-ap' if nota and nota >= 10 else 'nota-re' if nota else '' }}">
+                            {{ nota_en_letras(nota) if nota is not none else '' }}
+                        </td>
+                        <td style="text-align:center; font-size:7pt;">
+                            {% if nota is not none %}{{ 'T' if nota >= 10 else 'R' }}{% endif %}
+                        </td>
+                        <td></td><td></td><td></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- SEGUNDO AÑO -->
+        <div class="plan-ano" style="border-left:none;">
+            <div class="plan-ano-titulo">SEGUNDO AÑO</div>
+            <table class="plan-table">
+                {{ header_cols }}
+                <tbody>
+                {% set anio_k = '2' %}
+                {% for area in areas_1 %}
+                    {% set nota = notas_por_anio.get(anio_k, {}).get(area) %}
+                    <tr>
+                        <td>{{ area }}</td>
+                        <td class="nota-num {{ 'nota-ap' if nota and nota >= 10 else 'nota-re' if nota else '' }}">
+                            {{ "%.0f"|format(nota) if nota is not none else '' }}
+                        </td>
+                        <td class="nota-letra">{{ nota_en_letras(nota) if nota is not none else '' }}</td>
+                        <td style="text-align:center; font-size:7pt;">
+                            {% if nota is not none %}{{ 'T' if nota >= 10 else 'R' }}{% endif %}
+                        </td>
+                        <td></td><td></td><td></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- GRILLA 3er y 4to Año -->
+    {% if tipo == '31060' %}
+    {% set areas_3 = ['Lengua y Literatura','Idiomas','Matemática','Educación Física','Biología, Ambiente y Tecnología','Física','Química','Geografía, Historia y Soberanía Nacional'] %}
+    {% else %}
+    {% set areas_3 = ['Castellano','Inglés y otras Lenguas Extranjeras','Matemáticas','Educación Física','Física','Química','Biología','Geografía, Historia y Ciudadanía'] %}
+    {% endif %}
+
+    <div class="plan-grid" style="margin-top:0;">
+        <div class="plan-ano" style="border-top:none;">
+            <div class="plan-ano-titulo">TERCER AÑO</div>
+            <table class="plan-table">
+                {{ header_cols }}
+                <tbody>
+                {% set anio_k = '3' %}
+                {% for area in areas_3 %}
+                    {% set nota = notas_por_anio.get(anio_k, {}).get(area) %}
+                    <tr>
+                        <td>{{ area }}</td>
+                        <td class="nota-num {{ 'nota-ap' if nota and nota >= 10 else 'nota-re' if nota else '' }}">
+                            {{ "%.0f"|format(nota) if nota is not none else '' }}
+                        </td>
+                        <td class="nota-letra">{{ nota_en_letras(nota) if nota is not none else '' }}</td>
+                        <td style="text-align:center; font-size:7pt;">
+                            {% if nota is not none %}{{ 'T' if nota >= 10 else 'R' }}{% endif %}
+                        </td>
+                        <td></td><td></td><td></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="plan-ano" style="border-left:none; border-top:none;">
+            <div class="plan-ano-titulo">CUARTO AÑO</div>
+            <table class="plan-table">
+                {{ header_cols }}
+                <tbody>
+                {% set anio_k = '4' %}
+                {% for area in areas_3 %}
+                    {% set nota = notas_por_anio.get(anio_k, {}).get(area) %}
+                    <tr>
+                        <td>{{ area }}</td>
+                        <td class="nota-num {{ 'nota-ap' if nota and nota >= 10 else 'nota-re' if nota else '' }}">
+                            {{ "%.0f"|format(nota) if nota is not none else '' }}
+                        </td>
+                        <td class="nota-letra">{{ nota_en_letras(nota) if nota is not none else '' }}</td>
+                        <td style="text-align:center; font-size:7pt;">
+                            {% if nota is not none %}{{ 'T' if nota >= 10 else 'R' }}{% endif %}
+                        </td>
+                        <td></td><td></td><td></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- QUINTO AÑO -->
+    {% if tipo == '31060' %}
+    {% set areas_5 = ['Lengua y Literatura','Idiomas','Matemática','Educación Física','Biología, Ambiente y Tecnología','Física','Química','Geografía, Historia y Soberanía Nacional'] %}
+    {% else %}
+    {% set areas_5 = ['Castellano','Inglés y otras Lenguas Extranjeras','Matemáticas','Educación Física','Física','Química','Biología','Ciencias de la Tierra','Geografía, Historia y Ciudadanía','Formación para la Soberanía Nacional'] %}
+    {% endif %}
+
+    <div class="plan-grid" style="margin-top:0;">
+        <div class="plan-ano" style="border-top:none;">
+            <div class="plan-ano-titulo">QUINTO AÑO</div>
+            <table class="plan-table">
+                {{ header_cols }}
+                <tbody>
+                {% set anio_k = '5' %}
+                {% for area in areas_5 %}
+                    {% set nota = notas_por_anio.get(anio_k, {}).get(area) %}
+                    <tr>
+                        <td>{{ area }}</td>
+                        <td class="nota-num {{ 'nota-ap' if nota and nota >= 10 else 'nota-re' if nota else '' }}">
+                            {{ "%.0f"|format(nota) if nota is not none else '' }}
+                        </td>
+                        <td class="nota-letra">{{ nota_en_letras(nota) if nota is not none else '' }}</td>
+                        <td style="text-align:center; font-size:7pt;">
+                            {% if nota is not none %}{{ 'T' if nota >= 10 else 'R' }}{% endif %}
+                        </td>
+                        <td></td><td></td><td></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Columna derecha del 5to año: Orientación / Formación Científica -->
+        <div class="plan-ano" style="border-left:none; border-top:none;">
+            {% if tipo == '31060' %}
+            <div class="plan-ano-titulo">COMPONENTE FORMACIÓN CIENTÍFICA, TECNOLÓGICA E INNOVACIÓN</div>
+            <table class="plan-table">
+                <thead>
+                    <tr style="background:#e0e0e0;">
+                        <th style="border:1px solid #999; padding:2px 3px; text-align:left;">Área de Formación</th>
+                        <th style="border:1px solid #999; padding:2px 2px; width:25px;">Año</th>
+                        <th style="border:1px solid #999; padding:2px 2px; width:28px;">N°</th>
+                        <th style="border:1px solid #999; padding:2px 2px; width:55px;">Letras</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>Innovación Tecnológica y Productiva</td>
+                        {% for y in ['1°','2°','3°','4°','5°'] %}
+                        {% if loop.first %}
+                        <td style="text-align:center; font-size:7pt;">{{ y }}</td>
+                        <td></td><td></td></tr>
+                        {% if not loop.last %}<tr><td></td><td style="text-align:center; font-size:7pt;">{{ y }}</td><td></td><td></td></tr>{% endif %}
+                        {% endif %}
+                        {% endfor %}
+                    </td>
+                    <tr>
+                        <td colspan="4" style="border:1px solid #ccc; padding:2px; font-size:7pt; color:#666;">Orientación Vocacional — 1° al 5°</td>
+                    </tr>
+                </tbody>
+            </table>
+            {% else %}
+            <div class="plan-ano-titulo">OTRAS ÁREAS</div>
+            <table class="plan-table">
+                <thead>
+                    <tr style="background:#e0e0e0;">
+                        <th style="border:1px solid #999; padding:2px 3px; text-align:left;">Área de Formación</th>
+                        <th style="border:1px solid #999; padding:2px 2px; width:25px;">Año</th>
+                        <th style="border:1px solid #999; padding:2px 2px; width:28px;">N°</th>
+                        <th style="border:1px solid #999; padding:2px 2px; width:50px;">Literal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td rowspan="5">Orientación y Convivencia</td>
+                        {% for y in ['1°','2°','3°','4°','5°'] %}
+                        <td style="text-align:center; font-size:7pt;">{{ y }}</td>
+                        <td></td><td></td></tr>
+                        {% if not loop.last %}<tr>{% endif %}
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td rowspan="5">Participación en Grupos de Creación, Recreación y Producción</td>
+                        {% for y in ['1°','2°','3°','4°','5°'] %}
+                        <td style="text-align:center; font-size:7pt;">{{ y }}</td>
+                        <td></td><td></td></tr>
+                        {% if not loop.last %}<tr>{% endif %}
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ═══ VI. Observaciones ═══ -->
+    <div class="seccion-titulo">VI. Observaciones</div>
+    <div class="obs-box">
+        {{ observaciones or '' }}
+    </div>
+
+    <!-- ═══ VII y VIII. Firmas ═══ -->
+    <div class="firmas-grid">
+        <!-- Institución -->
+        <div class="firma-bloque">
+            <div class="firma-titulo">VII. Institución Educativa</div>
+            <div class="firma-campo">Director(a)</div>
+            <div class="sello-box">SELLO DE LA INSTITUCIÓN EDUCATIVA</div>
+            <div class="firma-campo">Apellidos y Nombres:</div>
+            <div class="firma-valor">{{ institucion.director_actual or '' }}</div>
+            <div class="firma-campo">Cédula de Identidad:</div>
+            <div class="firma-linea"></div>
+            <div class="firma-campo">Firma:</div>
+            <div class="firma-linea" style="min-height:20px;"></div>
+            <div style="font-size:7pt; color:#666; margin-top:4px;">Para efectos de su Validez Nacional</div>
+        </div>
+
+        <!-- CDCEE -->
+        <div class="firma-bloque">
+            <div class="firma-titulo">VIII. Centro de Desarrollo de la Calidad Educativa del Estado (CDCEE)</div>
+            <div class="firma-campo">Director(a)</div>
+            <div class="sello-box">SELLO DEL CENTRO DE DESARROLLO DE LA CALIDAD EDUCATIVA DEL ESTADO</div>
+            <div class="firma-campo">Apellidos y Nombres:</div>
+            <div class="firma-linea"></div>
+            <div class="firma-campo">Cédula de Identidad:</div>
+            <div class="firma-linea"></div>
+            <div class="firma-campo">Firma:</div>
+            <div class="firma-linea" style="min-height:20px;"></div>
+            <div style="font-size:7pt; color:#666; margin-top:4px;">Para efectos de su Validez Internacional</div>
+        </div>
+    </div>
+
+    <!-- ═══ PIE LEGAL ═══ -->
+    <div class="pie-legal">
+        <strong>VALOR FISCAL:</strong> Para su validez legal deberá ser presentada ante el organismo competente con los timbres fiscales correspondientes.
+        <br>Emitido por PRISMA — Sistema de Gestión Escolar | Código de verificación: <strong>{{ codigo_verificacion }}</strong>
+    </div>
+
+    <!-- Banda de verificación digital -->
+    <div class="verif-banda">
+        <span>Sistema PRISMA — {{ institucion.nombre or 'U.E.E. Carmen Ruíz' }}</span>
+        <span>Generado: {{ fecha_emision }} | Ref: CERT-{{ codigo_verificacion[:8] }}</span>
+        <span>Cód. Plan: {% if tipo == '31060' %}31060{% else %}31059{% endif %}</span>
+    </div>
+
+</div>
+
+</body>
+</html>

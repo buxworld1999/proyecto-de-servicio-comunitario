@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boletín de Calificaciones | PRISMA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: #e5e7eb;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* ── BARRA SUPERIOR (no se imprime) ── */
+        .top-bar {
+            max-width: 820px;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* ── BOLETÍN ── */
+        .boletin-wrap {
+            max-width: 820px;
+            margin: 0 auto;
+            background: #fff;
+            box-shadow: 0 8px 30px rgba(0,0,0,.15);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        /* ── ENCABEZADO INSTITUCIONAL ── */
+        .boletin-header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f2340 100%);
+            color: #fff;
+            padding: 24px 32px;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .inst-logo {
+            width: 70px; height: 70px;
+            background: rgba(255,255,255,.15);
+            border-radius: 50%;
+            border: 3px solid rgba(255,255,255,.3);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px;
+        }
+
+        .inst-info { text-align: center; }
+        .inst-nombre {
+            font-size: 15px; font-weight: 800;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+            line-height: 1.3;
+        }
+        .inst-subtitulo {
+            font-size: 11px;
+            opacity: .75;
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+        .inst-doc-tipo {
+            font-size: 18px; font-weight: 800;
+            text-align: right;
+            letter-spacing: .03em;
+        }
+        .inst-doc-sub {
+            font-size: 11px; opacity: .7;
+            text-align: right;
+            text-transform: uppercase;
+        }
+
+        /* ── BANDA DE AÑO ESCOLAR ── */
+        .ano-band {
+            background: #1d4ed8;
+            color: #fff;
+            padding: 8px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* ── DATOS DEL ESTUDIANTE ── */
+        .est-section {
+            padding: 20px 32px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .est-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .est-field label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: #64748b;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .est-field value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #0f172a;
+            display: block;
+        }
+
+        /* ── TABLA DE CALIFICACIONES ── */
+        .cal-section { padding: 20px 32px; }
+
+        .cal-title {
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: #1e3a5f;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .cal-title::after {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: #1e3a5f;
+            border-radius: 2px;
+        }
+
+        .cal-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .cal-table thead tr {
+            background: #1e3a5f;
+            color: #fff;
+        }
+
+        .cal-table th {
+            padding: 10px 12px;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            white-space: nowrap;
+        }
+
+        .cal-table th:first-child { text-align: left; border-radius: 8px 0 0 0; }
+        .cal-table th:last-child  { border-radius: 0 8px 0 0; }
+
+        .cal-table td {
+            padding: 9px 12px;
+            text-align: center;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        .cal-table td:first-child { text-align: left; font-weight: 600; }
+
+        .cal-table tbody tr:nth-child(even) { background: #f8faff; }
+        .cal-table tbody tr:hover { background: #eff6ff; }
+
+        /* Celdas de notas con color */
+        .nota-cell {
+            font-weight: 800;
+            font-size: 15px;
+            border-radius: 6px;
+            padding: 3px 8px;
+            display: inline-block;
+            min-width: 36px;
+        }
+        .nota-ap   { color: #15803d; background: #dcfce7; }
+        .nota-re   { color: #b91c1c; background: #fee2e2; }
+        .nota-nd   { color: #94a3b8; font-weight: 400; font-size: 12px; }
+
+        .res-cell  { font-size: 11px; font-weight: 800; text-transform: uppercase; padding: 3px 8px; border-radius: 20px; }
+        .res-ap    { background: #dcfce7; color: #15803d; }
+        .res-re    { background: #fee2e2; color: #b91c1c; }
+        .res-pe    { background: #fef9c3; color: #a16207; }
+
+        /* ── FILA TOTALES / PROMEDIO ── */
+        .total-row td {
+            background: #f8faff !important;
+            border-top: 2px solid #1e3a5f !important;
+            font-weight: 800;
+        }
+
+        /* ── RESULTADO FINAL ── */
+        .result-section {
+            margin: 0 32px 20px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .result-section.aprobado  { background: #f0fdf4; border: 2px solid #86efac; }
+        .result-section.reprobado { background: #fff1f2; border: 2px solid #fca5a5; }
+        .result-section.pendiente { background: #fffbeb; border: 2px solid #fcd34d; }
+
+        .result-text {
+            font-size: 22px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+        .result-aprobado  { color: #15803d; }
+        .result-reprobado { color: #b91c1c; }
+        .result-pendiente { color: #a16207; }
+
+        .result-stats {
+            display: flex;
+            gap: 20px;
+        }
+        .result-stat { text-align: center; }
+        .result-stat .num { font-size: 24px; font-weight: 800; color: #0f172a; }
+        .result-stat .lbl { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600; }
+
+        /* ── OBSERVACIONES ── */
+        .obs-section {
+            margin: 0 32px 20px;
+            padding: 14px 20px;
+            background: #f8faff;
+            border-radius: 10px;
+            border-left: 4px solid #1d4ed8;
+        }
+        .obs-title { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 6px; }
+        .obs-text  { font-size: 13px; color: #1e293b; min-height: 32px; }
+
+        /* ── FIRMAS ── */
+        .firmas-section {
+            margin: 24px 32px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 24px;
+        }
+
+        .firma-box {
+            text-align: center;
+            padding-top: 16px;
+            border-top: 1.5px solid #1e3a5f;
+        }
+        .firma-titulo { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #1e3a5f; }
+        .firma-nombre { font-size: 12px; color: #475569; margin-top: 4px; }
+
+        /* ── PIE DE PÁGINA ── */
+        .boletin-footer {
+            background: #f8faff;
+            border-top: 1.5px solid #e5e7eb;
+            padding: 12px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        /* ── PRINT ── */
+        @media print {
+            .no-print { display: none !important; }
+            body { background: #fff !important; padding: 0 !important; }
+            .boletin-wrap {
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                max-width: 100% !important;
+            }
+        }
+
+        /* ── BOTONES (no se imprimen) ── */
+        .top-bar .btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 20px; border-radius: 10px;
+            font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600;
+            border: none; cursor: pointer; text-decoration: none;
+            transition: all .2s;
+        }
+        .btn-print { background: #1d4ed8; color: #fff; }
+        .btn-print:hover { background: #1e40af; }
+        .btn-back  { background: #f1f5f9; color: #475569; border: 1.5px solid #e2e8f0; }
+        .btn-back:hover { background: #e2e8f0; }
+        .btn-cert  { background: #15803d; color: #fff; }
+        .btn-cert:hover { background: #166534; }
+    </style>
+</head>
+<body>
+
+    <!-- BARRA SUPERIOR -->
+    <div class="top-bar no-print">
+        <a href="{{ url_for('boletines') }}" class="btn btn-back">
+            <i class="fa-solid fa-arrow-left"></i> Volver
+        </a>
+        <button onclick="window.print()" class="btn btn-print">
+            <i class="fa-solid fa-print"></i> Imprimir / Guardar PDF
+        </button>
+        <a href="{{ url_for('nota_certificada_ver', cedula=estudiante.cedula, ano=boletin.codigo_ano_escolar, boletin_id=boletin.id) }}"
+            class="btn btn-cert" target="_blank">
+            <i class="fa-solid fa-certificate"></i> Generar Nota Certificada
+        </a>
+    </div>
+
+    <!-- BOLETÍN -->
+    <div class="boletin-wrap">
+
+        <!-- ENCABEZADO -->
+        <div class="boletin-header">
+            <div class="inst-logo">
+                <i class="fa-solid fa-school"></i>
+            </div>
+            <div class="inst-info">
+                <div class="inst-nombre">
+                    {{ institucion.nombre if institucion.nombre else 'Unidad Educativa Estadal' }}<br>
+                    {{ institucion.nombre if false else 'Carmen Ruíz' }}
+                </div>
+                <div class="inst-subtitulo">
+                    {{ institucion.municipio if institucion.municipio else 'San Fernando' }} —
+                    Estado {{ institucion.estado if institucion.estado else 'Apure' }}
+                </div>
+                <div class="inst-subtitulo" style="margin-top:4px;">
+                    Código DEA: {{ institucion.codigo_dea if institucion.codigo_dea else 'N/A' }} |
+                    Educación Media General
+                </div>
+            </div>
+            <div>
+                <div class="inst-doc-tipo">BOLETÍN</div>
+                <div class="inst-doc-sub">de Calificaciones</div>
+                <div class="inst-doc-sub" style="margin-top:4px;">N° {{ boletin.id }}</div>
+            </div>
+        </div>
+
+        <!-- BANDA AÑO ESCOLAR -->
+        <div class="ano-band">
+            <span>
+                <i class="fa-solid fa-calendar-alt"></i>
+                Año Escolar: <strong>{{ boletin.codigo_ano_escolar }}</strong>
+            </span>
+            <span>
+                Momento: <strong>{{ boletin.numero_momento if boletin.numero_momento else '3 (Final)' }}</strong>
+                {% for m in momentos %}{% if m.numero == boletin.numero_momento %} — {{ m.nombre }}{% endif %}{% endfor %}
+            </span>
+            <span>
+                Tipo: <strong>{{ boletin.tipo_boletin | title if boletin.tipo_boletin else 'Final' }}</strong>
+            </span>
+        </div>
+
+        <!-- DATOS DEL ESTUDIANTE -->
+        <div class="est-section">
+            <div class="cal-title">Datos del Estudiante</div>
+            <div class="est-grid">
+                <div class="est-field">
+                    <label>Apellidos y Nombres</label>
+                    <value>{{ (estudiante.apellidos or '') | upper }}, {{ (estudiante.nombres or '') | upper }}</value>
+                </div>
+                <div class="est-field">
+                    <label>Cédula / Código</label>
+                    <value>{{ estudiante.cedula }}</value>
+                </div>
+                <div class="est-field">
+                    <label>Grado y Sección</label>
+                    <value>
+                        {% if seccion_info.grado %}{{ seccion_info.grado.nombre }}{% endif %}
+                        — Sección {{ seccion_info.letra if seccion_info.letra else boletin.codigo_seccion }}
+                    </value>
+                </div>
+                <div class="est-field">
+                    <label>Fecha de Nacimiento</label>
+                    <value>{{ estudiante.fecha_nacimiento or '—' }}</value>
+                </div>
+                <div class="est-field">
+                    <label>Género</label>
+                    <value>{{ 'Masculino' if estudiante.genero == 'M' else 'Femenino' if estudiante.genero == 'F' else estudiante.genero or '—' }}</value>
+                </div>
+                <div class="est-field">
+                    <label>Fecha de Emisión</label>
+                    <value>{{ boletin.fecha_generacion or '—' }}</value>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABLA DE CALIFICACIONES -->
+        <div class="cal-section">
+            <div class="cal-title">Calificaciones</div>
+            <table class="cal-table">
+                <thead>
+                    <tr>
+                        <th style="min-width:180px;">Asignatura</th>
+                        {% for m in momentos %}
+                        <th>{{ m.nombre | replace(' Momento', '') | replace(' momento', '') }}</th>
+                        {% endfor %}
+                        <th>Definitiva</th>
+                        <th>Resultado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for det in detalles %}
+                    {% set mat_info = det.get('materia') or {} %}
+                    {% set nf = det.nota_final %}
+                    <tr>
+                        <td style="font-size:13px;">
+                            {{ mat_info.get('nombre', det.codigo_materia) }}
+                        </td>
+                        <td>
+                            {% if det.nota_momento1 is not none %}
+                            <span class="nota-cell {{ 'nota-ap' if det.nota_momento1 >= 10 else 'nota-re' }}">
+                                {{ "%.0f"|format(det.nota_momento1) }}
+                            </span>
+                            {% else %}<span class="nota-cell nota-nd">S/N</span>{% endif %}
+                        </td>
+                        <td>
+                            {% if det.nota_momento2 is not none %}
+                            <span class="nota-cell {{ 'nota-ap' if det.nota_momento2 >= 10 else 'nota-re' }}">
+                                {{ "%.0f"|format(det.nota_momento2) }}
+                            </span>
+                            {% else %}<span class="nota-cell nota-nd">S/N</span>{% endif %}
+                        </td>
+                        <td>
+                            {% if det.nota_momento3 is not none %}
+                            <span class="nota-cell {{ 'nota-ap' if det.nota_momento3 >= 10 else 'nota-re' }}">
+                                {{ "%.0f"|format(det.nota_momento3) }}
+                            </span>
+                            {% else %}<span class="nota-cell nota-nd">S/N</span>{% endif %}
+                        </td>
+                        <td>
+                            {% if nf is not none %}
+                            <span class="nota-cell {{ 'nota-ap' if nf >= 10 else 'nota-re' }}" style="font-size:17px;">
+                                {{ "%.0f"|format(nf) }}
+                            </span>
+                            {% else %}<span class="nota-cell nota-nd">—</span>{% endif %}
+                        </td>
+                        <td>
+                            {% if det.resultado_materia == 'A' %}
+                            <span class="res-cell res-ap">Aprobado</span>
+                            {% elif det.resultado_materia == 'R' %}
+                            <span class="res-cell res-re">Reprobado</span>
+                            {% else %}
+                            <span class="res-cell res-pe">Pendiente</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                    <!-- Fila de promedio general -->
+                    <tr class="total-row">
+                        <td style="font-size:13px; color:#1e3a5f;">
+                            <i class="fa-solid fa-calculator" style="margin-right:6px;"></i>
+                            PROMEDIO GENERAL
+                        </td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td>
+                            <span class="nota-cell {{ 'nota-ap' if boletin.promedio_general and boletin.promedio_general >= 10 else 'nota-re' }}" style="font-size:18px; font-weight:900;">
+                                {{ "%.2f"|format(boletin.promedio_general) if boletin.promedio_general is not none else '—' }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if boletin.resultado_final == 'A' %}
+                            <span class="res-cell res-ap" style="font-size:13px;">✓ APROBADO</span>
+                            {% elif boletin.resultado_final == 'R' %}
+                            <span class="res-cell res-re" style="font-size:13px;">✗ REPROBADO</span>
+                            {% else %}
+                            <span class="res-cell res-pe">PENDIENTE</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- RESULTADO FINAL -->
+        {% set res_class = 'aprobado' if boletin.resultado_final == 'A' else 'reprobado' if boletin.resultado_final == 'R' else 'pendiente' %}
+        <div class="result-section {{ res_class }}">
+            <div>
+                <div style="font-size:11px; font-weight:700; text-transform:uppercase; color:#64748b; margin-bottom:4px;">Resultado Final del Período</div>
+                <div class="result-text result-{{ res_class }}">
+                    {% if boletin.resultado_final == 'A' %}
+                    <i class="fa-solid fa-circle-check"></i> APROBADO
+                    {% elif boletin.resultado_final == 'R' %}
+                    <i class="fa-solid fa-circle-xmark"></i> REPROBADO
+                    {% else %}
+                    <i class="fa-solid fa-clock"></i> PENDIENTE
+                    {% endif %}
+                </div>
+            </div>
+            <div class="result-stats">
+                <div class="result-stat">
+                    <div class="num">{{ total_materias }}</div>
+                    <div class="lbl">Materias</div>
+                </div>
+                <div class="result-stat">
+                    <div class="num" style="color:#15803d;">{{ aprobadas }}</div>
+                    <div class="lbl">Aprobadas</div>
+                </div>
+                <div class="result-stat">
+                    <div class="num" style="color:#b91c1c;">{{ reprobadas }}</div>
+                    <div class="lbl">Reprobadas</div>
+                </div>
+                <div class="result-stat">
+                    <div class="num" style="color:#1d4ed8;">{{ "%.2f"|format(boletin.promedio_general) if boletin.promedio_general is not none else '—' }}</div>
+                    <div class="lbl">Promedio</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- OBSERVACIONES -->
+        <div class="obs-section">
+            <div class="obs-title"><i class="fa-solid fa-comment-dots"></i> Observaciones</div>
+            <div class="obs-text">{{ boletin.observaciones or 'Sin observaciones adicionales.' }}</div>
+        </div>
+
+        <!-- FIRMAS -->
+        <div class="firmas-section">
+            <div class="firma-box">
+                <div class="firma-titulo">Docente Guía</div>
+                <div class="firma-nombre">&nbsp;</div>
+            </div>
+            <div class="firma-box">
+                <div class="firma-titulo">Director(a)</div>
+                <div class="firma-nombre">{{ institucion.director_actual or '&nbsp;' }}</div>
+            </div>
+            <div class="firma-box">
+                <div class="firma-titulo">Representante / Acudiente</div>
+                <div class="firma-nombre">C.I.: ___________________</div>
+            </div>
+        </div>
+
+        <!-- PIE -->
+        <div class="boletin-footer">
+            <span><i class="fa-solid fa-shield-halved"></i> PRISMA — Sistema de Gestión Escolar</span>
+            <span>Generado: {{ boletin.fecha_generacion or '—' }}</span>
+            <span>Documento N° BOL-{{ boletin.id }}</span>
+        </div>
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Notas | PRISMA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='academico.css') }}">
+    <style>
+        .planilla-header {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            color: #e2e8f0;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .planilla-info span { font-size: 13px; opacity: .8; display: block; }
+        .planilla-info strong { font-size: 15px; }
+        .estado-cerrado {
+            background: #fff1f2; border: 2px solid #fca5a5;
+            border-radius: 10px; padding: 12px 18px;
+            color: #b91c1c; font-weight: 600; font-size: 14px;
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 16px;
+        }
+        .num-lista {
+            display: inline-block;
+            width: 28px; height: 28px;
+            background: #e2e8f0;
+            border-radius: 50%;
+            text-align: center; line-height: 28px;
+            font-size: 12px; font-weight: 700;
+            color: #475569;
+        }
+        .estudiante-nombre { font-weight: 600; color: #1e293b; }
+        .estudiante-cedula { font-size: 11px; color: #64748b; }
+        .filtros-panel {
+            background: #fff; border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,.07);
+            padding: 20px 24px; margin-bottom: 20px;
+        }
+        .tag-docente {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: #ede9fe; color: #6d28d9;
+            padding: 4px 12px; border-radius: 20px;
+            font-size: 12px; font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+<div class="ac-page-lg">
+
+    <!-- HEADER -->
+    <div class="ac-header">
+        <div class="ac-header-left">
+            <div class="ac-header-icon icon-emerald">
+                <i class="fa-solid fa-star-half-stroke"></i>
+            </div>
+            <div>
+                <h1>Registro de Notas</h1>
+                <p>Ingresa y actualiza calificaciones por momento evaluativo</p>
+            </div>
+        </div>
+        <a href="{{ url_for('menu') }}" class="ac-btn ac-btn-ghost no-print">
+            <i class="fa-solid fa-arrow-left"></i> Menú
+        </a>
+    </div>
+
+    <!-- FLASH MESSAGES -->
+    {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in msgs %}
+    <div class="ac-alert ac-alert-{{ 'success' if cat == 'success' else 'danger' if cat == 'danger' else 'warning' }}">
+        <i class="fa-solid {{ 'fa-circle-check' if cat == 'success' else 'fa-circle-exclamation' }}"></i>
+        {{ msg }}
+    </div>
+    {% endfor %}
+    {% endwith %}
+
+    <!-- PANEL DE FILTROS -->
+    <div class="filtros-panel">
+        <div class="ac-card-title" style="margin-bottom:14px;">
+            <i class="fa-solid fa-filter"></i>
+            Selección de Planilla
+        </div>
+
+        {% if rol == 'docente' and asignaciones_docente %}
+        <!-- DOCENTE: selecciona de sus asignaciones -->
+        <div style="margin-bottom:16px; padding:12px 16px; background:#ede9fe; border-radius:10px; border:1.5px solid #c4b5fd;">
+            <span class="tag-docente"><i class="fa-solid fa-chalkboard-user"></i> Modo Docente</span>
+            <span style="font-size:13px; color:#5b21b6; margin-left:10px;">Solo ves tus asignaturas asignadas</span>
+        </div>
+        <form method="GET" id="form-filtros">
+            <div class="ac-filters">
+                <div class="ac-field" style="grid-column: span 2;">
+                    <label>Mi Asignación (Materia — Sección — Año)</label>
+                    <select name="_asig" class="ac-select" id="sel-asig" onchange="cargarAsignacion(this)">
+                        <option value="">-- Selecciona tu asignación --</option>
+                        {% for asig in asignaciones_docente %}
+                        <option value="{{ asig.codigo_materia }}|{{ asig.codigo_seccion }}|{{ asig.codigo_ano_escolar }}"
+                            {% if asig.codigo_materia == materia_sel and asig.codigo_seccion == seccion_sel and asig.codigo_ano_escolar == ano_sel %}selected{% endif %}>
+                            {{ (asig.materia or {}).get('nombre', asig.codigo_materia) }} —
+                            Sección {{ asig.codigo_seccion }} —
+                            {{ asig.codigo_ano_escolar }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <input type="hidden" name="ano"     id="h-ano"     value="{{ ano_sel }}">
+                <input type="hidden" name="seccion" id="h-seccion" value="{{ seccion_sel }}">
+                <input type="hidden" name="materia" id="h-materia" value="{{ materia_sel }}">
+                <div class="ac-field">
+                    <label>Momento Evaluativo</label>
+                    <select name="momento" class="ac-select">
+                        <option value="">-- Selecciona --</option>
+                        {% for m in momentos %}
+                        <option value="{{ m.numero }}" {% if momento_sel == m.numero|string %}selected{% endif %}>
+                            {{ m.nombre }}
+                            {% if m.estado == 'C' %} 🔒 CERRADO{% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="ac-field" style="align-self: flex-end;">
+                    <button type="submit" class="ac-btn ac-btn-primary ac-btn-full">
+                        <i class="fa-solid fa-search"></i> Cargar Planilla
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        {% else %}
+        <!-- ADMIN/DIRECTOR/COORDINADOR: selección libre -->
+        <form method="GET" id="form-filtros">
+            <div class="ac-filters">
+                <div class="ac-field">
+                    <label>Año Escolar</label>
+                    <select name="ano" class="ac-select" onchange="this.form.submit()">
+                        <option value="">-- Año --</option>
+                        {% for a in anos %}
+                        <option value="{{ a.codigo }}" {% if a.codigo == ano_sel %}selected{% endif %}>
+                            {{ a.codigo }} {% if a.activo %}★{% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="ac-field">
+                    <label>Sección</label>
+                    <select name="seccion" class="ac-select">
+                        <option value="">-- Sección --</option>
+                        {% for s in secciones %}
+                        <option value="{{ s.codigo }}" {% if s.codigo == seccion_sel %}selected{% endif %}>
+                            {{ s.codigo_grado }}° — Sección {{ s.letra }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="ac-field">
+                    <label>Materia</label>
+                    <select name="materia" class="ac-select">
+                        <option value="">-- Materia --</option>
+                        {% for m in materias %}
+                        <option value="{{ m.codigo }}" {% if m.codigo == materia_sel %}selected{% endif %}>
+                            {{ m.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="ac-field">
+                    <label>Momento</label>
+                    <select name="momento" class="ac-select">
+                        <option value="">-- Momento --</option>
+                        {% for m in momentos %}
+                        <option value="{{ m.numero }}" {% if momento_sel == m.numero|string %}selected{% endif %}>
+                            {{ m.nombre }} {% if m.estado == 'C' %}🔒{% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="ac-field" style="align-self: flex-end;">
+                    <button type="submit" class="ac-btn ac-btn-primary ac-btn-full">
+                        <i class="fa-solid fa-search"></i> Cargar Planilla
+                    </button>
+                </div>
+            </div>
+        </form>
+        {% endif %}
+    </div>
+
+    <!-- PLANILLA DE NOTAS -->
+    {% if estudiantes_planilla is defined and estudiantes_planilla %}
+
+    {% if momento_cerrado %}
+    <div class="estado-cerrado">
+        <i class="fa-solid fa-lock fa-lg"></i>
+        <span>Este momento evaluativo está <strong>CERRADO</strong>. Solo se puede consultar, no modificar.</span>
+    </div>
+    {% endif %}
+
+    <!-- Info de la planilla -->
+    <div class="planilla-header">
+        <div class="planilla-info">
+            <span>Materia</span>
+            <strong>{{ materia_info.nombre if materia_info else materia_sel }}</strong>
+        </div>
+        <div class="planilla-info">
+            <span>Sección</span>
+            <strong>{{ seccion_sel }}</strong>
+        </div>
+        <div class="planilla-info">
+            <span>Momento</span>
+            <strong>{{ momento_info.nombre if momento_info else momento_sel }}</strong>
+        </div>
+        <div class="planilla-info">
+            <span>Año Escolar</span>
+            <strong>{{ ano_sel }}</strong>
+        </div>
+        <div class="planilla-info">
+            <span>Estudiantes</span>
+            <strong>{{ estudiantes_planilla | length }}</strong>
+        </div>
+    </div>
+
+    <form method="POST" action="{{ url_for('registro_notas') }}" id="form-notas">
+        <input type="hidden" name="accion" value="guardar_notas">
+        <input type="hidden" name="ano_escolar" value="{{ ano_sel }}">
+        <input type="hidden" name="codigo_seccion" value="{{ seccion_sel }}">
+        <input type="hidden" name="codigo_materia" value="{{ materia_sel }}">
+        <input type="hidden" name="numero_momento" value="{{ momento_sel }}">
+        {% for est in estudiantes_planilla %}
+        <input type="hidden" name="cedula[]" value="{{ est.cedula }}">
+        {% endfor %}
+
+        <div class="ac-card" style="padding: 0; overflow:hidden;">
+            <div class="ac-table-wrap">
+                <table class="ac-table">
+                    <thead>
+                        <tr>
+                            <th style="width:50px;">#</th>
+                            <th>Estudiante</th>
+                            <th style="width:120px; text-align:center;">Nota (0–20)</th>
+                            <th style="width:120px; text-align:center;">Resultado</th>
+                            <th>Observaciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for est in estudiantes_planilla %}
+                        <tr>
+                            <td>
+                                <span class="num-lista">{{ loop.index }}</span>
+                                {% if est.eval_id %}
+                                <input type="hidden" name="eval_id_{{ est.cedula }}" value="{{ est.eval_id }}">
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="estudiante-nombre">{{ est.apellidos }}, {{ est.nombres }}</div>
+                                <div class="estudiante-cedula">{{ est.cedula }}</div>
+                            </td>
+                            <td style="text-align:center;">
+                                {% if momento_cerrado %}
+                                <span class="nota-badge {{ 'alta' if est.nota_existente and est.nota_existente >= 15 else 'media' if est.nota_existente and est.nota_existente >= 10 else 'baja' if est.nota_existente is not none else 'vacia' }}">
+                                    {{ est.nota_existente if est.nota_existente is not none else '—' }}
+                                </span>
+                                {% else %}
+                                <input type="number"
+                                    name="nota_{{ est.cedula }}"
+                                    class="nota-input {{ 'aprobado' if est.resultado == 'A' else 'reprobado' if est.resultado == 'R' else '' }}"
+                                    value="{{ est.nota_existente if est.nota_existente is not none else '' }}"
+                                    min="0" max="20" step="0.01"
+                                    placeholder="—"
+                                    id="nota-{{ est.cedula }}"
+                                    oninput="actualizarResultado(this, '{{ est.cedula }}')"
+                                    {% if momento_cerrado %}readonly{% endif %}>
+                                {% endif %}
+                            </td>
+                            <td style="text-align:center;" id="res-{{ est.cedula }}">
+                                {% if est.resultado == 'A' %}
+                                <span class="badge badge-success"><i class="fa-solid fa-check"></i> Aprobado</span>
+                                {% elif est.resultado == 'R' %}
+                                <span class="badge badge-danger"><i class="fa-solid fa-times"></i> Reprobado</span>
+                                {% else %}
+                                <span class="badge badge-neutral">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if momento_cerrado %}
+                                <span style="font-size:13px; color:#64748b;">{{ est.obs_existente or '—' }}</span>
+                                {% else %}
+                                <input type="text"
+                                    name="obs_{{ est.cedula }}"
+                                    class="ac-input"
+                                    style="font-size:13px; padding:7px 12px;"
+                                    value="{{ est.obs_existente or '' }}"
+                                    placeholder="Opcional...">
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {% if not momento_cerrado %}
+        <div style="display:flex; gap:12px; margin-top:16px; flex-wrap:wrap;">
+            <button type="submit" class="ac-btn ac-btn-success" style="flex:1; min-width:200px; justify-content:center;">
+                <i class="fa-solid fa-save"></i> Guardar Todas las Notas
+            </button>
+            <button type="button" class="ac-btn ac-btn-ghost" onclick="limpiarNotas()">
+                <i class="fa-solid fa-eraser"></i> Limpiar
+            </button>
+        </div>
+        {% endif %}
+    </form>
+
+    {% elif ano_sel and seccion_sel and materia_sel and momento_sel %}
+    <div class="ac-card">
+        <div class="ac-empty">
+            <i class="fa-solid fa-users-slash"></i>
+            <p>No hay estudiantes matriculados en esta sección para el año seleccionado.</p>
+        </div>
+    </div>
+    {% elif ano_sel %}
+    <div class="ac-card">
+        <div class="ac-empty">
+            <i class="fa-solid fa-filter"></i>
+            <p>Selecciona Sección, Materia y Momento para cargar la planilla.</p>
+        </div>
+    </div>
+    {% else %}
+    <div class="ac-card">
+        <div class="ac-empty">
+            <i class="fa-solid fa-arrow-up-long"></i>
+            <p>Usa los filtros superiores para cargar la planilla de calificaciones.</p>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+const NOTA_MIN = {{ (materia_info.nota_minima_aprobacion if materia_info and materia_info.nota_minima_aprobacion else 10.0) }};
+
+function actualizarResultado(input, cedula) {
+    const val = parseFloat(input.value);
+    const resEl = document.getElementById('res-' + cedula);
+
+    if (isNaN(val) || input.value === '') {
+        input.className = 'nota-input';
+        resEl.innerHTML = '<span class="badge badge-neutral">—</span>';
+        return;
+    }
+
+    if (val < 0 || val > 20) {
+        input.className = 'nota-input reprobado';
+        resEl.innerHTML = '<span class="badge badge-warning"><i class="fa-solid fa-exclamation"></i> Inválido</span>';
+        return;
+    }
+
+    if (val >= NOTA_MIN) {
+        input.className = 'nota-input aprobado';
+        resEl.innerHTML = '<span class="badge badge-success"><i class="fa-solid fa-check"></i> Aprobado</span>';
+    } else {
+        input.className = 'nota-input reprobado';
+        resEl.innerHTML = '<span class="badge badge-danger"><i class="fa-solid fa-times"></i> Reprobado</span>';
+    }
+}
+
+function limpiarNotas() {
+    if (!confirm('¿Limpiar todos los campos de nota? (Solo en pantalla, no afecta lo guardado)')) return;
+    document.querySelectorAll('.nota-input').forEach(inp => {
+        inp.value = '';
+        inp.className = 'nota-input';
+    });
+    document.querySelectorAll('[id^="res-"]').forEach(el => {
+        el.innerHTML = '<span class="badge badge-neutral">—</span>';
+    });
+}
+
+// Para docente: cargar asignación seleccionada
+function cargarAsignacion(sel) {
+    const parts = sel.value.split('|');
+    if (parts.length === 3) {
+        document.getElementById('h-materia').value = parts[0];
+        document.getElementById('h-seccion').value = parts[1];
+        document.getElementById('h-ano').value     = parts[2];
+    }
+}
+</script>
+</body>
+</html>

@@ -35,13 +35,19 @@ def promover_ano():
     nuevo_ano_fin = ano_fin + 1
     nuevo_codigo = f"{nuevo_ano_inicio}-{nuevo_ano_fin}"
     
+    # Fechas automatizadas: 15 de septiembre al 15 de julio del siguiente año
+    fecha_inicio_auto = f"{nuevo_ano_inicio}-09-15"
+    fecha_fin_auto = f"{nuevo_ano_fin}-07-15"
+    
     log(f"\n2. Creando el Nuevo Año Escolar: {nuevo_codigo}...")
     
     nuevo_ano_data = {
         "codigo": nuevo_codigo,
-        "descripcion": f"Periodo Escolar {nuevo_codigo}",
+        "descripcion": f"Periodo Regular {nuevo_codigo}",
         "ano_inicio": nuevo_ano_inicio,
         "ano_fin": nuevo_ano_fin,
+        "fecha_inicio": fecha_inicio_auto,
+        "fecha_fin": fecha_fin_auto,
         "estado": "A",
         "activo": True
     }

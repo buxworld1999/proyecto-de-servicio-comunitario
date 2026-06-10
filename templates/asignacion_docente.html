@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asignación Docente | PRISMA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='academico.css') }}">
+</head>
+<body>
+<div class="ac-page-lg">
+
+    <div class="ac-header">
+        <div class="ac-header-left">
+            <div class="ac-header-icon icon-amber">
+                <i class="fa-solid fa-chalkboard-user"></i>
+            </div>
+            <div>
+                <h1>Asignación Docente</h1>
+                <p>Gestiona qué docente imparte cada materia por sección</p>
+            </div>
+        </div>
+        <a href="{{ url_for('menu') }}" class="ac-btn ac-btn-ghost">
+            <i class="fa-solid fa-arrow-left"></i> Menú
+        </a>
+    </div>
+
+    {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in msgs %}
+    <div class="ac-alert ac-alert-{{ 'success' if cat == 'success' else 'danger' if cat == 'danger' else 'warning' }}">
+        <i class="fa-solid {{ 'fa-circle-check' if cat == 'success' else 'fa-circle-exclamation' }}"></i>
+        {{ msg }}
+    </div>
+    {% endfor %}
+    {% endwith %}
+
+    <!-- STATS -->
+    <div class="ac-stats-grid">
+        <div class="ac-stat-card blue">
+            <span class="ac-stat-value">{{ total_asignaciones }}</span>
+            <span class="ac-stat-label">Asignaciones</span>
+        </div>
+        <div class="ac-stat-card green">
+            <span class="ac-stat-value">{{ total_docentes_asignados }}</span>
+            <span class="ac-stat-label">Docentes activos</span>
+        </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: 1fr 380px; gap:20px; align-items:start;">
+
+        <!-- LISTA DE ASIGNACIONES -->
+        <div>
+            <!-- Filtros -->
+            <div class="ac-card">
+                <form method="GET" action="{{ url_for('asignacion_docente') }}">
+                    <div class="ac-filters">
+                        <div class="ac-field">
+                            <label>Año Escolar</label>
+                            <select name="ano" class="ac-select" onchange="this.form.submit()">
+                                {% for a in anos %}
+                                <option value="{{ a.codigo }}" {% if a.codigo == ano_filtro %}selected{% endif %}>
+                                    {{ a.codigo }} {% if a.activo %}★{% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="ac-field">
+                            <label>Sección</label>
+                            <select name="seccion" class="ac-select">
+                                <option value="">— Todas —</option>
+                                {% for s in secciones %}
+                                <option value="{{ s.codigo }}" {% if s.codigo == sec_filtro %}selected{% endif %}>
+                                    {{ s.codigo }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="ac-field">
+                            <label>Docente</label>
+                            <select name="docente" class="ac-select">
+                                <option value="">— Todos —</option>
+                                {% for d in docentes %}
+                                <option value="{{ d.cedula }}" {% if d.cedula == doc_filtro %}selected{% endif %}>
+                                    {{ d.apellidos }}, {{ d.nombres }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="ac-field" style="align-self:flex-end;">
+                            <button type="submit" class="ac-btn ac-btn-primary ac-btn-full">
+                                <i class="fa-solid fa-filter"></i> Filtrar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="ac-card" style="padding:0; overflow:hidden;">
+                <div class="ac-table-wrap">
+                    <table class="ac-table">
+                        <thead>
+                            <tr>
+                                <th>Docente</th>
+                                <th>Materia</th>
+                                <th>Sección</th>
+                                <th>Horas</th>
+                                <th>Turno</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in asignaciones %}
+                            {% set pers = a.get('personal') or {} %}
+                            {% set mat  = a.get('materia') or {} %}
+                            {% set sec  = a.get('seccion') or {} %}
+                            <tr>
+                                <td>
+                                    <div style="font-weight:600; font-size:13px;">
+                                        {{ pers.get('apellidos','') }}, {{ pers.get('nombres','') }}
+                                    </div>
+                                    <div style="font-size:11px; color:#64748b;">{{ a.cedula_docente }}</div>
+                                </td>
+                                <td>
+                                    <span style="font-size:13px; color:#1e293b;">{{ mat.get('nombre', a.codigo_materia) }}</span>
+                                    {% if mat.get('codigo_grado') %}
+                                    <span class="badge badge-neutral" style="margin-left:4px; font-size:10px;">
+                                        {{ mat.codigo_grado }}° Año
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td><span class="badge badge-info">{{ a.codigo_seccion }}</span></td>
+                                <td><span class="badge badge-neutral">{{ a.horas_asignadas or '—' }}h</span></td>
+                                <td>{{ 'Mañana' if a.turno == 'M' else 'Tarde' if a.turno == 'T' else a.turno or '—' }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('asignacion_docente', ano=ano_filtro) }}" style="margin:0;">
+                                        <input type="hidden" name="accion" value="eliminar">
+                                        <input type="hidden" name="asig_id" value="{{ a.id }}">
+                                        <button type="submit" class="ac-btn ac-btn-danger ac-btn-xs"
+                                            onclick="return confirm('¿Eliminar esta asignación?')">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6">
+                                    <div class="ac-empty">
+                                        <i class="fa-solid fa-chalkboard"></i>
+                                        <p>No hay asignaciones para los filtros seleccionados.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL NUEVA ASIGNACIÓN -->
+        <div>
+            <div class="ac-card" style="position:sticky; top:20px;">
+                <div class="ac-card-title">
+                    <i class="fa-solid fa-plus-circle"></i>
+                    Nueva Asignación
+                </div>
+
+                <form method="POST" action="{{ url_for('asignacion_docente', ano=ano_filtro) }}">
+                    <input type="hidden" name="accion" value="crear">
+
+                    <div class="ac-field" style="margin-bottom:14px;">
+                        <label>Año Escolar</label>
+                        <select name="codigo_ano_escolar" class="ac-select" required>
+                            {% for a in anos %}
+                            <option value="{{ a.codigo }}" {% if a.codigo == ano_filtro %}selected{% endif %}>
+                                {{ a.codigo }} {% if a.activo %}(Activo){% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="ac-field" style="margin-bottom:14px;">
+                        <label>Docente</label>
+                        <select name="cedula_docente" class="ac-select" required>
+                            <option value="">-- Selecciona docente --</option>
+                            {% for d in docentes %}
+                            <option value="{{ d.cedula }}">
+                                {{ d.apellidos }}, {{ d.nombres }}
+                                {% if d.cargo %} ({{ d.cargo }}){% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="ac-field" style="margin-bottom:14px;">
+                        <label>Sección</label>
+                        <select name="codigo_seccion" class="ac-select" required>
+                            <option value="">-- Selecciona sección --</option>
+                            {% for s in secciones %}
+                            <option value="{{ s.codigo }}">
+                                {{ s.codigo }} ({{ s.codigo_grado }}° — {{ s.letra }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="ac-field" style="margin-bottom:14px;">
+                        <label>Materia</label>
+                        <select name="codigo_materia" class="ac-select" required>
+                            <option value="">-- Selecciona materia --</option>
+                            {% for m in materias %}
+                            <option value="{{ m.codigo }}">{{ m.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="ac-form-grid" style="margin-bottom:14px;">
+                        <div class="ac-field">
+                            <label>Horas/Semana</label>
+                            <input type="number" name="horas_asignadas" class="ac-input" value="4" min="1" max="20">
+                        </div>
+                        <div class="ac-field">
+                            <label>Turno</label>
+                            <select name="turno" class="ac-select">
+                                <option value="M">Mañana</option>
+                                <option value="T">Tarde</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="ac-btn ac-btn-success ac-btn-full">
+                        <i class="fa-solid fa-save"></i> Guardar Asignación
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

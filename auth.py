@@ -16,23 +16,26 @@ from flask import session, redirect, url_for, abort
 PERMISOS = {
     'admin': [
         'usuarios', 'personal', 'estudiantes', 'matricula',
-        'evaluaciones', 'constancias', 'citaciones', 'labor_social',
+        'evaluaciones', 'momentos', 'notas_certificadas',
+        'constancias', 'citaciones', 'labor_social',
         'materias', 'asignacion_docente', 'reportes', 'configuracion', 'activos',
         'terminal'
     ],
     'director': [
         'personal', 'estudiantes', 'matricula',
-        'evaluaciones', 'citaciones', 'labor_social',
+        'evaluaciones', 'momentos', 'notas_certificadas',
+        'citaciones', 'labor_social',
         'materias', 'asignacion_docente', 'reportes', 'configuracion', 'activos'
     ],
     'coordinador': [
         'personal', 'estudiantes', 'matricula',
-        'evaluaciones', 'citaciones', 'labor_social',
+        'evaluaciones', 'notas_certificadas',
+        'citaciones', 'labor_social',
         'materias', 'asignacion_docente', 'reportes', 'activos'
     ],
     'secretaria': [
         'personal', 'estudiantes', 'matricula',
-        'constancias', 'citaciones', 'reportes', 'activos'
+        'notas_certificadas', 'constancias', 'citaciones', 'reportes', 'activos'
     ],
     'docente': [
         'estudiantes', 'evaluaciones',
@@ -98,13 +101,27 @@ MODULOS_ITEMS = {
     'evaluaciones': [
         {
             'label': 'Registro de Notas',
-            'url':   '/evaluaciones',
+            'url':   '/registro_notas',
             'icono': 'fa-solid fa-star-half-stroke'
         },
         {
             'label': 'Boletines',
             'url':   '/boletines',
             'icono': 'fa-solid fa-newspaper'
+        },
+    ],
+    'momentos': [
+        {
+            'label': 'Momentos Evaluativos',
+            'url':   '/momentos',
+            'icono': 'fa-solid fa-calendar-check'
+        },
+    ],
+    'notas_certificadas': [
+        {
+            'label': 'Notas Certificadas',
+            'url':   '/notas_certificadas',
+            'icono': 'fa-solid fa-certificate'
         },
     ],
     'constancias': [
@@ -149,13 +166,6 @@ MODULOS_ITEMS = {
             'icono': 'fa-solid fa-chart-bar'
         },
     ],
-    'configuracion': [
-        {
-            'label': 'Configuración de Año',
-            'url':   '/configuracion_ano',
-            'icono': 'fa-solid fa-gears'
-        },
-    ],
     'activos': [
         {
             'label': 'Control de Activos',
@@ -184,7 +194,7 @@ MENU_GRUPOS = [
     {'titulo': 'Personal',       'modulos': ['personal']},
     {'titulo': 'Estudiantes',    'modulos': ['estudiantes']},
     {'titulo': 'Matrícula',      'modulos': ['matricula']},
-    {'titulo': 'Evaluaciones',   'modulos': ['evaluaciones']},
+    {'titulo': 'Evaluaciones',   'modulos': ['evaluaciones', 'momentos', 'notas_certificadas']},
     {'titulo': 'Documentos',     'modulos': ['constancias', 'citaciones']},
     {'titulo': 'Labor Social',   'modulos': ['labor_social']},
     {'titulo': 'Académico',      'modulos': ['materias', 'asignacion_docente']},

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notas Certificadas | PRISMA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='academico.css') }}">
+</head>
+<body>
+<div class="ac-page-lg">
+
+    <div class="ac-header">
+        <div class="ac-header-left">
+            <div class="ac-header-icon icon-cyan">
+                <i class="fa-solid fa-certificate"></i>
+            </div>
+            <div>
+                <h1>Notas Certificadas</h1>
+                <p>Historial académico y emisión de certificaciones oficiales</p>
+            </div>
+        </div>
+        <a href="{{ url_for('menu') }}" class="ac-btn ac-btn-ghost no-print">
+            <i class="fa-solid fa-arrow-left"></i> Menú
+        </a>
+    </div>
+
+    {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in msgs %}
+    <div class="ac-alert ac-alert-{{ 'success' if cat == 'success' else 'danger' if cat == 'danger' else 'warning' }}">
+        <i class="fa-solid {{ 'fa-circle-check' if cat == 'success' else 'fa-circle-exclamation' }}"></i>
+        {{ msg }}
+    </div>
+    {% endfor %}
+    {% endwith %}
+
+    <!-- BUSCADOR -->
+    <div class="ac-card">
+        <div class="ac-card-title">
+            <i class="fa-solid fa-search"></i> Buscar Historial de Estudiante
+        </div>
+        <form method="GET" action="{{ url_for('notas_certificadas') }}">
+            <div class="ac-filters">
+                <div class="ac-field">
+                    <label>Año Escolar</label>
+                    <select name="ano" class="ac-select">
+                        {% for a in anos_lista %}
+                        <option value="{{ a.codigo }}" {% if a.codigo == ano_sel %}selected{% endif %}>
+                            {{ a.codigo }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="ac-field" style="flex:2;">
+                    <label>Cédula del Estudiante</label>
+                    <input type="text" name="cedula" class="ac-input"
+                        value="{{ cedula_buscar }}" placeholder="Ej: V12345678">
+                </div>
+                <div class="ac-field" style="align-self:flex-end;">
+                    <button type="submit" class="ac-btn ac-btn-primary ac-btn-full">
+                        <i class="fa-solid fa-search"></i> Buscar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    {% if estudiante %}
+    <!-- PERFIL DEL ESTUDIANTE -->
+    <div class="ac-card">
+        <div style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+            <div style="width:64px; height:64px; background:linear-gradient(135deg,#06b6d4,#0891b2); border-radius:16px; display:flex; align-items:center; justify-content:center; color:#fff; font-size:24px; font-weight:800; flex-shrink:0;">
+                {{ estudiante.nombres[0] | upper if estudiante.nombres else '?' }}
+            </div>
+            <div style="flex:1;">
+                <div style="font-size:20px; font-weight:800; color:#0f172a; text-transform:uppercase;">
+                    {{ estudiante.apellidos }}, {{ estudiante.nombres }}
+                </div>
+                <div style="font-size:13px; color:#64748b; margin-top:4px; display:flex; gap:16px; flex-wrap:wrap;">
+                    <span><i class="fa-solid fa-id-card"></i> {{ estudiante.cedula }}</span>
+                    {% if estudiante.fecha_nacimiento %}
+                    <span><i class="fa-solid fa-cake-candles"></i> {{ estudiante.fecha_nacimiento }}</span>
+                    {% endif %}
+                    <span><i class="fa-solid fa-{{ 'mars' if estudiante.genero == 'M' else 'venus' }}"></i>
+                        {{ 'Masculino' if estudiante.genero == 'M' else 'Femenino' }}
+                    </span>
+                </div>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                {% for bol in historial %}
+                <a href="{{ url_for('nota_certificada_ver', cedula=estudiante.cedula, ano=bol.codigo_ano_escolar, boletin_id=bol.id) }}"
+                    target="_blank"
+                    class="ac-btn ac-btn-success ac-btn-sm">
+                    <i class="fa-solid fa-certificate"></i>
+                    Certificar {{ bol.codigo_ano_escolar }}
+                </a>
+                {% endfor %}
+                <a href="{{ url_for('nota_certificada_ver', cedula=estudiante.cedula, ano=ano_sel) }}"
+                    target="_blank"
+                    class="ac-btn ac-btn-primary ac-btn-sm" title="Vista Previa HTML">
+                    <i class="fa-solid fa-file-lines"></i>
+                    Vista Previa Web
+                </a>
+                
+                <form method="GET" action="{{ url_for('descargar_nota_xls') }}" style="display:flex; gap:8px; margin:0;">
+                    <input type="hidden" name="cedula" value="{{ estudiante.cedula }}">
+                    <input type="hidden" name="ano" value="{{ ano_sel }}">
+                    <select name="tipo" class="ac-select" style="width:140px; padding:4px 8px; font-size:12px; height:auto;">
+                        <option value="31059">EMG (31059)</option>
+                        <option value="31060">EMGCT (31060)</option>
+                    </select>
+                    <button type="submit" class="ac-btn ac-btn-success ac-btn-sm">
+                        <i class="fa-solid fa-file-excel"></i> Descargar XLS MPPE
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- HISTORIAL DE MATRÍCULAS -->
+    {% if matriculas %}
+    <div class="ac-card" style="padding:0; overflow:hidden;">
+        <div style="padding:14px 20px; border-bottom:1.5px solid #f1f5f9;">
+            <div class="ac-card-title" style="margin-bottom:0;">
+                <i class="fa-solid fa-graduation-cap"></i> Trayectoria Académica
+            </div>
+        </div>
+        <div class="ac-table-wrap">
+            <table class="ac-table">
+                <thead>
+                    <tr>
+                        <th>Año Escolar</th>
+                        <th>Grado</th>
+                        <th>Sección</th>
+                        <th>Estado</th>
+                        <th>Boletín</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mat in matriculas %}
+                    {% set sec_i = mat.get('seccion') or {} %}
+                    {% set grado_i = sec_i.get('grado') or {} %}
+                    <tr>
+                        <td><strong>{{ mat.codigo_ano_escolar }}</strong></td>
+                        <td>{{ grado_i.get('nombre', sec_i.get('codigo_grado', '—')) }}</td>
+                        <td><span class="badge badge-neutral">{{ sec_i.get('letra', mat.codigo_seccion) }}</span></td>
+                        <td>
+                            <span class="badge {{ 'badge-success' if mat.estado_matricula == 'A' else 'badge-neutral' }}">
+                                {{ 'Activo' if mat.estado_matricula == 'A' else mat.estado_matricula }}
+                            </span>
+                        </td>
+                        <td>
+                            {% set bol_anio = historial | selectattr('codigo_ano_escolar', 'equalto', mat.codigo_ano_escolar) | list %}
+                            {% if bol_anio %}
+                            {% set b = bol_anio[0] %}
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span class="nota-badge {{ 'alta' if b.promedio_general and b.promedio_general >= 15 else 'media' if b.promedio_general and b.promedio_general >= 10 else 'baja' if b.promedio_general else 'vacia' }}">
+                                    {{ "%.1f"|format(b.promedio_general) if b.promedio_general else '—' }}
+                                </span>
+                                <span class="badge {{ 'badge-success' if b.resultado_final == 'A' else 'badge-danger' if b.resultado_final == 'R' else 'badge-warning' }}">
+                                    {{ 'Aprobado' if b.resultado_final == 'A' else 'Reprobado' if b.resultado_final == 'R' else 'Pendiente' }}
+                                </span>
+                                <a href="{{ url_for('boletin_ver', boletin_id=b.id) }}" target="_blank" class="ac-btn ac-btn-primary ac-btn-xs">
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
+                            </div>
+                            {% else %}
+                            <span style="color:#94a3b8; font-size:12px;">Sin boletín</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    {% elif cedula_buscar %}
+    <div class="ac-card">
+        <div class="ac-empty">
+            <i class="fa-solid fa-user-slash"></i>
+            <p>Estudiante no encontrado. Verifica la cédula e intenta de nuevo.</p>
+        </div>
+    </div>
+    {% else %}
+    <div class="ac-card">
+        <div class="ac-empty">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <p>Ingresa la cédula de un estudiante para ver su historial académico.</p>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+</body>
+</html>

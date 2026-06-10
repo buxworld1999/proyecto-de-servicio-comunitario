@@ -12,13 +12,30 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
             {% for category, message in messages %}
-              <div class="alert">
+              <div class="alert" style="padding: 10px; margin-bottom: 15px; border-radius: 4px; background-color: {{ '#d4edda' if category == 'success' else '#f8d7da' }}; color: {{ '#155724' if category == 'success' else '#721c24' }};">
                 {{ message }}
               </div>
             {% endfor %}
           {% endif %}
         {% endwith %}
 
+        <!-- BOTÓN MATRÍCULA MASIVA -->
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; text-align: center; margin-bottom: 30px;">
+            <h3 style="margin-top: 0; color: #0f172a;">Matrícula Automática</h3>
+            <p style="color: #64748b; font-size: 14px; margin-bottom: 15px;">
+                Asigna a los estudiantes al año escolar activo de forma masiva,<br>
+                basado en el "Año" y "Sección" ingresados en su Registro Estudiantil.
+            </p>
+            <form method="POST" action="/matricula_automatica" onsubmit="return confirm('¿Está seguro de que desea matricular a todos los estudiantes de forma automática?');">
+                <button type="submit" class="btn-submit" style="background-color: #10b981; max-width: 300px; margin: 0 auto;">
+                    Generar Matrícula Automática
+                </button>
+            </form>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin-bottom: 30px;">
+
+        <h3 style="margin-bottom:20px; color: #0f172a;">Matrícula Individual</h3>
         <form method="POST" action="/matricula">
             <div class="form-group">
                 <label>Estudiante</label>

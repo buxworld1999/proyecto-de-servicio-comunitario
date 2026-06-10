@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boletines de Calificaciones | PRISMA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='academico.css') }}">
+</head>
+<body>
+<div class="ac-page-lg">
+
+    <!-- HEADER -->
+    <div class="ac-header">
+        <div class="ac-header-left">
+            <div class="ac-header-icon icon-violet">
+                <i class="fa-solid fa-newspaper"></i>
+            </div>
+            <div>
+                <h1>Boletines de Calificaciones</h1>
+                <p>Genera y consulta boletines individuales de estudiantes</p>
+            </div>
+        </div>
+        <a href="{{ url_for('menu') }}" class="ac-btn ac-btn-ghost no-print">
+            <i class="fa-solid fa-arrow-left"></i> Menú
+        </a>
+    </div>
+
+    <!-- FLASH MESSAGES -->
+    {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in msgs %}
+    <div class="ac-alert ac-alert-{{ 'success' if cat == 'success' else 'danger' if cat == 'danger' else 'warning' }}">
+        <i class="fa-solid {{ 'fa-circle-check' if cat == 'success' else 'fa-circle-exclamation' }}"></i>
+        {{ msg }}
+    </div>
+    {% endfor %}
+    {% endwith %}
+
+    <div style="display:grid; grid-template-columns: 1fr 360px; gap:20px; align-items: start;">
+
+        <!-- COLUMNA IZQUIERDA: Lista de boletines -->
+        <div>
+            <!-- Filtros de búsqueda -->
+            <div class="ac-card">
+                <div class="ac-card-title">
+                    <i class="fa-solid fa-search"></i>
+                    Buscar Boletines
+                </div>
+                <form method="GET" action="{{ url_for('boletines') }}">
+                    <div class="ac-filters">
+                        <div class="ac-field">
+                            <label>Año Escolar</label>
+                            <select name="ano" class="ac-select" onchange="this.form.submit()">
+                                {% for a in anos %}
+                                <option value="{{ a.codigo }}" {% if a.codigo == ano_sel %}selected{% endif %}>
+                                    {{ a.codigo }} {% if a.activo %}★{% endif %}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="ac-field">
+                            <label>Sección</label>
+                            <select name="seccion" class="ac-select">
+                                <option value="">— Todas —</option>
+                                {% for s in secciones %}
+                                <option value="{{ s.codigo }}" {% if s.codigo == sec_sel %}selected{% endif %}>
+                                    {{ s.codigo }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="ac-field">
+                            <label>Cédula del Estudiante</label>
+                            <input type="text" name="cedula" class="ac-input"
+                                value="{{ cedula_buscar }}" placeholder="Ej: V12345678">
+                        </div>
+                        <div class="ac-field" style="align-self:flex-end;">
+                            <button type="submit" class="ac-btn ac-btn-primary ac-btn-full">
+                                <i class="fa-solid fa-search"></i> Buscar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Lista de boletines -->
+            <div class="ac-card" style="padding:0; overflow:hidden;">
+                <div style="padding:16px 20px; border-bottom:1.5px solid #f1f5f9;">
+                    <div class="ac-card-title" style="margin-bottom:0;">
+                        <i class="fa-solid fa-list"></i>
+                        Boletines Generados
+                        <span class="badge badge-info" style="margin-left:auto;">{{ boletines | length }}</span>
+                    </div>
+                </div>
+                <div class="ac-table-wrap">
+                    <table class="ac-table">
+                        <thead>
+                            <tr>
+                                <th>Estudiante</th>
+                                <th>Sección</th>
+                                <th>Tipo</th>
+                                <th>Promedio</th>
+                                <th>Resultado</th>
+                                <th>Fecha</th>
+                                <th>Ver</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for b in boletines %}
+                            {% set est = b.get('estudiante') or {} %}
+                            <tr>
+                                <td>
+                                    <div style="font-weight:600; font-size:13px;">
+                                        {{ est.get('apellidos','') }}, {{ est.get('nombres','') }}
+                                    </div>
+                                    <div style="font-size:11px; color:#64748b;">{{ b.cedula_estudiante }}</div>
+                                </td>
+                                <td><span class="badge badge-neutral">{{ b.codigo_seccion }}</span></td>
+                                <td>
+                                    <span class="badge {{ 'badge-purple' if b.tipo_boletin == 'final' else 'badge-info' }}">
+                                        {{ b.tipo_boletin | title if b.tipo_boletin else 'Final' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <strong style="font-size:16px; color:{{ '#15803d' if b.promedio_general and b.promedio_general >= 10 else '#b91c1c' }};">
+                                        {{ "%.2f"|format(b.promedio_general) if b.promedio_general is not none else '—' }}
+                                    </strong>
+                                </td>
+                                <td>
+                                    {% if b.resultado_final == 'A' %}
+                                    <span class="badge badge-success"><i class="fa-solid fa-check"></i> Aprobado</span>
+                                    {% elif b.resultado_final == 'R' %}
+                                    <span class="badge badge-danger"><i class="fa-solid fa-times"></i> Reprobado</span>
+                                    {% else %}
+                                    <span class="badge badge-neutral">Pendiente</span>
+                                    {% endif %}
+                                </td>
+                                <td style="font-size:12px; color:#64748b;">{{ b.fecha_generacion or '—' }}</td>
+                                <td>
+                                    <a href="{{ url_for('boletin_ver', boletin_id=b.id) }}"
+                                        target="_blank"
+                                        class="ac-btn ac-btn-primary ac-btn-xs">
+                                        <i class="fa-solid fa-eye"></i> Ver
+                                    </a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7">
+                                    <div class="ac-empty">
+                                        <i class="fa-solid fa-newspaper"></i>
+                                        <p>No hay boletines generados aún.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUMNA DERECHA: Generar nuevo boletín -->
+        <div>
+            <div class="ac-card" style="position:sticky; top:20px;">
+                <div class="ac-card-title">
+                    <i class="fa-solid fa-plus-circle"></i>
+                    Generar Nuevo Boletín
+                </div>
+
+                {% if estudiante_buscado %}
+                <!-- Chip estudiante encontrado -->
+                <div style="background:#f0fdf4; border:1.5px solid #86efac; border-radius:12px; padding:14px 16px; margin-bottom:18px; display:flex; align-items:center; gap:12px;">
+                    <div style="width:40px; height:40px; background:#15803d; border-radius:50%; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:16px; flex-shrink:0;">
+                        {{ estudiante_buscado.nombres[0] | upper if estudiante_buscado.nombres else '?' }}
+                    </div>
+                    <div>
+                        <div style="font-weight:700; color:#14532d; font-size:14px;">
+                            {{ estudiante_buscado.nombres }} {{ estudiante_buscado.apellidos }}
+                        </div>
+                        <div style="font-size:12px; color:#4b7a60;">{{ estudiante_buscado.cedula }}</div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{{ url_for('boletines', ano=ano_sel) }}">
+                    <input type="hidden" name="accion" value="generar">
+
+                    <div class="ac-field" style="margin-bottom:14px;">
+                        <label>Cédula del Estudiante</label>
+                        <input type="text" name="cedula_estudiante" class="ac-input"
+                            value="{{ cedula_buscar }}"
+                            placeholder="Ej: V12345678" required>
+                    </div>
+
+                    <div class="ac-field" style="margin-bottom:14px;">
+                        <label>Año Escolar</label>
+                        <select name="codigo_ano_escolar" class="ac-select" required>
+                            {% for a in anos %}
+                            <option value="{{ a.codigo }}" {% if a.codigo == ano_sel %}selected{% endif %}>
+                                {{ a.codigo }} {% if a.activo %}(Activo){% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    {% if matricula_buscada %}
+                    <div class="ac-field" style="margin-bottom:14px;">
+                        <label>Sección (del estudiante)</label>
+                        <input type="text" class="ac-input" value="{{ matricula_buscada.codigo_seccion }}" readonly
+                            style="background:#f1f5f9; color:#475569;">
+                        <input type="hidden" name="codigo_seccion" value="{{ matricula_buscada.codigo_seccion }}">
+                    </div>
+                    {% else %}
+                    <div class="ac-field" style="margin-bottom:14px;">
+                        <label>Sección</label>
+                        <select name="codigo_seccion" class="ac-select" required>
+                            <option value="">-- Selecciona --</option>
+                            {% for s in secciones %}
+                            <option value="{{ s.codigo }}">{{ s.codigo }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+
+                    <div class="ac-field" style="margin-bottom:14px;">
+                        <label>Tipo de Boletín</label>
+                        <select name="tipo_boletin" class="ac-select">
+                            <option value="final">Final (los 3 momentos)</option>
+                            <option value="parcial">Parcial (por momento)</option>
+                        </select>
+                    </div>
+
+                    <div class="ac-field" style="margin-bottom:14px;">
+                        <label>Observaciones del Director</label>
+                        <textarea name="observaciones" class="ac-input"
+                            style="height:70px; resize:vertical;"
+                            placeholder="Opcional..."></textarea>
+                    </div>
+
+                    <button type="submit" class="ac-btn ac-btn-success ac-btn-full">
+                        <i class="fa-solid fa-file-circle-plus"></i>
+                        Generar Boletín
+                    </button>
+                </form>
+
+                {% if estudiante_buscado and not boletines %}
+                <div style="margin-top:12px; padding:10px 14px; background:#fffbeb; border-radius:8px; font-size:12px; color:#92400e; border:1px solid #fcd34d;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    No hay boletines previos para este estudiante.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

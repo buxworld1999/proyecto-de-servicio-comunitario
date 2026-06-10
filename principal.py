@@ -19,6 +19,13 @@ from auth import get_menu_items, login_required, rol_required
 
 # Módulos del Sistema
 
+# Módulo Académico
+from modulos.evaluacion.registro_notas        import registro_notas_view
+from modulos.evaluacion.boletines_mod         import boletines_view, boletin_ver_view
+from modulos.evaluacion.momentos_evaluativos  import momentos_view
+from modulos.evaluacion.notas_certificadas_mod import notas_certificadas_view, nota_certificada_ver_view, descargar_nota_xls_view
+from modulos.academico.materias_mod          import materias_view
+from modulos.academico.asignacion_docente_view import asignacion_docente_view as asignacion_docente_view_func
 
 # Cargar variables de entorno
 load_dotenv()
@@ -41,7 +48,7 @@ app.secret_key = os.environ.get("SECRET_KEY", "prisma_secret_key_ueecr_2025_segu
 app.permanent_session_lifetime = timedelta(hours=8)
 
 # Instalar interceptores de logs para el módulo Terminal Admin
-from admin_terminal import instalar_interceptores, vista_terminal, sse_stream
+from modulos.admin.admin_terminal import instalar_interceptores, vista_terminal, sse_stream
 instalar_interceptores()
 
 
@@ -111,12 +118,18 @@ def menu():
         usuario_codigo = session.get('codigo', '')
     )
 
+@app.route('/descargar_nota_xls')
+@login_required
+@rol_required('admin', 'director', 'coordinador', 'secretaria')
+def descargar_nota_xls():
+    return descargar_nota_xls_view()
+
 
 # ===================================================================
 # MÓDULOS IMPLEMENTADOS
 # ===================================================================
 
-from regis_estudiante import registro_estudiantes as registrar_estudiantes_func
+from modulos.estudiantes.regis_estudiante import registro_estudiantes as registrar_estudiantes_func, descargar_plantilla_estudiantes_view, cargar_estudiantes_masivo_view
 
 @app.route('/registro_estu', methods=['GET', 'POST'])
 @login_required
@@ -124,8 +137,18 @@ from regis_estudiante import registro_estudiantes as registrar_estudiantes_func
 def registro_estudiantes():
     return registrar_estudiantes_func()
 
+@app.route('/descargar_plantilla_estudiantes', methods=['GET'])
+@login_required
+@rol_required('admin', 'director', 'coordinador', 'secretaria')
+def descargar_plantilla_estudiantes():
+    return descargar_plantilla_estudiantes_view()
 
-from registrar_personal import personal as registrar_personal_func
+@app.route('/cargar_estudiantes_masivo', methods=['POST'])
+@login_required
+@rol_required('admin', 'director', 'coordinador', 'secretaria')
+def cargar_estudiantes_masivo():
+    return cargar_estudiantes_masivo_view()
+from modulos.personal.registrar_personal import personal as registrar_personal_func
 
 @app.route('/personal', methods=['GET', 'POST'])
 @login_required
@@ -134,7 +157,7 @@ def personal():
     return registrar_personal_func()
 
 
-from buscar_estu import buscar_estu as buscar_estu_func
+from modulos.estudiantes.buscar_estu import buscar_estu as buscar_estu_func
 
 @app.route('/buscar_estu', methods=['GET', 'POST'])
 @login_required
@@ -142,7 +165,7 @@ from buscar_estu import buscar_estu as buscar_estu_func
 def ruta_buscar_estu():
     return buscar_estu_func()
 
-from gestion_usuarios import gestion_usuarios as gestion_usuarios_func
+from modulos.admin.gestion_usuarios import gestion_usuarios as gestion_usuarios_func
 
 @app.route('/usuarios', methods=['GET', 'POST'])
 @login_required
@@ -151,7 +174,7 @@ def usuarios():
     return gestion_usuarios_func()
 
 
-from matricula import matricula_view
+from modulos.academico.matricula import matricula_view, matricula_automatica_view
 
 @app.route('/matricula', methods=['GET', 'POST'])
 @login_required
@@ -159,8 +182,14 @@ from matricula import matricula_view
 def proceso_matricula():
     return matricula_view()
 
+@app.route('/matricula_automatica', methods=['POST'])
+@login_required
+@rol_required('admin', 'director', 'coordinador', 'secretaria')
+def matricula_automatica():
+    return matricula_automatica_view()
 
-from configuracion_ano import configuracion_ano_view
+
+from modulos.academico.configuracion_ano import configuracion_ano_view
 
 @app.route('/configuracion_ano', methods=['GET', 'POST'])
 @login_required
@@ -169,7 +198,7 @@ def configuracion_ano():
     return configuracion_ano_view()
 
 
-from secciones import secciones_view
+from modulos.academico.secciones import secciones_view
 
 @app.route('/secciones')
 @login_required
@@ -177,12 +206,29 @@ from secciones import secciones_view
 def secciones():
     return secciones_view()
 
+from modulos.academico.ano_escolar import ano_escolar_view as ano_escolar_view_func, activar_ano_logic
 
-@app.route('/anio_escolar')
+@app.route('/anio_escolar', methods=['GET', 'POST'])
 @login_required
 @rol_required('admin', 'director', 'coordinador', 'secretaria')
 def anio_escolar():
-    return _modulo_en_desarrollo("Año Escolar", "fa-calendar-alt")
+    return ano_escolar_view_func()
+
+@app.route('/activar_ano/<codigo_ano>', methods=['POST'])
+@login_required
+@rol_required('admin', 'director', 'coordinador', 'secretaria')
+def activar_ano(codigo_ano):
+    return activar_ano_logic(codigo_ano)
+
+from modulos.academico.promocion_automatica import promover_ano
+
+@app.route('/ejecutar_promocion', methods=['POST'])
+@login_required
+@rol_required('admin', 'director')
+def ejecutar_promocion():
+    resultado = promover_ano()
+    flash("Promoción Automática ejecutada. Revisa los periodos para verificar el nuevo año activo.", "success")
+    return redirect(url_for('anio_escolar'))
 
 
 @app.route('/representantes')
@@ -196,7 +242,7 @@ def representantes():
 # ===================================================================
 
 
-from gestion_activos import activos_institucion as activos_institucion_func
+from modulos.admin.gestion_activos import activos_institucion as activos_institucion_func
 # Nota: Ajusta el "from" según el nombre que le diste al archivo del Paso 1
 
 @app.route('/activos', methods=['GET', 'POST'])
@@ -208,20 +254,62 @@ def activos():
     """
     return activos_institucion_func()
 
-@app.route('/evaluaciones')
+@app.route('/registro_notas', methods=['GET', 'POST'])
+@login_required
+@rol_required('admin', 'director', 'coordinador', 'docente')
+def registro_notas():
+    """Módulo de registro de calificaciones por momento."""
+    return registro_notas_view()
+
+
+@app.route('/evaluaciones', methods=['GET', 'POST'])
 @login_required
 @rol_required('admin', 'director', 'coordinador', 'docente')
 def evaluaciones():
-    return _modulo_en_desarrollo("Evaluaciones y Notas", "fa-star-half-stroke")
+    """Alias de compatibilidad hacia registro_notas."""
+    return redirect(url_for('registro_notas'))
 
 
-@app.route('/boletines')
+@app.route('/boletines', methods=['GET', 'POST'])
 @login_required
-@rol_required('admin', 'director', 'coordinador', 'docente')
+@rol_required('admin', 'director', 'coordinador', 'secretaria', 'docente')
 def boletines():
-    return _modulo_en_desarrollo("Boletines", "fa-newspaper")
+    """Listado y generación de boletines de calificaciones."""
+    return boletines_view()
 
-from constancia_estudio import constancia_estudio as constancia_estudio_func, descargar_formato
+
+@app.route('/boletin/<int:boletin_id>')
+@login_required
+@rol_required('admin', 'director', 'coordinador', 'secretaria', 'docente')
+def boletin_ver(boletin_id):
+    """Vista imprimible de un boletin individual."""
+    return boletin_ver_view(boletin_id)
+
+
+@app.route('/momentos', methods=['GET', 'POST'])
+@login_required
+@rol_required('admin', 'director')
+def momentos():
+    """Gestión de momentos evaluativos (lapsos)."""
+    return momentos_view()
+
+
+@app.route('/notas_certificadas', methods=['GET', 'POST'])
+@login_required
+@rol_required('admin', 'director', 'coordinador', 'secretaria')
+def notas_certificadas():
+    """Historial académico y emisión de notas certificadas."""
+    return notas_certificadas_view()
+
+
+@app.route('/nota_certificada_ver')
+@login_required
+@rol_required('admin', 'director', 'coordinador', 'secretaria')
+def nota_certificada_ver():
+    """Vista imprimible del certificado de notas."""
+    return nota_certificada_ver_view()
+
+from modulos.documentos.constancia_estudio import constancia_estudio as constancia_estudio_func, descargar_formato
 
 @app.route('/constancias', methods=['GET', 'POST'])
 @login_required
@@ -250,18 +338,20 @@ def labor_social():
     return _modulo_en_desarrollo("Labor Social", "fa-hands-holding-child")
 
 
-@app.route('/materias')
+@app.route('/materias', methods=['GET', 'POST'])
 @login_required
 @rol_required('admin', 'director', 'coordinador', 'docente')
 def materias():
-    return render_template('materias.html')
+    """CRUD de materias/asignaturas del plan de estudios."""
+    return materias_view()
 
 
-@app.route('/asignacion_docente')
+@app.route('/asignacion_docente', methods=['GET', 'POST'])
 @login_required
 @rol_required('admin', 'director', 'coordinador', 'docente')
 def asignacion_docente():
-    return _modulo_en_desarrollo("Asignación Docente", "fa-chalkboard-user")
+    """Gestión de asignaciones docente-materia-sección."""
+    return asignacion_docente_view_func()
 
 
 # ===================================================================
@@ -373,4 +463,5 @@ def admin_terminal_stream():
 
 if __name__ == '__main__':
     puerto = int(os.environ.get("PORT", 5000))
+    print(f"\n Link para entrar: http://127.0.0.1:{puerto}\n")
     app.run(host="0.0.0.0", port=puerto, debug=True)
