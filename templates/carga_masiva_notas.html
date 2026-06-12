@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carga Masiva de Notas | PRISMA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='academico.css') }}">
+<style>
+  /* ══════════════════════════════════════════════════════
+     CARGA MASIVA DE NOTAS — PRISMA
+     Diseño inspirado en APACUANA, adaptado al sistema PRISMA
+  ══════════════════════════════════════════════════════ */
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: #0f172a;
+      color: #f1f5f9;
+      margin: 0;
+      padding: 20px;
+    }
+
+  .cm-hero {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  .cm-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary, #4f46e5), #10b981);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: .25rem;
+  }
+
+  .cm-subtitle {
+    color: var(--text-muted, #94a3b8);
+    font-size: .9rem;
+    margin-bottom: 2rem;
+  }
+
+  /* ── Radio Toggles ─────────────────────────────────── */
+  .upload-mode-toggle {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    background: rgba(79, 70, 229, 0.05);
+    padding: 0.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border, #334155);
+  }
+
+  .upload-mode-toggle label {
+    flex: 1;
+    text-align: center;
+    padding: 0.8rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-muted, #94a3b8);
+    transition: all 0.2s;
+  }
+
+  .upload-mode-toggle input[type="radio"] {
+    display: none;
+  }
+
+  .upload-mode-toggle input[type="radio"]:checked + label {
+    background: var(--primary, #4f46e5);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+  }
+
+  /* ── Drop Zone ─────────────────────────────────────── */
+  .drop-zone {
+    border: 2px dashed rgba(79, 70, 229, 0.4);
+    border-radius: 24px;
+    padding: 3.5rem 2rem;
+    background: linear-gradient(145deg, rgba(79, 70, 229, 0.05) 0%, rgba(16, 185, 129, 0.02) 100%);
+    backdrop-filter: blur(10px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .drop-zone::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(circle at center, rgba(79, 70, 229, 0.1) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+
+  .drop-zone:hover,
+  .drop-zone.drag-over {
+    border-color: #10b981;
+    transform: translateY(-2px);
+    box-shadow: 0 15px 35px -5px rgba(79, 70, 229, 0.2), 0 0 20px rgba(16, 185, 129, 0.1);
+  }
+
+  .drop-zone:hover::before,
+  .drop-zone.drag-over::before {
+    opacity: 1;
+  }
+
+  .drop-zone i.drop-icon {
+    font-size: 3.5rem;
+    background: linear-gradient(135deg, var(--primary, #4f46e5), #10b981);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+    margin-bottom: 1rem;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+    transition: transform 0.3s;
+  }
+
+  .drop-zone:hover i.drop-icon {
+    transform: scale(1.1) translateY(-5px);
+  }
+
+  .drop-zone h3 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: var(--text-title, #f1f5f9);
+    letter-spacing: -0.5px;
+  }
+
+  .drop-zone p {
+    font-size: .85rem;
+    color: var(--text-muted, #94a3b8);
+    margin: 0;
+  }
+
+  #file-name-display {
+    margin-top: .75rem;
+    font-weight: 700;
+    color: var(--primary, #4f46e5);
+    font-size: .9rem;
+    min-height: 1.2rem;
+  }
+
+  /* ── Selectores de contexto ────────────────────────── */
+  .context-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+
+  @media (max-width: 620px) {
+    .context-grid { grid-template-columns: 1fr; }
+  }
+
+  .form-select {
+    width: 100%;
+    padding: .7rem 1rem;
+    background: var(--surface-alt, #1e293b);
+    border: 1px solid var(--border, #334155);
+    border-radius: 10px;
+    color: var(--text-title, #f1f5f9);
+    font-size: .9rem;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  .form-select:focus {
+    outline: none;
+    border-color: var(--primary, #4f46e5);
+  }
+
+  .form-label {
+    display: block;
+    font-size: .78rem;
+    font-weight: 700;
+    color: var(--text-muted, #94a3b8);
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    margin-bottom: .4rem;
+  }
+
+  /* ── Botón procesar ────────────────────────────────── */
+  #btn-procesar {
+    display: none;
+    margin-top: 2rem;
+    background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 1rem 3rem;
+    border-radius: 14px;
+    font-weight: 800;
+    font-size: 1.05rem;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  #btn-procesar::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 50%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: all 0.6s ease;
+  }
+
+  #btn-procesar:hover::after {
+    left: 100%;
+  }
+
+  #btn-procesar:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.5), 0 8px 10px -6px rgba(79, 70, 229, 0.1);
+    background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+  }
+
+  /* ── Spinner ───────────────────────────────────────── */
+  #spinner-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.65);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .spinner {
+    width: 56px; height: 56px;
+    border: 5px solid rgba(255,255,255,.15);
+    border-top-color: var(--primary, #4f46e5);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Tarjetas resumen ──────────────────────────────── */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  @media (max-width: 680px) {
+    .summary-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .summary-card {
+    border-radius: 16px;
+    padding: 1.4rem;
+    text-align: center;
+    animation: fadeIn .5s ease;
+  }
+
+  .summary-card.success  { background: rgba(16,185,129,.10); border: 1px solid rgba(16,185,129,.3); }
+  .summary-card.info     { background: rgba(79,70,229,.10);  border: 1px solid rgba(79,70,229,.3); }
+  .summary-card.warning  { background: rgba(245,158,11,.10); border: 1px solid rgba(245,158,11,.3); }
+  .summary-card.danger   { background: rgba(239,68,68,.10);  border: 1px solid rgba(239,68,68,.3); }
+
+  .summary-card .num {
+    font-size: 2.6rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .summary-card.success .num { color: #10b981; }
+  .summary-card.info .num    { color: #818cf8; }
+  .summary-card.warning .num { color: #f59e0b; }
+  .summary-card.danger .num  { color: #ef4444; }
+
+  .summary-card .label {
+    font-size: .78rem;
+    color: var(--text-muted, #94a3b8);
+    margin-top: .4rem;
+  }
+
+  /* ── Panel de contexto resultado ──────────────────── */
+  .context-bar {
+    background: var(--surface, #1e293b);
+    border: 1px solid var(--border, #334155);
+    border-radius: 14px;
+    padding: 1.2rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .context-bar .ctx-item {
+    text-align: center;
+  }
+
+  .context-bar .ctx-label {
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: var(--text-muted, #94a3b8);
+  }
+
+  .context-bar .ctx-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary, #818cf8);
+  }
+
+  /* ── Paneles colapsibles ───────────────────────────── */
+  .result-panel {
+    background: var(--surface, #1e293b);
+    border: 1px solid var(--border, #334155);
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    margin-top: 1.25rem;
+    animation: fadeIn .4s ease;
+  }
+
+  details summary {
+    cursor: pointer;
+    font-weight: 700;
+    font-size: .9rem;
+    color: var(--text-title, #f1f5f9);
+    padding: .5rem 0;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+
+  details summary::-webkit-details-marker { display: none; }
+
+  details[open] summary .arr { transform: rotate(90deg); }
+  details summary .arr { transition: transform .2s; }
+
+  /* ── Tabla resultados ──────────────────────────────── */
+  .result-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .82rem;
+    margin-top: .75rem;
+  }
+
+  .result-table th {
+    background: rgba(79, 70, 229, .1);
+    color: var(--text-title, #f1f5f9);
+    padding: .5rem .75rem;
+    text-align: left;
+    font-weight: 700;
+  }
+
+  .result-table td {
+    padding: .45rem .75rem;
+    border-bottom: 1px solid var(--border, #334155);
+    color: var(--text-muted, #94a3b8);
+  }
+
+  .result-table tr:last-child td { border: none; }
+
+  .badge-a {
+    background: rgba(16,185,129,.15);
+    color: #10b981;
+    font-size: .72rem;
+    font-weight: 700;
+    padding: .2rem .55rem;
+    border-radius: 20px;
+  }
+
+  .badge-r {
+    background: rgba(239,68,68,.15);
+    color: #ef4444;
+    font-size: .72rem;
+    font-weight: 700;
+    padding: .2rem .55rem;
+    border-radius: 20px;
+  }
+
+  /* ── Diagnóstico ───────────────────────────────────── */
+  .diag-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .4rem 0;
+    border-bottom: 1px solid var(--border, #334155);
+    font-size: .84rem;
+    color: var(--text-muted, #94a3b8);
+  }
+
+  .diag-row:last-child { border: none; }
+
+  /* ── Toast ─────────────────────────────────────────── */
+  .toast-cm {
+    position: fixed;
+    bottom: 2rem; right: 2rem;
+    z-index: 10000;
+    background: var(--surface, #1e293b);
+    border: 1px solid var(--border, #334155);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    max-width: 360px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.4);
+    animation: slideUp .4s ease;
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+  }
+
+  .toast-cm.success { border-left: 4px solid #10b981; }
+  .toast-cm.warning { border-left: 4px solid #f59e0b; }
+  .toast-cm .toast-title { font-weight: 700; font-size: .9rem; color: var(--text-title, #f1f5f9); }
+  .toast-cm .toast-msg { font-size: .8rem; color: var(--text-muted, #94a3b8); margin-top: .15rem; }
+
+  /* ── Pasos del motor ───────────────────────────────── */
+  .steps-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    margin-top: 1rem;
+  }
+
+  .steps-list li {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .84rem;
+    color: var(--text-muted, #94a3b8);
+  }
+
+  .steps-list li i {
+    color: #10b981;
+    flex-shrink: 0;
+  }
+
+  /* ── Animaciones ───────────────────────────────────── */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Radio Toggles ─────────────────────────────────── */
+  .upload-mode-toggle {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    background: rgba(79, 70, 229, 0.05);
+    padding: 0.5rem;
+    border-radius: 12px;
+    border: 1px solid var(--border, #334155);
+  }
+
+  .upload-mode-toggle label {
+    flex: 1;
+    text-align: center;
+    padding: 0.8rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-muted, #94a3b8);
+    transition: all 0.2s;
+  }
+
+  .upload-mode-toggle input[type="radio"] {
+    display: none;
+  }
+
+  .upload-mode-toggle input[type="radio"]:checked + label {
+    background: var(--primary, #4f46e5);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+  }
+</style>
+</head>
+<body>
+<div class="cm-hero">
+  <h1 class="cm-title"><i class="fa-solid fa-file-excel" style="font-size:1.5rem;"></i> Carga Masiva de Notas</h1>
+  <p class="cm-subtitle">Sube un Excel con las calificaciones y el sistema las registrará automáticamente en la planilla</p>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for cat, msg in messages %}
+    <div style="background:rgba({% if cat=='danger' %}239,68,68{% elif cat=='warning' %}245,158,11{% else %}16,185,129{% endif %},.1);border:1px solid rgba({% if cat=='danger' %}239,68,68{% elif cat=='warning' %}245,158,11{% else %}16,185,129{% endif %},.3);color:{% if cat=='danger' %}#f87171{% elif cat=='warning' %}#fbbf24{% else %}#34d399{% endif %};padding:.9rem 1.2rem;border-radius:10px;margin-bottom:1rem;font-size:.9rem;">
+      {{ msg }}
+    </div>
+    {% endfor %}
+  {% endif %}
+  {% endwith %}
+
+  {% if not procesado %}
+  {# ══ FORMULARIO DE CARGA ══════════════════════════════════ #}
+  <div class="glass-panel" style="padding:2rem;">
+
+    <form method="POST" enctype="multipart/form-data" id="upload-form">
+
+      {# ── Selector de Modo de Carga ────────────────────── #}
+      <div class="upload-mode-toggle">
+        <input type="radio" name="tipo_carga" id="modo_simple" value="simple" checked onchange="toggleModo(this.value)">
+        <label for="modo_simple"><i class="fa-solid fa-list-check"></i> Materia por Materia</label>
+        
+        <input type="radio" name="tipo_carga" id="modo_sabana" value="sabana" onchange="toggleModo(this.value)">
+        <label for="modo_sabana"><i class="fa-solid fa-table-cells"></i> Sábana MPPE (Completa)</label>
+      </div>
+
+      {# ── Contexto de la carga ─────────────────────────── #}
+      <div class="context-grid">
+        <div>
+          <label class="form-label">Año Escolar</label>
+          <select class="form-select" name="ano_escolar" id="sel-ano" required>
+            <option value="">— Selecciona —</option>
+            {% for a in anos %}
+            <option value="{{ a.codigo }}" {% if a.codigo == ano_sel %}selected{% endif %}>
+              {{ a.descripcion or a.codigo }}{% if a.activo %} ✓{% endif %}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Sección</label>
+          <select class="form-select" name="codigo_seccion" id="sel-seccion" required>
+            <option value="">— Selecciona año primero —</option>
+            {% for s in secciones_todas %}
+            <option value="{{ s.codigo }}" data-ano="{{ s.codigo_ano_escolar }}" data-grado="{{ s.codigo_grado }}">
+              {{ s.codigo }} — {{ s.codigo_grado }}° Año {{ s.letra }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        </div>
+        <div>
+          <label class="form-label">Momento Evaluativo</label>
+          <select class="form-select" name="numero_momento" id="sel-momento" required>
+            <option value="">— Selecciona —</option>
+            {% for mom in momentos %}
+            <option value="{{ mom.numero }}" {% if mom.estado == 'C' %}disabled{% endif %}>
+              {{ mom.nombre }} {% if mom.estado == 'C' %}(Cerrado){% endif %}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      {# ── Drop Zone ────────────────────────────────────── #}
+      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+        <input type="file" id="file-input" name="archivo_excel" accept=".xlsx,.xls" required style="display:none;">
+        <i class="fa-solid fa-cloud-arrow-up drop-icon"></i>
+        <h3>Arrastra tu archivo Excel aquí</h3>
+        <p id="drop-zone-help">Modo actual: Carga de 1 materia (Columnas Cédula, Nombre, Nota)</p>
+        <div id="file-name-display"></div>
+      </div>
+
+      <div style="text-align:center;">
+        <button type="submit" id="btn-procesar">
+          <i class="fa-solid fa-bolt"></i> Procesar y Registrar Notas
+        </button>
+      </div>
+    </form>
+
+    {# ── Instrucciones ────────────────────────────────────── #}
+    <div style="margin-top:2rem;">
+      <h4 style="font-size:.9rem;font-weight:700;color:var(--text-title,#f1f5f9);margin-bottom:.5rem;">
+        Fases del proceso:
+      </h4>
+      <ul class="steps-list">
+        <li><i class="fa-solid fa-check-circle"></i> Selecciona el año, sección, materia y momento evaluativo</li>
+        <li><i class="fa-solid fa-check-circle"></i> El Excel debe tener columnas: Cédula, Apellidos, Nombres, Nota</li>
+        <li><i class="fa-solid fa-check-circle"></i> El motor detecta el encabezado automáticamente (hasta fila 30)</li>
+        <li><i class="fa-solid fa-check-circle"></i> Las notas se validan en el rango 0–20</li>
+        <li><i class="fa-solid fa-check-circle"></i> Solo se registran estudiantes matriculados en esa sección</li>
+        <li><i class="fa-solid fa-check-circle"></i> Registros existentes se actualizan; los nuevos se insertan</li>
+      </ul>
+    </div>
+  </div>
+
+  {% else %}
+  {# ══ RESULTADOS ══════════════════════════════════════════ #}
+
+  {# Barra de contexto #}
+  <div class="context-bar">
+    <div class="ctx-item">
+      <div class="ctx-label">Sección</div>
+      <div class="ctx-value">{{ seccion_sel }}</div>
+    </div>
+    <div class="ctx-item">
+      <div class="ctx-label">Materia</div>
+      <div class="ctx-value">{{ materia_nombre }}</div>
+    </div>
+    <div class="ctx-item">
+      <div class="ctx-label">Momento</div>
+      <div class="ctx-value">{{ momento_nombre }}</div>
+    </div>
+    <div class="ctx-item">
+      <div class="ctx-label">Total procesado</div>
+      <div class="ctx-value">{{ total_insertadas + total_actualizadas + total_no_encontradas + total_errores }}</div>
+    </div>
+  </div>
+
+  {# Tarjetas de resumen #}
+  <div class="summary-grid">
+    <div class="summary-card success">
+      <div class="num">{{ total_insertadas }}</div>
+      <div class="label">Notas insertadas</div>
+    </div>
+    <div class="summary-card info">
+      <div class="num">{{ total_actualizadas }}</div>
+      <div class="label">Notas actualizadas</div>
+    </div>
+    <div class="summary-card warning">
+      <div class="num">{{ total_no_encontradas }}</div>
+      <div class="label">No matriculados / Sin cédula</div>
+    </div>
+    <div class="summary-card danger">
+      <div class="num">{{ total_errores }}</div>
+      <div class="label">Errores</div>
+    </div>
+  </div>
+
+  {# ── Notas insertadas ───────────────────────────── #}
+  {% if insertadas %}
+  <div class="result-panel">
+    <details open>
+      <summary>
+        <i class="fa-solid fa-check-circle" style="color:#10b981;"></i>
+        Notas Insertadas ({{ insertadas|length }})
+        <i class="fa-solid fa-chevron-right arr" style="margin-left:auto;font-size:.8rem;"></i>
+      </summary>
+      <table class="result-table">
+        <thead><tr><th>Cédula</th><th>Estudiante</th><th>Nota</th><th>Resultado</th></tr></thead>
+        <tbody>
+          {% for r in insertadas %}
+          <tr>
+            <td>{{ r.cedula }}</td>
+            <td>{{ r.nombre }}</td>
+            <td><strong>{{ r.nota }}</strong></td>
+            <td>
+              {% if r.resultado == 'A' %}
+                <span class="badge-a">APROBADO</span>
+              {% else %}
+                <span class="badge-r">REPROBADO</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </details>
+  </div>
+  {% endif %}
+
+  {# ── Notas actualizadas ─────────────────────────── #}
+  {% if actualizadas %}
+  <div class="result-panel">
+    <details>
+      <summary>
+        <i class="fa-solid fa-rotate" style="color:#818cf8;"></i>
+        Notas Actualizadas ({{ actualizadas|length }})
+        <i class="fa-solid fa-chevron-right arr" style="margin-left:auto;font-size:.8rem;"></i>
+      </summary>
+      <table class="result-table">
+        <thead><tr><th>Cédula</th><th>Estudiante</th><th>Nota</th><th>Resultado</th></tr></thead>
+        <tbody>
+          {% for r in actualizadas %}
+          <tr>
+            <td>{{ r.cedula }}</td>
+            <td>{{ r.nombre }}</td>
+            <td><strong>{{ r.nota }}</strong></td>
+            <td>
+              {% if r.resultado == 'A' %}
+                <span class="badge-a">APROBADO</span>
+              {% else %}
+                <span class="badge-r">REPROBADO</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </details>
+  </div>
+  {% endif %}
+
+  {# ── No encontrados ─────────────────────────────── #}
+  {% if no_encontradas %}
+  <div class="result-panel">
+    <details>
+      <summary>
+        <i class="fa-solid fa-user-xmark" style="color:#f59e0b;"></i>
+        No Matriculados / Sin Cédula ({{ no_encontradas|length }})
+        <i class="fa-solid fa-chevron-right arr" style="margin-left:auto;font-size:.8rem;"></i>
+      </summary>
+      <table class="result-table">
+        <thead><tr><th>Fila</th><th>Cédula</th><th>Nombre en Excel</th><th>Motivo</th></tr></thead>
+        <tbody>
+          {% for r in no_encontradas %}
+          <tr>
+            <td>{{ r.fila or '—' }}</td>
+            <td>{{ r.cedula or '—' }}</td>
+            <td>{{ r.nombre }}</td>
+            <td style="color:#f59e0b;">{{ r.motivo }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </details>
+  </div>
+  {% endif %}
+
+  {# ── Errores ────────────────────────────────────── #}
+  {% if errores %}
+  <div class="result-panel">
+    <details>
+      <summary>
+        <i class="fa-solid fa-circle-xmark" style="color:#ef4444;"></i>
+        Registros con Error ({{ errores|length }})
+        <i class="fa-solid fa-chevron-right arr" style="margin-left:auto;font-size:.8rem;"></i>
+      </summary>
+      <table class="result-table">
+        <thead><tr><th>Fila</th><th>Cédula</th><th>Estudiante</th><th>Motivo</th></tr></thead>
+        <tbody>
+          {% for e in errores %}
+          <tr>
+            <td>{{ e.fila or '—' }}</td>
+            <td>{{ e.cedula }}</td>
+            <td>{{ e.nombre }}</td>
+            <td style="color:#f87171;">{{ e.motivo }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </details>
+  </div>
+  {% endif %}
+
+  {# ── Diagnóstico del archivo ────────────────────── #}
+  {% if diagnostico %}
+  <div class="result-panel" style="margin-top:1.25rem;">
+    <details>
+      <summary>
+        <i class="fa-solid fa-chart-bar" style="color:#94a3b8;"></i>
+        Diagnóstico del Archivo
+        <i class="fa-solid fa-chevron-right arr" style="margin-left:auto;font-size:.8rem;"></i>
+      </summary>
+      <div style="margin-top:.75rem;">
+        <div class="diag-row">
+          <span>Total filas analizadas</span>
+          <span style="color:var(--text-title,#f1f5f9);">{{ diagnostico.total_filas_raw }}</span>
+        </div>
+        <div class="diag-row">
+          <span>Filas omitidas</span>
+          <span>{{ diagnostico.filas_omitidas }}</span>
+        </div>
+        <div class="diag-row">
+          <span>Fila de encabezado detectada</span>
+          <span style="color:var(--text-title,#f1f5f9);">Fila {{ diagnostico.header_row_index }}</span>
+        </div>
+        <div class="diag-row">
+          <span>Columnas detectadas</span>
+          <span style="color:#818cf8;">{{ diagnostico.columnas_detectadas | join(', ') }}</span>
+        </div>
+        {% if diagnostico.columnas_faltantes %}
+        <div class="diag-row">
+          <span>Columnas no encontradas</span>
+          <span style="color:#f59e0b;">{{ diagnostico.columnas_faltantes | join(', ') }}</span>
+        </div>
+        {% endif %}
+        {% if diagnostico.advertencias %}
+        <div style="margin-top:.75rem;">
+          {% for adv in diagnostico.advertencias %}
+          <div style="color:#f59e0b;font-size:.82rem;padding:.25rem 0;">
+            <i class="fa-solid fa-triangle-exclamation"></i> {{ adv }}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </details>
+  </div>
+  {% endif %}
+
+  {# ── Acciones post-carga ────────────────────────── #}
+  <div style="text-align:center;margin-top:2rem;display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;">
+    <a href="{{ url_for('carga_masiva_notas') }}"
+       style="display:inline-block;background:linear-gradient(135deg,var(--primary,#4f46e5),#10b981);color:#fff;padding:.75rem 2rem;border-radius:10px;font-weight:700;text-decoration:none;">
+      <i class="fa-solid fa-rotate-left"></i> Cargar otro archivo
+    </a>
+    <a href="{{ url_for('registro_notas') }}"
+       style="display:inline-block;border:1px solid var(--primary,#4f46e5);color:var(--primary,#818cf8);padding:.75rem 2rem;border-radius:10px;font-weight:700;text-decoration:none;">
+      <i class="fa-solid fa-table-list"></i> Ir al Registro de Notas
+    </a>
+    <a href="{{ url_for('notas_certificadas') }}"
+       style="display:inline-block;border:1px solid #10b981;color:#10b981;padding:.75rem 2rem;border-radius:10px;font-weight:700;text-decoration:none;">
+      <i class="fa-solid fa-certificate"></i> Notas Certificadas
+    </a>
+  </div>
+
+  {% endif %}
+</div>
+
+{# ── Spinner overlay ─────────────────────────────────────── #}
+<div id="spinner-overlay" style="display:flex;display:none;">
+  <div class="spinner"></div>
+  <p style="color:#fff;font-weight:600;font-size:.95rem;">Procesando archivo…</p>
+  <p style="color:rgba(255,255,255,.6);font-size:.8rem;">Analizando estructura, validando notas y guardando en Supabase</p>
+</div>
+
+{# ── Toast de confirmación ───────────────────────────────── #}
+{% if procesado %}
+<div class="toast-cm {% if total_errores == 0 and total_no_encontradas == 0 %}success{% else %}warning{% endif %}" id="result-toast">
+  <i class="fa-solid fa-{% if total_errores == 0 and total_no_encontradas == 0 %}circle-check{% else %}triangle-exclamation{% endif %}"
+     style="font-size:1.4rem;color:{% if total_errores == 0 and total_no_encontradas == 0 %}#10b981{% else %}#f59e0b{% endif %};flex-shrink:0;"></i>
+  <div>
+    <div class="toast-title">Carga completada · {{ seccion_sel }}</div>
+    <div class="toast-msg">
+      {{ total_insertadas }} insertadas · {{ total_actualizadas }} actualizadas · {{ total_no_encontradas }} no encontradas · {{ total_errores }} errores
+    </div>
+  </div>
+</div>
+<script>setTimeout(() => { const t = document.getElementById('result-toast'); if(t) t.style.opacity='0'; }, 7000);</script>
+{% endif %}
+
+<script>
+// ── Drop zone ──────────────────────────────────────────────────────────────
+const dropZone  = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+const nameDisp  = document.getElementById('file-name-display');
+const btnProc   = document.getElementById('btn-procesar');
+const form      = document.getElementById('upload-form');
+const spinner   = document.getElementById('spinner-overlay');
+
+function handleFile(file) {
+  if (!file) return;
+  nameDisp.textContent = '📄 ' + file.name;
+  if (btnProc) btnProc.style.display = 'inline-block';
+}
+
+if (fileInput) fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
+
+if (dropZone) {
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      fileInput.files = dt.files;
+      handleFile(file);
+    }
+  });
+}
+
+if (form) {
+  form.addEventListener('submit', () => {
+    if (spinner) { spinner.style.display = 'flex'; }
+  });
+}
+
+// ── Filtrar secciones según año seleccionado ───────────────────────────────
+const selAno    = document.getElementById('sel-ano');
+const selSec    = document.getElementById('sel-seccion');
+
+function filtrarSecciones() {
+  if (!selAno || !selSec) return;
+  const ano = selAno.value;
+  Array.from(selSec.options).forEach(opt => {
+    if (!opt.value) return;  // placeholder
+    opt.hidden = opt.dataset.ano !== ano;
+  });
+  // Reset si la sección actual ya no corresponde al año
+  const current = selSec.options[selSec.selectedIndex];
+  if (current && current.dataset.ano !== ano) {
+    selSec.value = '';
+  }
+}
+
+if (selAno) {
+  selAno.addEventListener('change', filtrarSecciones);
+  filtrarSecciones(); // inicial
+}
+
+// ── Drag & Drop & Animaciones ────────────────────────────────────────────────
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+</body>
+</html>

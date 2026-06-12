@@ -161,8 +161,29 @@ def _generar_boletin(cedula, ano, seccion, tipo='final', num_mom=None, obs=None)
     Retorna el id del boletín generado, o None si hay error.
     """
     hoy = date.today().isoformat()
+    num_mom_int = int(num_mom) if num_mom and str(num_mom).isdigit() else 3
 
-    # ── 1. Obtener porcentajes de cada momento ────────────────────────
+    # ── 1. Eliminar boletín(es) existentes para evitar duplicados ──────
+    # Se buscan todos los boletines previos del mismo estudiante/año/sección/tipo,
+    # se borran sus detalles primero (por la FK), y luego el boletín padre.
+    try:
+        resp_prev = supabase.table("boletin").select("id") \
+            .eq("cedula_estudiante", cedula) \
+            .eq("codigo_ano_escolar", ano) \
+            .eq("codigo_seccion", seccion) \
+            .eq("tipo_boletin", tipo) \
+            .execute()
+        for bol_prev in (resp_prev.data or []):
+            prev_id = bol_prev['id']
+            try:
+                supabase.table("detalle_boletin").delete().eq("id_boletin", prev_id).execute()
+            except Exception:
+                pass
+            supabase.table("boletin").delete().eq("id", prev_id).execute()
+    except Exception:
+        pass
+
+    # ── 2. Obtener porcentajes de cada momento ────────────────────────
     porcentajes = {1: 33.33, 2: 33.33, 3: 33.34}
     try:
         resp_mom = supabase.table("momento_evaluativo").select("numero, porcentaje") \
@@ -173,7 +194,7 @@ def _generar_boletin(cedula, ano, seccion, tipo='final', num_mom=None, obs=None)
     except Exception:
         pass
 
-    # ── 2. Materias activas del grado de la sección ───────────────────
+    # ── 3. Materias activas del grado de la sección ───────────────────
     seccion_info = None
     try:
         resp_sec = supabase.table("seccion").select("codigo_grado") \
@@ -183,15 +204,11 @@ def _generar_boletin(cedula, ano, seccion, tipo='final', num_mom=None, obs=None)
     except Exception:
         pass
 
-    codigo_grado = seccion_info['codigo_grado'] if seccion_info else None
-
     try:
-        # Obtener las materias que tienen un docente asignado en esta sección
         resp_asig = supabase.table("asignacion_docente").select("codigo_materia") \
             .eq("codigo_seccion", seccion).eq("codigo_ano_escolar", ano).execute()
         materias_asignadas = [a['codigo_materia'] for a in (resp_asig.data or [])]
 
-        # Obtener materias que ya tengan alguna nota cargada (por si se eliminó la asignación)
         resp_ev = supabase.table("evaluacion").select("codigo_materia") \
             .eq("cedula_estudiante", cedula).eq("codigo_ano_escolar", ano).execute()
         materias_evaluadas = [e['codigo_materia'] for e in (resp_ev.data or [])]
@@ -210,10 +227,10 @@ def _generar_boletin(cedula, ano, seccion, tipo='final', num_mom=None, obs=None)
         return None
 
     if not materias:
-        flash("No hay materias configuradas para este grado.", "warning")
+        flash("No hay materias configuradas para este estudiante/grado.", "warning")
         return None
 
-    # ── 3. Notas del estudiante ───────────────────────────────────────
+    # ── 4. Notas del estudiante ───────────────────────────────────────
     try:
         resp_ev = supabase.table("evaluacion").select(
             "cedula_estudiante, codigo_materia, numero_momento, nota, resultado"
@@ -232,7 +249,7 @@ def _generar_boletin(cedula, ano, seccion, tipo='final', num_mom=None, obs=None)
             notas_idx[cm] = {}
         notas_idx[cm][mom] = ev['nota']
 
-    # ── 4. Calcular definitivas y promedio general ────────────────────
+    # ── 5. Calcular definitivas y promedio general ────────────────────
     detalles = []
     sum_definitivas = 0.0
     count_definitivas = 0
@@ -273,12 +290,12 @@ def _generar_boletin(cedula, ano, seccion, tipo='final', num_mom=None, obs=None)
     promedio_general = round(sum_definitivas / count_definitivas, 2) if count_definitivas else 0.0
     resultado_final  = 'A' if materias_reprobadas == 0 and count_definitivas > 0 else 'R'
 
-    # ── 5. Guardar boletin ────────────────────────────────────────────
+    # ── 6. Guardar boletin ────────────────────────────────────────────
     dato_boletin = {
         "cedula_estudiante":  cedula,
         "codigo_ano_escolar": ano,
         "codigo_seccion":     seccion,
-        "numero_momento":     int(num_mom) if num_mom else 3,
+        "numero_momento":     num_mom_int,
         "promedio_general":   promedio_general,
         "mencion":            None,
         "resultado_final":    resultado_final,
@@ -294,15 +311,20 @@ def _generar_boletin(cedula, ano, seccion, tipo='final', num_mom=None, obs=None)
         flash(f"Error al guardar boletín: {str(e)}", "danger")
         return None
 
-    # ── 6. Guardar detalle_boletin ────────────────────────────────────
+    # ── 7. Guardar detalle_boletin ────────────────────────────────────
+    errores_det = 0
     for det in detalles:
         det['id_boletin'] = boletin_id
         try:
             supabase.table("detalle_boletin").insert(det).execute()
-        except Exception as e:
-            pass  # Si falla un detalle, continuar
+        except Exception:
+            errores_det += 1
 
-    flash("✅ Boletín generado exitosamente.", "success")
+    if errores_det:
+        flash(f"⚠ Boletín generado con {errores_det} materia(s) sin detalle. Promedio: {promedio_general}.", "warning")
+    else:
+        estado_txt = 'Aprobado' if resultado_final == 'A' else 'Reprobado'
+        flash(f"✅ Boletín generado: {len(detalles)} materias | Promedio: {promedio_general} | {estado_txt}.", "success")
     return boletin_id
 
 

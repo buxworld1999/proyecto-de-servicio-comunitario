@@ -105,6 +105,11 @@ MODULOS_ITEMS = {
             'icono': 'fa-solid fa-star-half-stroke'
         },
         {
+            'label': 'Carga Masiva de Notas',
+            'url':   '/carga_masiva_notas',
+            'icono': 'fa-solid fa-file-excel'
+        },
+        {
             'label': 'Boletines',
             'url':   '/boletines',
             'icono': 'fa-solid fa-newspaper'
@@ -129,20 +134,6 @@ MODULOS_ITEMS = {
             'label': 'Constancias',
             'url':   '/constancias',
             'icono': 'fa-solid fa-file-circle-check'
-        },
-    ],
-    'citaciones': [
-        {
-            'label': 'Citaciones',
-            'url':   '/citaciones',
-            'icono': 'fa-solid fa-bell'
-        },
-    ],
-    'labor_social': [
-        {
-            'label': 'Labor Social',
-            'url':   '/labor_social',
-            'icono': 'fa-solid fa-hands-holding-child'
         },
     ],
     'materias': [

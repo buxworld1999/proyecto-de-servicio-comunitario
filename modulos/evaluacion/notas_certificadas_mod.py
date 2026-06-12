@@ -223,6 +223,78 @@ def notas_certificadas_view():
     )
 
 
+def _construir_notas_por_anio(cedula: str, tipo: str,
+                              matriculas_hist: list,
+                              evaluaciones: list,
+                              detalles_boletin: list = None,
+                              boletin_ano: str = None) -> dict:
+    """
+    Construye el diccionario {str(numero_ano): {area_mppe: nota}}
+    a partir de los datos históricos del estudiante.
+    Reutilizable en nota_certificada_ver_view y descargar_nota_xls_view.
+    """
+    from collections import defaultdict
+
+    notas_por_anio = {}
+
+    # ── Datos del boletín (tienen prioridad) ─────────────────────────
+    if detalles_boletin and boletin_ano:
+        boletin_mat = next(
+            (m for m in matriculas_hist if m.get('codigo_ano_escolar') == boletin_ano), {}
+        )
+        sec_info  = boletin_mat.get('seccion') or {}
+        grado_inf = sec_info.get('grado') or {}
+        numero_ano_str = str(grado_inf.get('numero_ano', ''))
+
+        if numero_ano_str:
+            notas_por_anio[numero_ano_str] = {}
+            for det in detalles_boletin:
+                mat_info   = det.get('materia') or {}
+                nombre_mat = mat_info.get('nombre', det.get('codigo_materia', ''))
+                nota_final = det.get('nota_final')
+                if nota_final is not None:
+                    area_mppe = _mapear_area(nombre_mat, tipo)
+                    notas_por_anio[numero_ano_str][area_mppe] = nota_final
+
+    # ── Complementar con evaluaciones históricas directas ────────────
+    ev_grouped = defaultdict(list)
+    for ev in evaluaciones:
+        key = (ev['codigo_ano_escolar'], ev['codigo_materia'])
+        if ev.get('nota') is not None:
+            ev_grouped[key].append(ev['nota'])
+
+    for mat in matriculas_hist:
+        ano_esc   = mat.get('codigo_ano_escolar', '')
+        sec_info  = mat.get('seccion') or {}
+        grado_inf = sec_info.get('grado') or {}
+        num_ano   = grado_inf.get('numero_ano')
+
+        if not num_ano:
+            continue
+
+        k = str(num_ano)
+        if k not in notas_por_anio:
+            notas_por_anio[k] = {}
+
+        for (ae, cm), notas in ev_grouped.items():
+            if ae != ano_esc:
+                continue
+            nota_prom = sum(notas) / len(notas)
+            ev_mat = next((e for e in evaluaciones
+                          if e['codigo_ano_escolar'] == ae
+                          and e['codigo_materia'] == cm), None)
+            if not ev_mat:
+                continue
+            mat_info_ev = ev_mat.get('materia') or {}
+            nombre_mat  = mat_info_ev.get('nombre', cm)
+            area_mppe   = _mapear_area(nombre_mat, tipo)
+
+            if area_mppe not in notas_por_anio[k]:
+                notas_por_anio[k][area_mppe] = round(nota_prom, 0)
+
+    return notas_por_anio
+
+
 # ─── Vista del Certificado Oficial (Formato MPPE) ────────────────────────────
 
 def nota_certificada_ver_view():
@@ -273,7 +345,7 @@ def nota_certificada_ver_view():
     except Exception:
         ano_info = {"codigo": ano}
 
-    # ── 4. Matrículas históricas (para saber en qué año cursó c/ grado)
+    # ── 4. Matrículas históricas ──────────────────────────────────────
     try:
         resp_mats = supabase.table("matricula").select(
             "codigo_ano_escolar, codigo_seccion, "
@@ -284,25 +356,22 @@ def nota_certificada_ver_view():
     except Exception:
         matriculas_hist = []
 
-    # Matricula del año actual (para datos de la sección)
     matricula_info = next(
         (m for m in matriculas_hist if m.get('codigo_ano_escolar') == ano),
         matriculas_hist[0] if matriculas_hist else {}
     )
 
-    # ── 5. Notas: construir estructura {numero_ano: {area_mppe: nota}} ──
-    # Recolectamos todas las evaluaciones históricas del estudiante
+    # ── 5. Evaluaciones históricas ────────────────────────────────────
     try:
         resp_ev = supabase.table("evaluacion").select(
             "codigo_materia, codigo_ano_escolar, numero_momento, nota, "
-            "materia(nombre, codigo_grado, "
-            "grado(numero_ano))"
+            "materia(nombre, codigo_grado, grado(numero_ano))"
         ).eq("cedula_estudiante", cedula).execute()
         evaluaciones = resp_ev.data or []
     except Exception:
         evaluaciones = []
 
-    # También intentar desde detalle_boletin si hay boletín
+    # ── 6. Detalles de boletín (si existe) ───────────────────────────
     detalles_boletin = []
     if boletin_id:
         try:
@@ -313,71 +382,14 @@ def nota_certificada_ver_view():
         except Exception:
             pass
 
-    # Construir {str(numero_ano): {area_mppe: nota_definitiva}}
-    notas_por_anio = {}
+    # ── 7. Construir notas_por_anio ───────────────────────────────────
+    notas_por_anio = _construir_notas_por_anio(
+        cedula, tipo, matriculas_hist, evaluaciones,
+        detalles_boletin=detalles_boletin,
+        boletin_ano=ano
+    )
 
-    if detalles_boletin:
-        # Usar datos del boletín final para el año seleccionado
-        # Necesitamos saber qué año (1°-5°) corresponde a este boletín
-        boletin_mat = next(
-            (m for m in matriculas_hist if m.get('codigo_ano_escolar') == ano), {}
-        )
-        sec_info  = boletin_mat.get('seccion') or {}
-        grado_inf = sec_info.get('grado') or {}
-        numero_ano_str = str(grado_inf.get('numero_ano', ''))
-
-        if numero_ano_str:
-            notas_por_anio[numero_ano_str] = {}
-            for det in detalles_boletin:
-                mat_info   = det.get('materia') or {}
-                nombre_mat = mat_info.get('nombre', det.get('codigo_materia', ''))
-                nota_final = det.get('nota_final')
-                if nota_final is not None:
-                    area_mppe = _mapear_area(nombre_mat, tipo)
-                    notas_por_anio[numero_ano_str][area_mppe] = nota_final
-
-    # Complementar con evaluaciones directas (todos los años históricos)
-    # Agrupar evaluaciones por (año_escolar, materia) → nota promedio
-    from collections import defaultdict
-    ev_grouped = defaultdict(list)
-    for ev in evaluaciones:
-        key = (ev['codigo_ano_escolar'], ev['codigo_materia'])
-        if ev.get('nota') is not None:
-            ev_grouped[key].append(ev['nota'])
-
-    # Para cada matrícula histórica, buscar en qué numero_ano cursó
-    for mat in matriculas_hist:
-        ano_esc   = mat.get('codigo_ano_escolar', '')
-        sec_info  = mat.get('seccion') or {}
-        grado_inf = sec_info.get('grado') or {}
-        num_ano   = grado_inf.get('numero_ano')
-
-        if not num_ano:
-            continue
-
-        k = str(num_ano)
-        if k not in notas_por_anio:
-            notas_por_anio[k] = {}
-
-        # Buscar evaluaciones de ese año escolar
-        for (ae, cm), notas in ev_grouped.items():
-            if ae != ano_esc:
-                continue
-            nota_prom = sum(notas) / len(notas)
-            # Buscar nombre de la materia
-            ev_mat = next((e for e in evaluaciones
-                          if e['codigo_ano_escolar'] == ae and e['codigo_materia'] == cm), None)
-            if not ev_mat:
-                continue
-            mat_info_ev = ev_mat.get('materia') or {}
-            nombre_mat  = mat_info_ev.get('nombre', cm)
-            area_mppe   = _mapear_area(nombre_mat, tipo)
-
-            # Solo sobrescribir si no hay valor (priorizar detalle_boletin)
-            if area_mppe not in notas_por_anio[k]:
-                notas_por_anio[k][area_mppe] = round(nota_prom, 0)
-
-    # ── 6. Observaciones ─────────────────────────────────────────────
+    # ── 8. Observaciones ──────────────────────────────────────────────
     observaciones = ''
     if boletin_id:
         try:
@@ -388,7 +400,7 @@ def nota_certificada_ver_view():
         except Exception:
             pass
 
-    # ── 7. Metadatos del documento ────────────────────────────────────
+    # ── 9. Metadatos del documento ────────────────────────────────────
     codigo_verificacion = _generar_codigo_verificacion(cedula, ano)
     fecha_emision       = date.today().strftime('%d de %B de %Y').capitalize()
     emisor_nombre       = session.get('nombre', 'Secretaría')
@@ -412,7 +424,7 @@ def nota_certificada_ver_view():
 def descargar_nota_xls_view():
     """
     Genera y descarga el archivo .xls rellenado con los datos del estudiante
-    usando la función en notas_xls_filler.py
+    y sus notas históricas reales usando llenar_xls_mppe.
     """
     cedula     = request.args.get('cedula', '').strip()
     ano        = request.args.get('ano', '').strip()
@@ -422,28 +434,56 @@ def descargar_nota_xls_view():
         flash("Cédula del estudiante requerida para descargar el formato.", "warning")
         return redirect(url_for('notas_certificadas'))
 
-    # 1. Estudiante
+    # ── 1. Estudiante ─────────────────────────────────────────────────
     try:
         resp_est = supabase.table("estudiante").select("*") \
             .eq("cedula", cedula).limit(1).execute()
         estudiante = resp_est.data[0] if resp_est.data else None
     except Exception:
         estudiante = None
-        
+
     if not estudiante:
         flash("Estudiante no encontrado.", "danger")
         return redirect(url_for('notas_certificadas'))
 
-    # 2. Institución
+    # ── 2. Institución ────────────────────────────────────────────────
     try:
         resp_inst = supabase.table("institucion").select("*").limit(1).execute()
         institucion = resp_inst.data[0] if resp_inst.data else {}
     except Exception:
         institucion = {}
 
-    # Generar XLS buffer
+    # ── 3. Matrículas históricas ──────────────────────────────────────
     try:
-        buf, nombre_archivo = llenar_xls_mppe(tipo, estudiante, institucion, {}, ruta_base="formato notas")
+        resp_mats = supabase.table("matricula").select(
+            "codigo_ano_escolar, codigo_seccion, "
+            "seccion(letra, codigo_grado, grado(nombre, numero_ano))"
+        ).eq("cedula_estudiante", cedula) \
+         .order("codigo_ano_escolar").execute()
+        matriculas_hist = resp_mats.data or []
+    except Exception:
+        matriculas_hist = []
+
+    # ── 4. Evaluaciones históricas ────────────────────────────────────
+    try:
+        resp_ev = supabase.table("evaluacion").select(
+            "codigo_materia, codigo_ano_escolar, numero_momento, nota, "
+            "materia(nombre, codigo_grado, grado(numero_ano))"
+        ).eq("cedula_estudiante", cedula).execute()
+        evaluaciones = resp_ev.data or []
+    except Exception:
+        evaluaciones = []
+
+    # ── 5. Construir notas_por_anio reales ────────────────────────────
+    notas_por_anio = _construir_notas_por_anio(
+        cedula, tipo, matriculas_hist, evaluaciones
+    )
+
+    # ── 6. Generar XLS buffer ─────────────────────────────────────────
+    try:
+        buf, nombre_archivo = llenar_xls_mppe(
+            tipo, estudiante, institucion, notas_por_anio
+        )
         nombre_descarga = f"Notas_Certificadas_{tipo}_{cedula}.xls"
         return send_file(
             buf,

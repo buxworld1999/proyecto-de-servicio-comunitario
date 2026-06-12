@@ -179,6 +179,13 @@
 
     // ── Auto-scroll inicial ──
     bottom.scrollIntoView();
+
+    // ── Cerrar conexión al salir de la página para liberar el servidor ──
+    window.addEventListener('beforeunload', () => {
+        if (source) {
+            source.close();
+        }
+    });
 </script>
 </body>
 </html>

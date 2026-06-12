@@ -1,88 +1,179 @@
+"""
+notas_xls_filler.py — Generador de formato XLS oficial MPPE
+PRISMA — Sistema de Gestión Escolar | Unidad Educativa Carmen Ruíz
+
+Toma una plantilla .xls del MPPE (31059 o 31060), rellena los datos
+del estudiante, institución y notas por año, y retorna un BytesIO.
+"""
+
 import os
 import io
 import xlrd
 from xlutils.copy import copy
-from datetime import datetime
 
-# Mapa de coordenadas para 31059 (Filas son 0-indexed, col son 0-indexed)
-MAPA_31059 = {
-    'institucion_codigo': (6, 1),
-    'institucion_nombre': (6, 6),
-    'institucion_direccion': (7, 1),
-    'institucion_telefono': (7, 15),
-    'institucion_municipio': (8, 1),
-    'institucion_estado': (8, 6),
-    'institucion_cdcee': (8, 15),
-    
-    'estudiante_cedula': (9, 1),
-    'estudiante_fecha_nac': (9, 8),
-    'estudiante_apellidos': (10, 1),
-    'estudiante_nombres': (10, 10),
-    'estudiante_lugar_nac': (11, 1),
-    'estudiante_estado_nac': (11, 10),
-    'estudiante_municipio_nac': (11, 16),
+# Ruta base de la carpeta de plantillas (relativa a la raíz del proyecto)
+# __file__ = .../modulos/evaluacion/notas_xls_filler.py
+# Subimos 2 niveles: evaluacion → modulos → raíz del proyecto
+_BASE_PROYECTO = os.path.abspath(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
+)
+_RUTA_FORMATOS = os.path.join(_BASE_PROYECTO, 'formato notas')
+
+
+# ─── Conversión nota → letras ─────────────────────────────────────────────────
+
+_NOTA_LETRAS = {
+    20: 'VEINTE',      19: 'DIECINUEVE',  18: 'DIECIOCHO',
+    17: 'DIECISIETE',  16: 'DIECISÉIS',   15: 'QUINCE',
+    14: 'CATORCE',     13: 'TRECE',       12: 'DOCE',
+    11: 'ONCE',        10: 'DIEZ',         9: 'NUEVE',
+     8: 'OCHO',         7: 'SIETE',        6: 'SEIS',
+     5: 'CINCO',        4: 'CUATRO',       3: 'TRES',
+     2: 'DOS',          1: 'UNO',          0: 'CERO',
 }
 
-# Mapa de áreas para 31059 y 31060: Fila base, etc. (Omitimos llenado complejo de notas para mantener el formato estable si no se requiere)
-# Escribiremos los datos personales que son los más críticos.
+def _nota_a_letras(nota) -> str:
+    """Convierte nota numérica a texto (ej: 18 → 'DIECIOCHO')."""
+    if nota is None:
+        return ''
+    try:
+        n = int(round(float(nota)))
+        return _NOTA_LETRAS.get(n, str(n))
+    except (TypeError, ValueError):
+        return ''
 
-def llenar_xls_mppe(tipo, estudiante, institucion, notas_por_anio, ruta_base="formato notas"):
+
+# ─── Mapa de filas de notas por año (0-indexed) para 31059 ───────────────────
+#
+# El formato MPPE 31059 tiene bloques de notas en filas específicas:
+#   Año 1 → filas 14..22, Año 2 → filas 23..31, etc.
+# Columnas: área (col 0 o 1), nota_num (col 5), nota_letras (col 8..11)
+# Estos valores son aproximaciones generales; ajustar si el XLS es diferente.
+#
+# NOTA: Si el XLS exacto tiene otra distribución, el sistema simplemente
+# no sobreescribirá esas celdas (no corrompe el archivo).
+_BLOQUES_ANOS_31059 = {
+    '1': {'fila_inicio': 14, 'fila_fin': 22},
+    '2': {'fila_inicio': 23, 'fila_fin': 31},
+    '3': {'fila_inicio': 32, 'fila_fin': 40},
+    '4': {'fila_inicio': 41, 'fila_fin': 49},
+    '5': {'fila_inicio': 50, 'fila_fin': 58},
+}
+
+
+def _encontrar_plantilla(tipo: str, ruta_base: str = None) -> str:
     """
-    Lee el formato XLS, llena los datos y devuelve un objeto BytesIO con el XLS modificado.
+    Localiza la plantilla .xls del formato indicado.
+    Busca primero en la ruta_base explícita, luego en _RUTA_FORMATOS.
     """
-    if tipo == '31060':
-        patron = '31060'
-    else:
-        patron = '31059'
-        
-    ruta_plantilla = None
-    if os.path.exists(ruta_base):
-        for f in os.listdir(ruta_base):
-            if patron in f and f.lower().endswith('.xls'):
-                ruta_plantilla = os.path.join(ruta_base, f)
-                break
-                
-    if not ruta_plantilla:
-        raise FileNotFoundError(f"No se encontró la plantilla XLS para {patron}")
-        
+    patron = '31060' if tipo == '31060' else '31059'
+
+    rutas_candidatas = []
+    if ruta_base:
+        rutas_candidatas.append(ruta_base)
+    rutas_candidatas.append(_RUTA_FORMATOS)
+
+    for ruta in rutas_candidatas:
+        if os.path.isdir(ruta):
+            for nombre in os.listdir(ruta):
+                if patron in nombre and nombre.lower().endswith('.xls'):
+                    return os.path.join(ruta, nombre)
+
+    raise FileNotFoundError(
+        f"No se encontró la plantilla XLS '{patron}' en: {rutas_candidatas}. "
+        f"Verifica que la carpeta 'formato notas' existe en la raíz del proyecto."
+    )
+
+
+# ─── Función principal ────────────────────────────────────────────────────────
+
+def llenar_xls_mppe(tipo, estudiante, institucion, notas_por_anio,
+                    ruta_base=None):
+    """
+    Lee el formato XLS oficial MPPE, rellena los datos del estudiante,
+    la institución y las notas por año, y retorna (BytesIO, nombre_archivo).
+
+    Args:
+        tipo          : '31059' (EMG) o '31060' (EMG Mención C y T)
+        estudiante    : dict con datos del estudiante (cedula, nombres, etc.)
+        institucion   : dict con datos de la institución
+        notas_por_anio: dict {str(num_ano): {area_mppe: nota}} o {}
+        ruta_base     : ruta alternativa a la carpeta de plantillas (opcional)
+    """
+    ruta_plantilla = _encontrar_plantilla(tipo, ruta_base)
+
     rb = xlrd.open_workbook(ruta_plantilla, formatting_info=True)
     wb = copy(rb)
     ws = wb.get_sheet(0)
-    
-    # Escribir datos básicos según mapa 31059
-    # Nota: para 31060 las coordenadas podrían variar por 1 fila, 
-    # pero a menudo son iguales. Para no corromper, usamos manejo de errores.
+
+    # ── Offset de fila según tipo ─────────────────────────────────────
+    offset = 1 if tipo == '31060' else 0
+
+    # ── Institución ───────────────────────────────────────────────────
     try:
-        if tipo == '31060':
-            # Ajuste de 1 fila para 31060
-            offset = 1 
-        else:
-            offset = 0
-
-        # Institución
-        ws.write(6 + offset, 1, institucion.get('codigo_dea', ''))
-        ws.write(6 + offset, 6, institucion.get('nombre', ''))
-        ws.write(7 + offset, 1, institucion.get('direccion', ''))
+        ws.write(6 + offset, 1,  institucion.get('codigo_dea', ''))
+        ws.write(6 + offset, 6,  institucion.get('nombre', ''))
+        ws.write(7 + offset, 1,  institucion.get('direccion', ''))
         ws.write(7 + offset, 15, institucion.get('telefono', ''))
-        ws.write(8 + offset, 1, institucion.get('municipio', ''))
-        ws.write(8 + offset, 6, institucion.get('estado', ''))
+        ws.write(8 + offset, 1,  institucion.get('municipio', ''))
+        ws.write(8 + offset, 6,  institucion.get('estado', ''))
         ws.write(8 + offset, 15, institucion.get('zona_educativa', ''))
+    except Exception as e:
+        print(f"[XLS] Error escribiendo institución: {e}")
 
-        # Estudiante
-        ws.write(9 + offset, 1, estudiante.get('cedula', ''))
-        ws.write(9 + offset, 8, str(estudiante.get('fecha_nacimiento', '')))
-        ws.write(10 + offset, 1, (estudiante.get('apellidos') or '').upper())
+    # ── Datos del Estudiante ──────────────────────────────────────────
+    try:
+        ws.write(9  + offset, 1,  estudiante.get('cedula', ''))
+        ws.write(9  + offset, 8,  str(estudiante.get('fecha_nacimiento', '')))
+        ws.write(10 + offset, 1,  (estudiante.get('apellidos') or '').upper())
         ws.write(10 + offset, 10, (estudiante.get('nombres') or '').upper())
-        ws.write(11 + offset, 1, (estudiante.get('lugar_nacimiento') or '').upper())
+        ws.write(11 + offset, 1,  (estudiante.get('lugar_nacimiento') or '').upper())
         ws.write(11 + offset, 10, (estudiante.get('estado_nacimiento') or '').upper())
         ws.write(11 + offset, 16, (estudiante.get('municipio_nacimiento') or '').upper())
     except Exception as e:
-        print(f"Error llenando campos básicos XLS: {e}")
+        print(f"[XLS] Error escribiendo datos del estudiante: {e}")
 
-    # Guardar a buffer
+    # ── Notas por año (llenado inteligente fila por fila) ─────────────
+    # Para cada año, leemos las celdas de la columna de áreas (col 1 para 31059)
+    # y buscamos si hay nota para esa área en notas_por_anio.
+    if notas_por_anio:
+        bloques = _BLOQUES_ANOS_31059  # Usar el mismo mapa para ambos tipos (ajustar si difieren)
+        col_area  = 1   # columna donde está el nombre del área de formación
+        col_nota  = 5   # columna donde va el número
+        col_letra = 8   # columna donde va la nota en letras
+
+        for ano_str, bloque in bloques.items():
+            notas_ano = notas_por_anio.get(ano_str, {})
+            if not notas_ano:
+                continue
+
+            for fila in range(bloque['fila_inicio'] + offset,
+                              bloque['fila_fin']   + offset + 1):
+                try:
+                    # Leer el área de formación que ya está en la plantilla
+                    celda_area = rb.sheets()[0].cell_value(fila, col_area)
+                    area_txt = str(celda_area).strip()
+                    if not area_txt:
+                        continue
+
+                    # Buscar nota para esta área (coincidencia parcial case-insensitive)
+                    nota_val = None
+                    for area_key, nota in notas_ano.items():
+                        if (area_key.lower() in area_txt.lower() or
+                                area_txt.lower() in area_key.lower()):
+                            nota_val = nota
+                            break
+
+                    if nota_val is not None:
+                        ws.write(fila, col_nota,  round(float(nota_val), 0))
+                        ws.write(fila, col_letra, _nota_a_letras(nota_val))
+                except Exception:
+                    continue  # No corromper el formato si falla una celda
+
+    # ── Serializar y retornar ─────────────────────────────────────────
     buf = io.BytesIO()
     wb.save(buf)
     buf.seek(0)
-    
+
     nombre_archivo = os.path.basename(ruta_plantilla)
     return buf, nombre_archivo

@@ -24,6 +24,7 @@ from modulos.evaluacion.registro_notas        import registro_notas_view
 from modulos.evaluacion.boletines_mod         import boletines_view, boletin_ver_view
 from modulos.evaluacion.momentos_evaluativos  import momentos_view
 from modulos.evaluacion.notas_certificadas_mod import notas_certificadas_view, nota_certificada_ver_view, descargar_nota_xls_view
+from modulos.evaluacion.carga_masiva_notas    import carga_masiva_notas_view
 from modulos.academico.materias_mod          import materias_view
 from modulos.academico.asignacion_docente_view import asignacion_docente_view as asignacion_docente_view_func
 
@@ -262,6 +263,14 @@ def registro_notas():
     return registro_notas_view()
 
 
+@app.route('/carga_masiva_notas', methods=['GET', 'POST'])
+@login_required
+@rol_required('admin', 'director', 'coordinador', 'docente')
+def carga_masiva_notas():
+    """Carga masiva de notas mediante archivo Excel."""
+    return carga_masiva_notas_view()
+
+
 @app.route('/evaluaciones', methods=['GET', 'POST'])
 @login_required
 @rol_required('admin', 'director', 'coordinador', 'docente')
@@ -357,82 +366,13 @@ def asignacion_docente():
 # ===================================================================
 # MÓDULO DE REPORTES (CONEXIÓN ACTIVA A SUPABASE)
 # ===================================================================
+from modulos.reportes.reportes import reportes as reportes_func
 
 @app.route('/reportes', methods=['GET', 'POST'])
 @login_required
 @rol_required('admin', 'director', 'coordinador', 'secretaria')
 def reportes():
-    """
-    Controlador para el módulo de reportes.
-    Consulta directamente las tablas de Supabase según el formulario enviado.
-    """
-    # Inicializamos variables para mandar a la plantilla en caso de consulta exitosa
-    resultados = None
-    tipo_reporte = None
-
-    if request.method == 'POST':
-        # Identificamos qué formulario se envió por medio de un campo oculto o el botón presionado
-        accion = request.form.get('accion')
-
-        try:
-            # --- CASO 1: REPORTE DE MATRÍCULA ---
-            if accion == 'matricula':
-                grado_seleccionado = request.form.get('grado')
-                
-                # Construimos la consulta base a la tabla estudiante
-                query = supabase.table("estudiante").select("cedula, nacionalidad, nombres, apellidos, genero, estado_estudiante")
-                
-                # Si el usuario seleccionó un grado específico (asumiendo que manejas el campo o filtro similar)
-                # NOTA: Si en tu tabla 'estudiante' guardas el grado o año, puedes aplicar el filtro aquí:
-                # if grado_seleccionado != 'todos':
-                #     query = query.eq("grado", grado_seleccionado)
-                
-                response = query.execute()
-                resultados = response.data
-                tipo_reporte = 'matricula'
-                
-                if not resultados:
-                    flash("No se encontraron estudiantes registrados para los filtros seleccionados.", "warning")
-
-            # --- CASO 2: CONSTANCIAS DE ESTUDIO ---
-            elif accion == 'constancia':
-                v_cedula = request.form.get('cedula_buscar', '').strip()
-                v_motivo = request.form.get('motivo', '').strip() or "Trámite General"
-
-                # Buscamos al estudiante por su cédula
-                response = supabase.table("estudiante") \
-                    .select("cedula, nacionalidad, nombres, apellidos, estado_estudiante") \
-                    .eq("cedula", v_cedula) \
-                    .execute()
-
-                if response.data:
-                    estudiante = response.data[0]
-                    # Validar si está activo
-                    if estudiante.get('estado_estudiante') == 'A':
-                        # Pasamos los datos del estudiante directo a una plantilla de constancia limpia
-                        return render_template(
-                            'constancia_imprimible.html',
-                            estudiante=estudiante,
-                            motivo=v_motivo,
-                            fecha_hoy=os.popen('date +"%d-%m-%Y"').read().strip() # Fecha del sistema
-                        )
-                    else:
-                        flash("El estudiante se encuentra Inactivo (Retirado). No se puede emitir la constancia.", "danger")
-                else:
-                    flash(f"No se encontró ningún estudiante con la cédula '{v_cedula}'.", "danger")
-
-        except Exception as e:
-            flash(f"Error en la base de datos al generar reporte: {str(e)}", "danger")
-
-    # Si es GET o si fue un POST que no redirigió, muestra el panel con los resultados (si existen)
-    return render_template(
-        'reportes.html', 
-        usuario_nombre=session.get('nombre', 'Usuario'),
-        usuario_rol=session.get('rol', ''),
-        resultados=resultados,
-        tipo_reporte=tipo_reporte
-    )
-
+    return reportes_func()
 
 def _modulo_en_desarrollo(nombre: str, icono: str) -> str:
     """ Renderiza la plantilla de modulos en desarrollo """
@@ -464,4 +404,4 @@ def admin_terminal_stream():
 if __name__ == '__main__':
     puerto = int(os.environ.get("PORT", 5000))
     print(f"\n Link para entrar: http://127.0.0.1:{puerto}\n")
-    app.run(host="0.0.0.0", port=puerto, debug=True)
+    app.run(host="0.0.0.0", port=puerto, debug=True, threaded=True)
