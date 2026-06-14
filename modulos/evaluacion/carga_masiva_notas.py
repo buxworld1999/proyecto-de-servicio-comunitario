@@ -69,15 +69,9 @@ def carga_masiva_notas_view():
         secciones_todas = []
 
     try:
-        resp_mat = supabase.table("materia").select("codigo, nombre, nota_minima_aprobacion") \
+        resp_mat = supabase.table("materia").select("codigo, nombre, nota_minima_aprobacion, codigo_grado") \
             .eq("estado", "A").order("nombre").execute()
         materias = resp_mat.data or []
-        
-        # Extraer el grado a partir del código de la materia (ej: CAST1 -> 1)
-        for m in materias:
-            match = re.search(r'\d+', m['codigo'])
-            m['codigo_grado'] = match.group() if match else ''
-            
     except Exception:
         materias = []
 

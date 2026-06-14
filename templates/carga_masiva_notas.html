@@ -950,6 +950,7 @@ function toggleModo(modo) {
 document.addEventListener("DOMContentLoaded", function() {
   const modoSelect = document.querySelector('input[name="tipo_carga"]:checked');
   if (modoSelect) toggleModo(modoSelect.value);
+  filtrarMaterias();
 });
 
 // ── Drag & Drop & Animaciones ────────────────────────────────────────────────
