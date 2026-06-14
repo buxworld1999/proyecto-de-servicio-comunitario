@@ -92,12 +92,22 @@ def carga_masiva_notas_view():
     ano_sel = request.args.get('ano', _get_ano_activo() or '')
     secciones = [s for s in secciones_todas if s.get('codigo_ano_escolar') == ano_sel]
 
+    seccion_sel = request.args.get('seccion', '')
+    grado_sel = None
+    if seccion_sel:
+        sec_obj = next((s for s in secciones if s.get('codigo') == seccion_sel), None)
+        if sec_obj:
+            grado_sel = sec_obj.get('codigo_grado')
+            
+    if grado_sel:
+        materias = [m for m in materias if str(m.get('codigo_grado')) == str(grado_sel)]
+
     # ── GET: mostrar formulario ───────────────────────────────────────
     if request.method != 'POST':
         return render_template(
             'carga_masiva_notas.html',
             anos=anos, secciones=secciones, materias=materias, momentos=momentos,
-            ano_sel=ano_sel, secciones_todas=secciones_todas,
+            ano_sel=ano_sel, seccion_sel=seccion_sel, secciones_todas=secciones_todas,
         )
 
     # ── POST: procesar archivo ────────────────────────────────────────

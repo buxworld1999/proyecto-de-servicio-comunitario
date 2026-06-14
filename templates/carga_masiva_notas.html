@@ -523,7 +523,7 @@
       <div class="context-grid">
         <div>
           <label class="form-label">Año Escolar</label>
-          <select class="form-select" name="ano_escolar" id="sel-ano" required>
+          <select class="form-select" name="ano_escolar" id="sel-ano" onchange="window.location.href='?ano=' + this.value" required>
             <option value="">— Selecciona —</option>
             {% for a in anos %}
             <option value="{{ a.codigo }}" {% if a.codigo == ano_sel %}selected{% endif %}>
@@ -534,10 +534,10 @@
         </div>
         <div>
           <label class="form-label">Sección</label>
-          <select class="form-select" name="codigo_seccion" id="sel-seccion" required>
+          <select class="form-select" name="codigo_seccion" id="sel-seccion" onchange="window.location.href='?ano=' + document.getElementById('sel-ano').value + '&seccion=' + this.value" required>
             <option value="">— Selecciona año primero —</option>
-            {% for s in secciones_todas %}
-            <option value="{{ s.codigo }}" data-ano="{{ s.codigo_ano_escolar }}" data-grado="{{ s.codigo_grado }}">
+            {% for s in secciones %}
+            <option value="{{ s.codigo }}" data-ano="{{ s.codigo_ano_escolar }}" data-grado="{{ s.codigo_grado }}" {% if s.codigo == seccion_sel %}selected{% endif %}>
               {{ s.codigo }} — {{ s.codigo_grado }}° Año {{ s.letra }}
             </option>
             {% endfor %}
@@ -884,53 +884,9 @@ if (form) {
   });
 }
 
-// ── Filtrar secciones según año seleccionado ───────────────────────────────
+// ── Variables de la página ───────────────────────────────────────────────
 const selAno    = document.getElementById('sel-ano');
 const selSec    = document.getElementById('sel-seccion');
-
-function filtrarSecciones() {
-  if (!selAno || !selSec) return;
-  const ano = selAno.value;
-  Array.from(selSec.options).forEach(opt => {
-    if (!opt.value) return;  // placeholder
-    opt.hidden = opt.dataset.ano !== ano;
-  });
-  // Reset si la sección actual ya no corresponde al año
-  const current = selSec.options[selSec.selectedIndex];
-  if (current && current.dataset.ano !== ano) {
-    selSec.value = '';
-  }
-}
-
-if (selAno) {
-  selAno.addEventListener('change', filtrarSecciones);
-  filtrarSecciones(); // inicial
-}
-
-function filtrarMaterias() {
-  if (!selSec) return;
-  const selMat = document.getElementById('sel-materia');
-  if (!selMat) return;
-  
-  const selectedOption = selSec.options[selSec.selectedIndex];
-  const grado = selectedOption ? selectedOption.dataset.grado : '';
-  
-  Array.from(selMat.options).forEach(opt => {
-    if (!opt.value) return; // placeholder
-    const isMatch = (opt.dataset.grado === grado);
-    opt.hidden = !isMatch;
-    opt.style.display = isMatch ? '' : 'none';
-  });
-  
-  const current = selMat.options[selMat.selectedIndex];
-  if (current && current.hidden) {
-    selMat.value = '';
-  }
-}
-
-if (selSec) {
-  selSec.addEventListener('change', filtrarMaterias);
-}
 
 function toggleModo(modo) {
   const containerMateria = document.getElementById('container-materia');
@@ -952,7 +908,6 @@ function toggleModo(modo) {
 document.addEventListener("DOMContentLoaded", function() {
   const modoSelect = document.querySelector('input[name="tipo_carga"]:checked');
   if (modoSelect) toggleModo(modoSelect.value);
-  filtrarMaterias();
 });
 </body>
 </html>
