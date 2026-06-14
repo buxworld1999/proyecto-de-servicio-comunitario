@@ -917,7 +917,9 @@ function filtrarMaterias() {
   
   Array.from(selMat.options).forEach(opt => {
     if (!opt.value) return; // placeholder
-    opt.hidden = opt.dataset.grado !== grado;
+    const isMatch = (opt.dataset.grado === grado);
+    opt.hidden = !isMatch;
+    opt.style.display = isMatch ? '' : 'none';
   });
   
   const current = selMat.options[selMat.selectedIndex];
@@ -952,9 +954,5 @@ document.addEventListener("DOMContentLoaded", function() {
   if (modoSelect) toggleModo(modoSelect.value);
   filtrarMaterias();
 });
-
-// ── Drag & Drop & Animaciones ────────────────────────────────────────────────
-const dropZone = document.getElementById('drop-zone');
-const fileInput = document.getElementById('file-input');
 </body>
 </html>
