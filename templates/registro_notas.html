@@ -150,7 +150,7 @@
                 </div>
                 <div class="ac-field">
                     <label>Sección</label>
-                    <select name="seccion" class="ac-select">
+                    <select name="seccion" class="ac-select" onchange="this.form.submit()">
                         <option value="">-- Sección --</option>
                         {% for s in secciones %}
                         <option value="{{ s.codigo }}" {% if s.codigo == seccion_sel %}selected{% endif %}>

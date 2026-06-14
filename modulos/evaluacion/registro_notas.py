@@ -91,11 +91,11 @@ def registro_notas_view():
         secciones_todas = []
 
     try:
-        resp_mat = supabase.table("materia").select("codigo, nombre, nota_minima_aprobacion") \
+        resp_mat = supabase.table("materia").select("codigo, nombre, nota_minima_aprobacion, codigo_grado") \
             .eq("estado", "A").order("nombre").execute()
-        materias = resp_mat.data or []
+        materias_todas = resp_mat.data or []
     except Exception as e:
-        materias = []
+        materias_todas = []
 
     try:
         resp_mom = supabase.table("momento_evaluativo").select("numero, nombre, estado") \
@@ -119,6 +119,18 @@ def registro_notas_view():
 
     # Secciones filtradas por año
     secciones = [s for s in secciones_todas if s.get('codigo_ano_escolar') == ano_sel]
+    
+    # Materias filtradas por grado de la sección seleccionada
+    grado_sel = None
+    if seccion_sel:
+        sec_obj = next((s for s in secciones if s.get('codigo') == seccion_sel), None)
+        if sec_obj:
+            grado_sel = sec_obj.get('codigo_grado')
+            
+    if grado_sel:
+        materias = [m for m in materias_todas if m.get('codigo_grado') == grado_sel]
+    else:
+        materias = materias_todas
 
     # ── 3. Si hay selección completa → cargar planilla ────────────────
     estudiantes_planilla = []
