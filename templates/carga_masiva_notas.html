@@ -543,6 +543,16 @@
             {% endfor %}
           </select>
         </div>
+        <div id="container-materia">
+          <label class="form-label">Materia</label>
+          <select class="form-select" name="codigo_materia" id="sel-materia" required>
+            <option value="">— Selecciona —</option>
+            {% for m in materias %}
+            <option value="{{ m.codigo }}" data-grado="{{ m.codigo_grado }}">
+              {{ m.nombre }}
+            </option>
+            {% endfor %}
+          </select>
         </div>
         <div>
           <label class="form-label">Momento Evaluativo</label>
@@ -896,6 +906,51 @@ if (selAno) {
   selAno.addEventListener('change', filtrarSecciones);
   filtrarSecciones(); // inicial
 }
+
+function filtrarMaterias() {
+  if (!selSec) return;
+  const selMat = document.getElementById('sel-materia');
+  if (!selMat) return;
+  
+  const selectedOption = selSec.options[selSec.selectedIndex];
+  const grado = selectedOption ? selectedOption.dataset.grado : '';
+  
+  Array.from(selMat.options).forEach(opt => {
+    if (!opt.value) return; // placeholder
+    opt.hidden = opt.dataset.grado !== grado;
+  });
+  
+  const current = selMat.options[selMat.selectedIndex];
+  if (current && current.hidden) {
+    selMat.value = '';
+  }
+}
+
+if (selSec) {
+  selSec.addEventListener('change', filtrarMaterias);
+}
+
+function toggleModo(modo) {
+  const containerMateria = document.getElementById('container-materia');
+  const dropHelp = document.getElementById('drop-zone-help');
+  const matSelect = document.getElementById('sel-materia');
+  
+  if (modo === 'sabana') {
+    if (containerMateria) containerMateria.style.display = 'none';
+    if (matSelect) matSelect.removeAttribute('required');
+    if (dropHelp) dropHelp.textContent = 'Modo actual: Carga de Múltiples Materias (Formato Sábana MPPE)';
+  } else {
+    if (containerMateria) containerMateria.style.display = 'block';
+    if (matSelect) matSelect.setAttribute('required', 'required');
+    if (dropHelp) dropHelp.textContent = 'Modo actual: Carga de 1 materia (Columnas Cédula, Nombre, Nota)';
+  }
+}
+
+// Ejecutar toggleModo con el modo actual al cargar
+document.addEventListener("DOMContentLoaded", function() {
+  const modoSelect = document.querySelector('input[name="tipo_carga"]:checked');
+  if (modoSelect) toggleModo(modoSelect.value);
+});
 
 // ── Drag & Drop & Animaciones ────────────────────────────────────────────────
 const dropZone = document.getElementById('drop-zone');
