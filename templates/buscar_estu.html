@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>Búsqueda Completa de Estudiantes</title>
     <link rel="stylesheet" href="static/buscar_estu.css">
+    <script src="static/theme-apply.js"></script>
 </head>
 
 <body>
@@ -74,15 +75,15 @@
                     <th>Estado en el Sistema</th>
                     <td>
                         {% if estudiante.estado == 'A' %}
-                        <span style="color: #00ff66; font-weight: bold;">ACTIVO</span>
+                        <span class="badge-activo">Activo</span>
                         {% else %}
-                        <span style="color: var(--color-error); font-weight: bold;">INACTIVO</span>
+                        <span class="badge-inactivo">Inactivo</span>
                         {% endif %}
                     </td>
                 </tr>
             </table>
             {% else %}
-            <p style="color: #777; font-style: italic; text-align: center; margin-top: 40px;">
+            <p class="empty-msg">
                 Introduce un número de cédula en el panel izquierdo para consultar los registros de la base de datos.
             </p>
             {% endif %}

@@ -431,6 +431,49 @@ body {
 
 
 /* ============================================================
+   ACORDEÓN DEL SIDEBAR
+   ============================================================ */
+
+.menu-group {
+    margin-bottom: 2px;
+}
+
+.menu-group-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.3);
+    font-family: 'Outfit', sans-serif;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+}
+
+.menu-group-toggle:hover {
+    color: rgba(255,255,255,0.5);
+    background: rgba(255,255,255,0.03);
+}
+
+.menu-chevron {
+    font-size: 9px;
+    transition: transform 0.25s ease;
+    flex-shrink: 0;
+}
+
+.menu-group-items {
+    overflow: hidden;
+}
+
+
+/* ============================================================
    ÁREA DE CONTENIDO
    ============================================================ */
 

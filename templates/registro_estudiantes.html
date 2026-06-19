@@ -6,84 +6,105 @@
     <title>U.E.E Carmen Ruíz - Registro</title>
     <link rel="icon" href="static/fondo_escuela.jpg" type="image/png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="static/registro_estu.css">
     <style>
-        /* ══════════════════════════════════════════════════════
-           REGISTRO DE ESTUDIANTES — PRISMA
-           Diseño Moderno y Premium
-        ══════════════════════════════════════════════════════ */
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --surface:    #ffffff;
+            --surface-2:  #f8fafc;
+            --text:       #1e293b;
+            --text-sub:   #64748b;
+            --label:      #475569;
+            --border:     #e2e8f0;
+            --input-bg:   #ffffff;
+            --primary:    #2563eb;
+            --primary-dk: #1d4ed8;
+            --success:    #10b981;
+            --fs-bg:      rgba(248, 250, 252, 0.6);
+        }
+        html.dark {
+            --surface:    #0f172a;
+            --surface-2:  #1e293b;
+            --text:       #f1f5f9;
+            --text-sub:   #94a3b8;
+            --label:      #cbd5e1;
+            --border:     #334155;
+            --input-bg:   #1e293b;
+            --input-text: #f1f5f9;
+            --primary:    #3b82f6;
+            --primary-dk: #2563eb;
+            --success:    #4ade80;
+            --fs-bg:      rgba(30, 41, 59, 0.5);
+        }
+
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: 'Outfit', sans-serif;
-            background-color: #0f172a;
-            color: #f1f5f9;
-            margin: 0;
-            padding: 20px;
+            background: transparent;
+            color: var(--text);
+            padding: 16px;
+            font-size: 14px;
         }
 
         .form-container {
             max-width: 100%;
             margin: 0;
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 16px;
-            padding: 1.5rem 2rem;
-            box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.5);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 24px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.05);
         }
 
         h2 {
             text-align: center;
-            font-size: 1.7rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #4f46e5, #10b981);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border);
         }
 
         fieldset {
             border: none;
-            background: rgba(15, 23, 42, 0.4);
-            border-radius: 10px;
-            padding: 1rem 1.5rem;
-            margin-bottom: 1rem;
-            border-left: 4px solid #4f46e5;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-
-        fieldset:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+            background: var(--fs-bg);
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 12px;
+            border-left: 3px solid var(--primary);
         }
 
         legend {
-            font-weight: 700;
-            font-size: 1rem;
-            color: #818cf8;
-            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.82rem;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
             display: inline-block;
         }
 
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 0.8rem;
+            gap: 10px;
         }
 
         .form-group {
             display: flex;
             flex-direction: column;
+            gap: 4px;
         }
 
         .form-group label {
-            font-size: 0.75rem;
+            font-size: 11px;
             font-weight: 600;
-            color: #94a3b8;
-            margin-bottom: 0.25rem;
+            color: var(--label);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.4px;
         }
 
         input[type="text"],
@@ -93,139 +114,111 @@
         select,
         textarea {
             width: 100%;
-            padding: 0.5rem 0.75rem;
-            background: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 8px;
-            color: #f1f5f9;
+            padding: 8px 10px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
             font-family: 'Outfit', sans-serif;
-            font-size: 0.85rem;
-            transition: all 0.3s;
+            font-size: 13px;
+            transition: border-color 0.2s, box-shadow 0.2s;
             box-sizing: border-box;
+            outline: none;
         }
 
         input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
         }
 
         .btn-submit {
             display: block;
             width: 100%;
-            padding: 0.8rem;
-            margin-top: 1.5rem;
-            background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+            padding: 11px;
+            margin-top: 18px;
+            background: var(--primary);
             color: white;
             border: none;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 700;
+            border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 8px 15px -5px rgba(79, 70, 229, 0.4);
+            transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+            letter-spacing: 0.3px;
         }
 
         .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 20px -5px rgba(79, 70, 229, 0.5);
-            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+            background: var(--primary-dk);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            transform: translateY(-1px);
         }
 
         .alert {
-            background: rgba(16, 185, 129, 0.1);
+            background: rgba(16, 185, 129, 0.08);
             border: 1px solid rgba(16, 185, 129, 0.3);
-            color: #34d399;
-            padding: 1rem;
-            border-radius: 10px;
-            margin-bottom: 2rem;
+            color: #065f46;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
             text-align: center;
             font-weight: 600;
+            font-size: 13px;
         }
 
-        /* Specific fix for the gray background section */
         .gray-section {
-            background-color: rgba(0, 0, 0, 0.2);
-            padding: 1rem;
-            border-radius: 8px;
-            margin-top: 0.8rem;
+            background: var(--surface-2);
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 8px;
         }
 
-        /* ── Drop Zone ─────────────────────────────────────── */
+        /* ── Drop Zone — simple y auténtica ── */
         .drop-zone {
-            border: 2px dashed rgba(16, 185, 129, 0.4);
-            border-radius: 16px;
-            padding: 2rem 1.5rem;
-            background: linear-gradient(145deg, rgba(16, 185, 129, 0.05) 0%, rgba(15, 23, 42, 0.4) 100%);
-            backdrop-filter: blur(10px);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px dashed var(--border);
+            border-radius: 10px;
+            padding: 24px 16px;
+            background: var(--surface-2);
             cursor: pointer;
             text-align: center;
-            position: relative;
-            overflow: hidden;
-            margin-bottom: 1.5rem;
-        }
-
-        .drop-zone::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(circle at center, rgba(16, 185, 129, 0.1) 0%, transparent 70%);
-            opacity: 0;
-            transition: opacity 0.4s;
+            transition: border-color 0.2s, background 0.2s;
+            margin-bottom: 16px;
         }
 
         .drop-zone:hover,
         .drop-zone.drag-over {
-            border-color: #10b981;
-            transform: translateY(-2px);
-            box-shadow: 0 15px 35px -5px rgba(16, 185, 129, 0.2), 0 0 20px rgba(16, 185, 129, 0.1);
-        }
-
-        .drop-zone:hover::before,
-        .drop-zone.drag-over::before {
-            opacity: 1;
+            border-color: var(--primary);
+            background: rgba(37, 99, 235, 0.04);
         }
 
         .drop-zone i.drop-icon {
-            font-size: 3.5rem;
-            background: linear-gradient(135deg, #10b981, #059669);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 8px;
             display: inline-block;
-            margin-bottom: 1rem;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
-            transition: transform 0.3s;
-        }
-
-        .drop-zone:hover i.drop-icon {
-            transform: scale(1.1) translateY(-5px);
         }
 
         .drop-zone h3 {
-            font-size: 1.25rem;
-            font-weight: 800;
-            margin-bottom: 0.5rem;
-            color: #f1f5f9;
-            letter-spacing: -0.5px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
         }
 
         .drop-zone p {
-            font-size: .85rem;
-            color: #94a3b8;
+            font-size: 0.8rem;
+            color: var(--text-sub);
             margin: 0;
         }
 
         #file-name-display {
-            margin-top: .75rem;
-            font-weight: 700;
-            color: #10b981;
-            font-size: .9rem;
-            min-height: 1.2rem;
+            margin-top: 8px;
+            font-weight: 600;
+            color: var(--success);
+            font-size: 0.85rem;
         }
     </style>
+    <script src="static/theme-apply.js"></script>
 </head>
 
 <body>

@@ -6,6 +6,7 @@
     <title>Materias | PRISMA</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='academico.css') }}">
+    <script src="static/theme-apply.js"></script>
 </head>
 <body>
 <div class="ac-page-lg">
@@ -20,7 +21,7 @@
                 <p>Gestiona el plan de estudios por grado</p>
             </div>
         </div>
-        <a href="{{ url_for('menu') }}" class="ac-btn ac-btn-ghost">
+        <a href="{{ url_for('menu') }}" target="_top" class="ac-btn ac-btn-ghost">
             <i class="fa-solid fa-arrow-left"></i> Menú
         </a>
     </div>

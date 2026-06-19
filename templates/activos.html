@@ -3,152 +3,360 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Control de Activos - Carmen Ruiz</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Activos — PRISMA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
         :root {
-            --primary-color: #00E5FF;
-            --bg-color: transparent;
-            --text-color: #FFF;
-            --border-color: rgba(0, 229, 255, 0.3);
-            --input-bg: rgba(10, 10, 10, 0.6);
+            --surface:   #ffffff;
+            --surface-2: #f8fafc;
+            --text:      #1e293b;
+            --text-sub:  #64748b;
+            --label:     #475569;
+            --border:    #e2e8f0;
+            --input-bg:  #f8fafc;
+            --input-text:#1e293b;
+            --placeholder:#94a3b8;
+            --primary:   #2563eb;
+            --primary-dk:var(--primary-dk);
+            --th-bg:     #f8fafc;
+            --th-text:   #64748b;
+            --td-text:   #334155;
+            --divider:   #f1f5f9;
+            --row-hover: #f8fafc;
+            --shadow:    0 1px 4px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.05);
+            --icon-bg:   rgba(37,99,235,0.1);
+            --icon-fg:   #2563eb;
         }
+
+        html.dark {
+            --surface:   #0f172a;
+            --surface-2: #1e293b;
+            --text:      #f1f5f9;
+            --text-sub:  #94a3b8;
+            --label:     #cbd5e1;
+            --border:    #334155;
+            --input-bg:  #1e293b;
+            --input-text:#f1f5f9;
+            --placeholder:#475569;
+            --primary:   #3b82f6;
+            --primary-dk:#2563eb;
+            --th-bg:     #0f172a;
+            --th-text:   #94a3b8;
+            --td-text:   #cbd5e1;
+            --divider:   #1e293b;
+            --row-hover: rgba(255,255,255,0.04);
+            --shadow:    0 1px 4px rgba(0,0,0,0.4), 0 4px 20px rgba(0,0,0,0.3);
+            --icon-bg:   rgba(59,130,246,0.12);
+            --icon-fg:   #60a5fa;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Outfit', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            padding: 0;
-            line-height: 1.6;
-        }
-
-        h1, h2 {
-            color: var(--primary-color);
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        /* Formulario Estilizado */
-        form {
+            font-family: 'Outfit', sans-serif;
             background: transparent;
+            color: var(--text);
             padding: 20px;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        .page-header {
             display: flex;
-            gap: 15px;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .page-header-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--icon-bg);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
             justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 30px;
+            color: var(--icon-fg);
+            font-size: 18px;
         }
 
-        input {
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            outline: none;
+        .page-header h1 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .page-header p {
+            font-size: 12px;
+            color: var(--text-sub);
+            margin-top: 2px;
+        }
+
+        /* ── Formulario ── */
+        .form-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+
+        .form-card h2 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--label);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-card h2 i {
+            color: #2563eb;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .form-group label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--label);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .form-group input {
+            padding: 9px 11px;
             background: var(--input-bg);
-            color: var(--text-color);
-            flex: 1 1 200px;
-        }
-        
-        input:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            outline: none;
         }
 
-        button {
-            background-color: var(--primary-color);
-            color: #000;
-            font-weight: bold;
-            padding: 12px 25px;
+        .form-group input:focus {
+            border-color: #2563eb;
+            background: #fff;
+            box-shadow: 0 0 0 3px var(--icon-bg);
+        }
+
+        .form-group input::placeholder {
+            color: var(--text-sub);
+        }
+
+        .btn-submit {
+            padding: 10px 24px;
+            background: var(--primary);
+            color: #fff;
             border: none;
             border-radius: 8px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
             cursor: pointer;
-            transition: 0.3s;
+            transition: background 0.2s, box-shadow 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-submit:hover {
+            background: var(--primary-dk);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+        }
+
+        /* ── Tabla ── */
+        .table-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+
+        .table-card-header {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-card-header h2 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--label);
             text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        button:hover {
-            background-color: #00b3cc;
-            box-shadow: 0 0 15px rgba(0, 229, 255, 0.4);
-            transform: translateY(-2px);
+        .table-card-header h2 i { color: #2563eb; }
+
+        .total-badge {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+            background: #f1f5f9;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 5px 14px;
         }
 
-        /* Tabla Moderna */
         table {
             width: 100%;
             border-collapse: collapse;
-            background: transparent;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-        }
-
-        thead {
-            background-color: rgba(0, 229, 255, 0.1);
-            color: var(--primary-color);
         }
 
         th, td {
-            padding: 15px;
+            padding: 11px 16px;
             text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid var(--divider);
+            font-size: 13px;
         }
-        
+
         th {
-            border-bottom: 2px solid var(--border-color);
+            background: var(--surface-2);
+            color: var(--text-sub);
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        tbody tr:hover {
-            background-color: rgba(0, 229, 255, 0.05);
+        td { color: var(--td-text); }
+
+        tbody tr:hover { background: var(--surface-2); }
+
+        tbody tr:last-child td { border-bottom: none; }
+
+        .text-right { text-align: right; }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-sub);
         }
 
-        h2 {
-            margin-top: 30px;
-            text-align: right;
-            padding-right: 20px;
+        .empty-state i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            display: block;
+            color: #cbd5e1;
         }
     </style>
+    <script src="static/theme-apply.js"></script>
 </head>
 
 <body>
-    <h1>Sistema de Control de Activos: Carmen Ruiz</h1>
 
-    <form method="POST">
-        <input type="text" name="nombre" placeholder="Nombre del activo" required>
-        <input type="text" name="propietario" placeholder="¿A quién pertenece?" required>
-        <input type="text" name="encargado" placeholder="¿Quién es el encargado?" required>
-        <input type="number" name="cantidad" placeholder="Cantidad" required>
-        <input type="number" step="0.01" name="valor" placeholder="Valor Unitario" required>
+    <div class="page-header">
+        <div class="page-header-icon">
+            <i class="fa-solid fa-boxes-stacking"></i>
+        </div>
+        <div>
+            <h1>Control de Activos</h1>
+            <p>Inventario de bienes — U.E. Carmen Ruíz</p>
+        </div>
+    </div>
 
-        <button type="submit">Control de Activos</button>
-    </form>
+    <!-- Formulario de registro -->
+    <div class="form-card">
+        <h2><i class="fa-solid fa-plus"></i> Registrar Activo</h2>
+        <form method="POST">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Nombre del activo</label>
+                    <input type="text" name="nombre" placeholder="Ej: Computadora" required>
+                </div>
+                <div class="form-group">
+                    <label>Propietario</label>
+                    <input type="text" name="propietario" placeholder="¿A quién pertenece?" required>
+                </div>
+                <div class="form-group">
+                    <label>Encargado</label>
+                    <input type="text" name="encargado" placeholder="¿Quién es el encargado?" required>
+                </div>
+                <div class="form-group">
+                    <label>Cantidad</label>
+                    <input type="number" name="cantidad" placeholder="0" required>
+                </div>
+                <div class="form-group">
+                    <label>Valor unitario ($)</label>
+                    <input type="number" step="0.01" name="valor" placeholder="0.00" required>
+                </div>
+            </div>
+            <button type="submit" class="btn-submit">
+                <i class="fa-solid fa-floppy-disk"></i> Guardar Activo
+            </button>
+        </form>
+    </div>
 
-    <hr>
+    <!-- Tabla de inventario -->
+    <div class="table-card">
+        <div class="table-card-header">
+            <h2><i class="fa-solid fa-list-check"></i> Inventario registrado</h2>
+            <span class="total-badge">Total: ${{ "%.2f"|format(total) }}</span>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Activo</th>
+                    <th>Propietario</th>
+                    <th>Encargado</th>
+                    <th class="text-right">Cantidad</th>
+                    <th class="text-right">Valor Unit.</th>
+                    <th class="text-right">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in activos %}
+                <tr>
+                    <td>{{ item.nombre }}</td>
+                    <td>{{ item.propietario }}</td>
+                    <td>{{ item.encargado }}</td>
+                    <td class="text-right">{{ item.cantidad }}</td>
+                    <td class="text-right">${{ "%.2f"|format(item.valor_unitario) }}</td>
+                    <td class="text-right">${{ "%.2f"|format(item.cantidad * item.valor_unitario) }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6">
+                        <div class="empty-state">
+                            <i class="fa-regular fa-folder-open"></i>
+                            No hay activos registrados aún.
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-    <table border="1" cellpadding="10">
-        <thead>
-            <tr>
-                <th>Activo</th>
-                <th>Propietario</th>
-                <th>Encargado</th>
-                <th>Cantidad</th>
-                <th>Valor Unitario</th>
-                <th>Subtotal</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in activos %}
-            <tr>
-                <td>{{ item.nombre }}</td>
-                <td>{{ item.propietario }}</td>
-                <td>{{ item.encargado }}</td>
-                <td>{{ item.cantidad }}</td>
-                <td>${{ "%.2f"|format(item.valor_unitario) }}</td>
-                <td>${{ "%.2f"|format(item.cantidad * item.valor_unitario) }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <h2>Valor Total del Inventario: ${{ "%.2f"|format(total) }}</h2>
 </body>
 
 </html>

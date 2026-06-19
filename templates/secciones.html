@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="static/secciones.css">
     <!-- FontAwesome para iconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="static/theme-apply.js"></script>
 </head>
 
 <body>
@@ -16,7 +17,9 @@
         <!-- Encabezado y Navegación -->
         <div class="header">
             <h1><i class="fa-solid fa-layer-group"></i> Estudiantes por Secciones</h1>
-            <button class="btn-nueva"><i class="fa-solid fa-plus"></i> Nueva Sección</button>
+            <a href="/matricula" target="_top" class="btn-nueva">
+                <i class="fa-solid fa-plus"></i> Nueva Sección / Matrícula
+            </a>
         </div>
 
         {% with messages = get_flashed_messages() %}

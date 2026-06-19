@@ -262,6 +262,25 @@ def registro_notas_view():
 
                 resultado = _nota_resultado(nota_float, nota_min)
 
+                cedula_docente_form = request.form.get('cedula_docente_evaluador', '').strip()
+                docente_evaluador_final = cedula_personal
+                
+                # Si es un administrativo, buscar el docente asignado a la materia o usar el que escriba
+                if rol in ('admin', 'director', 'coordinador', 'secretaria'):
+                    if cedula_docente_form:
+                        docente_evaluador_final = cedula_docente_form
+                    else:
+                        try:
+                            resp_asig = supabase.table("asignacion_docente").select("cedula_docente") \
+                                .eq("codigo_materia", materia_form) \
+                                .eq("codigo_seccion", seccion_form) \
+                                .eq("codigo_ano_escolar", ano_form) \
+                                .limit(1).execute()
+                            if resp_asig.data:
+                                docente_evaluador_final = resp_asig.data[0]['cedula_docente']
+                        except Exception:
+                            pass
+
                 dato = {
                     "cedula_estudiante":       cedula,
                     "codigo_materia":          materia_form,
@@ -271,7 +290,7 @@ def registro_notas_view():
                     "resultado":               resultado,
                     "fecha_evaluacion":        hoy,
                     "observaciones":           obs_str,
-                    "cedula_docente_evaluador": cedula_personal,
+                    "cedula_docente_evaluador": docente_evaluador_final,
                 }
 
                 try:

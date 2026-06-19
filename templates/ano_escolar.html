@@ -7,12 +7,13 @@
     <title>Gestión de Año Escolar | PRISMA</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="static/ano_escolar.css">
+    <script src="static/theme-apply.js"></script>
 </head>
 
 <body>
         <div class="contenedor">
-            <a href="{{ url_for('menu') }}" class="btn-volver">
-                <i class="fa-solid fa-arrow-left"></i> Volver al Menú Principal
+            <a href="{{ url_for('menu') }}" class="btn-volver" target="_top">
+                <i class="fa-solid fa-arrow-left"></i> Volver al Menú
             </a>
 
             {% with mensajes = get_flashed_messages(with_categories=true) %}

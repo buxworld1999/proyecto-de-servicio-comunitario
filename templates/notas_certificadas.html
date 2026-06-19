@@ -6,6 +6,7 @@
     <title>Notas Certificadas | PRISMA</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='academico.css') }}">
+    <script src="static/theme-apply.js"></script>
 </head>
 <body>
 <div class="ac-page-lg">
@@ -20,7 +21,7 @@
                 <p>Historial académico y emisión de certificaciones oficiales</p>
             </div>
         </div>
-        <a href="{{ url_for('menu') }}" class="ac-btn ac-btn-ghost no-print">
+        <a href="{{ url_for('menu') }}" target="_top" class="ac-btn ac-btn-ghost no-print">
             <i class="fa-solid fa-arrow-left"></i> Menú
         </a>
     </div>

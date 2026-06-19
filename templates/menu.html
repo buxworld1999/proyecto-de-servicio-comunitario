@@ -80,33 +80,26 @@
                     <span>Inicio</span>
                 </a>
 
-                <!-- ================================================= -->
-                <!-- MENÚ DINÁMICO JINJA2 — GENERADO POR ROL           -->
-                <!--                                                     -->
-                <!-- Flask envía: menu_items = [                        -->
-                <!--   { 'titulo': 'Matrícula',                         -->
-                <!--     'items': [                                      -->
-                <!--       { 'label': '...', 'url': '...', 'icono': '...' } -->
-                <!--     ]                                               -->
-                <!--   }, ...                                            -->
-                <!-- ]                                                   -->
-                <!-- ================================================= -->
-
                 {% if menu_items %}
 
                 {% for grupo in menu_items %}
 
-                {# ── Título separador del grupo ── #}
-                <div class="menu-section-title">{{ grupo.titulo }}</div>
-
-                {# ── Ítems del grupo ── #}
-                {% for item in grupo['items'] %}
-                <a href="{{ item.url }}" target="contenido" class="menu-item" id="nav-{{ item.url | replace('/', '') }}"
-                    aria-label="{{ item.label }}">
-                    <i class="{{ item.icono }}"></i>
-                    <span>{{ item.label }}</span>
-                </a>
-                {% endfor %}
+                {# ── Grupo colapsable (acordeón) ── #}
+                <div class="menu-group" id="group-{{ loop.index }}">
+                    <button class="menu-group-toggle" onclick="toggleGroup('group-{{ loop.index }}')" aria-expanded="true">
+                        <span>{{ grupo.titulo }}</span>
+                        <i class="fa-solid fa-chevron-down menu-chevron"></i>
+                    </button>
+                    <div class="menu-group-items" id="group-{{ loop.index }}-items">
+                        {% for item in grupo['items'] %}
+                        <a href="{{ item.url }}" target="contenido" class="menu-item" id="nav-{{ item.url | replace('/', '') }}"
+                            aria-label="{{ item.label }}">
+                            <i class="{{ item.icono }}"></i>
+                            <span>{{ item.label }}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
 
                 {% endfor %}
 
@@ -241,6 +234,15 @@
                 ? '<i class="fa-solid fa-sun"></i>'
                 : '<i class="fa-solid fa-moon"></i>';
             localStorage.setItem("prisma_tema", isDark ? "dark" : "light");
+
+            // Notificar al iframe del cambio de tema en tiempo real
+            const iframe = document.getElementById('iframe-contenido');
+            if (iframe && iframe.contentWindow) {
+                iframe.contentWindow.postMessage(
+                    { type: 'prisma_theme', dark: isDark },
+                    '*'
+                );
+            }
         });
 
 
@@ -306,6 +308,29 @@
         // ============================================================
         // EVENTOS — Botón "Inicio" del sidebar
         // ============================================================
+
+        // ============================================================
+        // ACORDEÓN DEL SIDEBAR
+        // ============================================================
+
+        function toggleGroup(groupId) {
+            const group = document.getElementById(groupId);
+            const items = document.getElementById(groupId + '-items');
+            const chevron = group.querySelector('.menu-chevron');
+            const isOpen = items.style.display !== 'none';
+
+            items.style.display = isOpen ? 'none' : 'block';
+            chevron.style.transform = isOpen ? 'rotate(-90deg)' : 'rotate(0deg)';
+        }
+
+        // Autocolapsar grupos sin items activos al inicio
+        document.querySelectorAll('.menu-group').forEach(group => {
+            const items = group.querySelector('.menu-group-items');
+            if (items) {
+                // Empezar todos abiertos
+                items.style.display = 'block';
+            }
+        });
 
         document.getElementById("nav-inicio").addEventListener("click", function (e) {
             e.preventDefault();

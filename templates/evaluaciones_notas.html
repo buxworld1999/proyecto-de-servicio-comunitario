@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Evaluaciones y Notas | PRISMA</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f6f9;
+            color: #333;
+        }
+
+        .contenedor {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .btn-volver {
+            color: #4a5568;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .btn-volver:hover {
+            color: #2d3748;
+        }
+
+        .card {
+            background: #ffffff;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            border-top: 4px solid #2b6cb0;
+        }
+
+        .card h2 {
+            margin-top: 0;
+            margin-bottom: 5px;
+            color: #2d3748;
+            font-size: 20px;
+        }
+
+        .subtitulo {
+            color: #718096;
+            font-size: 13px;
+            margin-bottom: 25px;
+        }
+
+        .grid-formulario {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .campo {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .campo-completo {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .campo label {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #4a5568;
+        }
+
+        .input-style {
+            padding: 10px 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: #fff;
+            color: #4a5568;
+        }
+
+        .input-style:focus {
+            border-color: #2b6cb0;
+            outline: none;
+        }
+
+        .input-readonly {
+            background-color: #e2e8f0 !important;
+            color: #4a5568;
+            cursor: not-allowed;
+        }
+
+        .btn-contenedor {
+            grid-column: 1 / -1;
+            text-align: right;
+            margin-top: 10px;
+        }
+
+        .btn-submit {
+            background-color: #2b6cb0;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .btn-submit:hover {
+            background-color: #1a4971;
+        }
+
+        .tabla-scroll {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+
+        .tabla-datos {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 950px;
+        }
+
+        .tabla-datos th,
+        .tabla-datos td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 13px;
+        }
+
+        .tabla-datos th {
+            background-color: #f7fafc;
+            color: #4a5568;
+            font-weight: 700;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 2px;
+        }
+
+        .badge-aprobado {
+            background-color: #c6f6d5;
+            color: #22543d;
+        }
+
+        .badge-reprobado {
+            background-color: #feebc8;
+            color: #c05621;
+        }
+
+        .alerta {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .alerta-exito {
+            background-color: #c6f6d5;
+            color: #22543d;
+            border-left: 4px solid #38a169;
+        }
+
+        .alerta-error {
+            background-color: #fed7d7;
+            color: #742a2a;
+            border-left: 4px solid #e53e3e;
+        }
+
+        .btn-borrar {
+            color: #e53e3e;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #fed7d7;
+            background-color: #fff5f5;
+            transition: all 0.2s;
+        }
+
+        .btn-borrar:hover {
+            background-color: #e53e3e;
+            color: white;
+        }
+
+        .btn-editar {
+            color: #2b6cb0;
+            background-color: #ebf8ff;
+            border: 1px solid #bee3f8;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+            transition: all 0.2s;
+        }
+
+        .btn-editar:hover {
+            background-color: #2b6cb0;
+            color: white;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 550px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+            border-top: 4px solid #2b6cb0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="contenedor">
+        <a href="{{ url_for('menu') }}" class="btn-volver"></a>
+
+        {% with mensajes = get_flashed_messages(with_categories=true) %}
+        {% if mensajes %}
+        {% for categoria, mensaje in mensajes %}
+        <div class="alerta alerta-{{ 'exito' if categoria == 'success' else 'error' }}">{{ mensaje }}</div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <div class="card">
+            <h2>Registro de Calificaciones: Bachillerato</h2>
+            <p class="subtitulo">Evaluación cuantitativa obligatoria bajo la escala estricta del 1 al 20.</p>
+
+            <form action="{{ url_for('evaluaciones') }}" method="POST" class="grid-formulario">
+
+                <div class="campo">
+                    <label>Cédula de Identidad del Estudiante:</label>
+                    <input type="text" name="cedula_estudiante" class="input-style" placeholder="Ej: V-30111222"
+                        maxlength="10" required>
+                </div>
+
+                <div class="campo">
+                    <label>Año del Estudiante:</label>
+                    <select id="select_ano_estudiante" name="ano_estudiante" class="input-style"
+                        onchange="ajustarFormularioPrincipal()" required>
+                        <option value="" selected disabled>Seleccione el año...</option>
+                        <option value="1">1er Año</option>
+                        <option value="2">2do Año</option>
+                        <option value="3">3er Año</option>
+                        <option value="4">4to Año</option>
+                        <option value="5">5to Año</option>
+                    </select>
+                </div>
+
+                <div class="campo">
+                    <label>Materia:</label>
+                    <select name="codigo_materia_secundaria" id="select_materia_secundaria" class="input-style"
+                        onchange="verificarMateriaManualSecundaria(this.value)" required disabled>
+                        <option value="" selected disabled>Primero seleccione el año del alumno...</option>
+                    </select>
+                </div>
+
+                <div class="campo" id="bloque-manual-secundaria" style="display: none;">
+                    <label style="color: #c53030;">Escriba el Código de Materia:</label>
+                    <input type="text" name="codigo_materia_secundaria_manual" id="input_materia_secundaria_manual"
+                        class="input-style" placeholder="Ej: MAT1">
+                </div>
+
+                <div class="campo">
+                    <label>Año Escolar:</label>
+                    <input type="text" name="codigo_ano_escolar" class="input-style" placeholder="Ej: 2025-2026"
+                        required>
+                </div>
+
+                <div class="campo" id="contenedor_select_momento">
+                    <label>Momento Evaluativo:</label>
+                    <select name="numero_momento" id="select_numero_momento" class="input-style" required>
+                        <option value="1">1er Momento</option>
+                        <option value="2">2do Momento</option>
+                        <option value="3">3er Momento</option>
+                    </select>
+                </div>
+
+                <div class="campo">
+                    <label>Calificación Numérica (1 al 20):</label>
+                    <input type="number" name="nota_numerica" class="input-style" placeholder="Escala 1 al 20" min="1"
+                        max="20" step="0.1" required>
+                </div>
+
+                <div class="campo">
+                    <label>Fecha de la Evaluación:</label>
+                    <input type="date" name="fecha_evaluacion" class="input-style" required>
+                </div>
+
+                <div class="campo">
+                    <label>Cédula del Docente Evaluador:</label>
+                    <input type="text" name="cedula_docente_evaluador" class="input-style" placeholder="Ej: V-14222333"
+                        required>
+                </div>
+
+                <div class="campo">
+                    <label>Tipo de Calificación:</label>
+                    <select name="tipo_nota" id="select_tipo_nota" class="input-style"
+                        onchange="ajustarFormularioPrincipal()" required>
+                        <option value="REGULAR" selected>Evaluación Regular (Ordinaria)</option>
+                        <option value="REVISION">Nota de Revisión / Reparación</option>
+                        <option value="PENDIENTE">Materia Pendiente</option>
+                        <option value="SUPERACION">Remedial</option>
+                    </select>
+                </div>
+
+                <div class="campo-completo">
+                    <label>Observaciones o Comentarios Pedagógicos (Opcional):</label>
+                    <textarea name="observaciones" class="input-style" rows="4"
+                        placeholder="Ej: Cumplió con los objetivos y demostró dominio temático..."></textarea>
+                </div>
+
+                <div class="btn-contenedor">
+                    <button type="submit" class="btn-submit">Guardar Calificación</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="card" style="border-top-color: #4a5568;">
+            <h2>Lista de Calificaciones Cargadas</h2>
+
+            <div style="margin-bottom: 15px; display: flex; flex-direction: column;">
+                <label style="font-size: 13px; font-weight: 600; margin-bottom: 6px; color: #4a5568;">Filtro Rápido de
+                    Historial:</label>
+                <input type="text" id="buscadorHistorial" class="input-style"
+                    placeholder="Escribe la cédula para buscar al instante...">
+            </div>
+
+            <div class="tabla-scroll">
+                <table class="tabla-datos" id="tablaCalificaciones">
+                    <thead>
+                        <tr>
+                            <th>Estudiante</th>
+                            <th>Año</th>
+                            <th>Materias</th>
+                            <th>Año Escolar</th>
+                            <th>Momento</th>
+                            <th>Calificaciones</th>
+                            <th>Tipo Nota</th>
+                            <th>Docentes</th>
+                            <th>Fecha</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cal in calificaciones %}
+                        <tr>
+                            <td>
+                                <strong>{{ cal.cedula_estudiante }}</strong>
+                                {% if cal.observaciones %}
+                                <span style="cursor: pointer; margin-left: 5px; font-size: 14px;"
+                                    data-cedula="{{ cal.cedula_estudiante | e }}"
+                                    data-observaciones="{{ cal.observaciones | e }}"
+                                    onclick="mostrarAlertaObservacion(this)">💬</span>
+                                {% endif %}
+                            </td>
+                            <td><span style="font-weight: 600; color: #2b6cb0;">{{ cal.ano_estudiante }}° Año</span>
+                            </td>
+                            <td>{{ mapa_materias.get(cal.codigo_materia, cal.codigo_materia) }}</td>
+                            <td>{{ cal.codigo_ano_escolar }}</td>
+                            <td>{{ cal.numero_momento }}° Momento</td>
+                            <td>
+                                <span style="font-weight: bold; font-size: 14px;">{{ cal.nota }} pts</span>
+                                <span
+                                    class="badge {{ 'badge-aprobado' if cal.resultado == 'A' else 'badge-reprobado' }}">
+                                    {{ 'Aprobado' if cal.resultado == 'A' else 'Reprobado' }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if cal.tipo_nota == 'REVISION' or cal.es_revision %}
+                                <span class="badge" style="background-color: #fed7d7; color: #9b2c2c;">Revisión</span>
+                                {% elif cal.tipo_nota == 'PENDIENTE' %}
+                                <span class="badge" style="background-color: #feebc8; color: #c05621;">Pendiente</span>
+                                {% elif cal.tipo_nota == 'SUPERACION' %}
+                                <span class="badge" style="background-color: #e2e8f0; color: #4a5568;">Remedial</span>
+                                {% else %}
+                                <span class="badge" style="background-color: #edf2f7; color: #4a5568;">Regular</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ cal.cedula_docente_evaluador }}</td>
+                            <td><small>{{ cal.fecha_evaluacion }}</small></td>
+                            <td style="white-space: nowrap;">
+                                <button type="button" class="btn-editar"
+                                    onclick="abrirModalEditar('{{ cal.id }}', '{{ cal.cedula_estudiante }}', '{{ cal.ano_estudiante }}', '{{ cal.codigo_materia }}', '{{ cal.codigo_ano_escolar }}', '{{ cal.numero_momento }}', '{{ cal.nota }}', '{{ cal.tipo_nota }}', '{{ cal.cedula_docente_evaluador }}', '{{ cal.fecha_evaluacion }}', '{{ cal.observaciones or '' }}')">
+                                    Editar
+                                </button>
+                                <a href="{{ url_for('evaluaciones', action='eliminar', id=cal.id) }}" class="btn-borrar"
+                                    onclick="return confirm('¿Seguro que quieres borrar esta nota del sistema?');">
+                                    Borrar
+                                </a>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="10" style="text-align: center; color: #a0aec0; padding: 30px;">
+                                No existen calificaciones cargadas en el sistema.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalEditar" class="modal-overlay">
+        <div class="modal-content">
+            <h2 style="margin-top: 0; color: #2d3748;">Corregir Calificación Registrada</h2>
+            <p class="subtitulo" style="margin-bottom: 15px;">Modificando datos del alumno: <strong
+                    id="modal_label_cedula" style="color:#2b6cb0;"></strong></p>
+
+            <form action="{{ url_for('evaluaciones') }}" method="POST" class="grid-formulario">
+                <input type="hidden" name="id_nota" id="modal_id_nota">
+                <input type="hidden" name="cedula_estudiante" id="modal_cedula_estudiante">
+
+                <div class="campo">
+                    <label>Cédula de Identidad:</label>
+                    <input type="text" id="modal_visual_cedula" class="input-style input-readonly" readonly>
+                </div>
+
+                <div class="campo">
+                    <label>Año Escolar:</label>
+                    <input type="text" name="codigo_ano_escolar" id="modal_ano_escolar"
+                        class="input-style input-readonly" readonly required>
+                </div>
+
+                <div class="campo">
+                    <label>Año del Estudiante:</label>
+                    <select id="modal_select_ano" class="input-style input-readonly" disabled required>
+                        <option value="1">1er Año</option>
+                        <option value="2">2do Año</option>
+                        <option value="3">3er Año</option>
+                        <option value="4">4to Año</option>
+                        <option value="5">5to Año</option>
+                    </select>
+                    <input type="hidden" name="ano_estudiante" id="modal_hidden_ano_estudiante">
+                </div>
+
+                <div class="campo">
+                    <label>Materia:</label>
+                    <select id="modal_select_materia" class="input-style input-readonly" disabled required></select>
+                    <input type="hidden" name="codigo_materia_secundaria" id="modal_hidden_materia">
+                </div>
+
+                <div class="campo">
+                    <label>Cédula del Docente:</label>
+                    <input type="text" name="cedula_docente_evaluador" id="modal_cedula_docente"
+                        class="input-style input-readonly" readonly required>
+                </div>
+
+                <div class="campo" id="contenedor_modal_momento">
+                    <label>Momento Evaluativo:</label>
+                    <select name="numero_momento" id="modal_numero_momento" class="input-style" required>
+                        <option value="1">1er Momento</option>
+                        <option value="2">2do Momento</option>
+                        <option value="3">3er Momento</option>
+                    </select>
+                </div>
+
+                <div class="campo">
+                    <label>Tipo de Calificación:</label>
+                    <select name="tipo_nota" id="modal_tipo_nota" class="input-style"
+                        onchange="calcularEstadoDinamicoModal()" required>
+                        <option value="REGULAR">Evaluación Regular (Ordinaria)</option>
+                        <option value="REVISION">Nota de Revisión / Reparación</option>
+                        <option value="PENDIENTE">Materia Pendiente</option>
+                        <option value="SUPERACION">Remedial</option>
+                    </select>
+                </div>
+
+                <div class="campo">
+                    <label>Calificación Numérica (1 al 20):</label>
+                    <input type="number" name="nota_numerica" id="modal_nota_numerica" class="input-style" min="1"
+                        max="20" step="0.1" oninput="calcularEstadoDinamicoModal()" required>
+                    <span id="modal_feedback_estado" style="font-size: 11px; margin-top: 4px;"></span>
+                </div>
+
+                <div class="campo">
+                    <label>Fecha de la Evaluación:</label>
+                    <input type="date" name="fecha_evaluacion" id="modal_fecha_evaluacion" class="input-style" required>
+                </div>
+
+                <div class="campo-completo">
+                    <label>Observaciones Pedagógicas:</label>
+                    <textarea name="observaciones" id="modal_observaciones" class="input-style" rows="4"
+                        placeholder="Escriba aquí los detalles cualitativos del rendimiento..."></textarea>
+                </div>
+
+                <div class="btn-contenedor" style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button"
+                        style="background-color: #e2e8f0; color: #4a5568; border: none; padding: 10px 20px; font-weight: bold; border-radius: 6px; cursor: pointer;"
+                        onclick="cerrarModalEditar()">Cancelar</button>
+                    <button type="submit" class="btn-submit" style="padding: 10px 25px; margin-top: 0;">Aplicar
+                        Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const baseMaterias = {
+            "1": [
+                { id: "MAT1", nombre: "Matemáticas" },
+                { id: "CAST1", nombre: "Castellano" },
+                { id: "ING1", nombre: "Inglés y otras Lenguas" },
+                { id: "EDFI1", nombre: "Educación Física" },
+                { id: "ARTE1", nombre: "Arte y Patrimonio" },
+                { id: "CNAT1", nombre: "Ciencias Naturales" },
+                { id: "GHC1", nombre: "Geografía, Historia y Ciudadanía" },
+                { id: "OC1", nombre: "Orientación y Convivencia" },
+                { id: "GCRP1", nombre: "Grupos de Creación, Recreación y Prod." }
+            ],
+            "2": [
+                { id: "MAT2", nombre: "Matemáticas" },
+                { id: "CAST2", nombre: "Castellano" },
+                { id: "ING2", nombre: "Inglés y otras Lenguas" },
+                { id: "EDFI2", textContent: "Educación Física", nombre: "Educación Física" },
+                { id: "ARTE2", nombre: "Arte y Patrimonio" },
+                { id: "CNAT2", nombre: "Ciencias Naturales" },
+                { id: "GHC2", nombre: "Geografía, Historia y Ciudadanía" },
+                { id: "OC2", nombre: "Orientación y Convivencia" },
+                { id: "GCRP2", nombre: "Grupos de Creación, Recreación y Prod." }
+            ],
+            "3": [
+                { id: "MAT3", nombre: "Matemáticas" },
+                { id: "CAST3", textContent: "Castellano", nombre: "Castellano" },
+                { id: "ING3", nombre: "Inglés y otras Lenguas" },
+                { id: "EDFI3", nombre: "Educación Física" },
+                { id: "FIS3", nombre: "Física" },
+                { id: "QUI3", nombre: "Química" },
+                { id: "BIO3", nombre: "Biología" },
+                { id: "GHC3", nombre: "Geografía, Historia y Ciudadanía" },
+                { id: "OC3", nombre: "Orientación y Convivencia" },
+                { id: "GCRP3", nombre: "Grupos de Creación, Recreación y Prod." }
+            ],
+            "4": [
+                { id: "MAT4", nombre: "Matemáticas" },
+                { id: "CAST4", nombre: "Castellano" },
+                { id: "ING4", nombre: "Inglés y otras Lenguas" },
+                { id: "EDFI4", nombre: "Educación Física" },
+                { id: "FIS4", nombre: "Física" },
+                { id: "QUI4", nombre: "Química" },
+                { id: "BIO4", nombre: "Biología" },
+                { id: "GHC4", nombre: "Geografía, Historia y Ciudadanía" },
+                { id: "FSN4", nombre: "Formación para la Soberanía Nacional" },
+                { id: "OC4", nombre: "Orientación y Convivencia" },
+                { id: "GCRP4", nombre: "Grupos de Creación, Recreación y Prod." }
+            ],
+            "5": [
+                { id: "MAT5", nombre: "Matemáticas" },
+                { id: "CAST5", nombre: "Castellano" },
+                { id: "ING5", nombre: "Inglés y otras Lenguas" },
+                { id: "EDFI5", nombre: "Educación Física" },
+                { id: "FIS5", nombre: "Física" },
+                { id: "QUI5", nombre: "Química" },
+                { id: "BIO5", nombre: "Biología" },
+                { id: "CT5", nombre: "Ciencias de la Tierra" },
+                { id: "GHC5", nombre: "Geografía, Historia y Ciudadanía" },
+                { id: "FSN5", nombre: "Formación para la Soberanía Nacional" },
+                { id: "OC5", nombre: "Orientación y Convivencia" },
+                { id: "GCRP5", nombre: "Grupos de Creación, Recreación y Prod." }
+            ]
+        };
+
+        function ajustarFormularioPrincipal() {
+            const ano = document.getElementById('select_ano_estudiante').value;
+            const tipoNota = document.getElementById('select_tipo_nota').value;
+            const selectMateria = document.getElementById('select_materia_secundaria');
+            const selectMomento = document.getElementById('select_numero_momento');
+            const ayudaPrevial = document.getElementById('ayuda-momento-revision-principal');
+            if (ayudaPrevial) ayudaPrevial.remove();
+
+            if (tipoNota === "REVISION") {
+                selectMomento.value = "3";
+                const ayuda = document.createElement('small');
+                ayuda.id = 'ayuda-momento-revision-principal';
+                ayuda.style.color = '#dd6b20';
+                ayuda.style.fontWeight = '600';
+                ayuda.style.marginTop = '4px';
+                ayuda.textContent = 'Sugerido automáticamente al Cierre del Año (3er Momento).';
+                document.getElementById('contenedor_select_momento').appendChild(ayuda);
+            }
+
+            if (!ano) return;
+            selectMateria.innerHTML = '<option value="" selected disabled>Seleccione una materia...</option>';
+            selectMateria.disabled = false;
+
+            if (tipoNota === "PENDIENTE") {
+                let anoNum = parseInt(ano);
+                if (anoNum <= 1) {
+                    selectMateria.innerHTML = '<option value="" selected disabled>1er Año no posee Materias Pendientes</option>';
+                    verificarMateriaManualSecundaria("");
+                    return;
+                }
+
+                for (let i = 1; i < anoNum; i++) {
+                    if (baseMaterias[i]) {
+                        baseMaterias[i].forEach(materia => {
+                            const opt = document.createElement('option');
+                            opt.value = materia.id;
+                            opt.textContent = `${materia.nombre} (${i}° Año)`;
+                            selectMateria.appendChild(opt);
+                        });
+                    }
+                }
+            } else {
+                if (baseMaterias[ano]) {
+                    baseMaterias[ano].forEach(materia => {
+                        const opt = document.createElement('option');
+                        opt.value = materia.id;
+                        opt.textContent = materia.nombre;
+                        selectMateria.appendChild(opt);
+                    });
+                }
+            }
+
+            const optManual = document.createElement('option');
+            optManual.value = "MANUAL";
+            optManual.textContent = "Otra (Ingresar código manualmente)";
+            selectMateria.appendChild(optManual);
+            verificarMateriaManualSecundaria("");
+        }
+
+        function verificarMateriaManualSecundaria(valor) {
+            const bloqueManualSec = document.getElementById('bloque-manual-secundaria');
+            const inputManualSec = document.getElementById('input_materia_secundaria_manual');
+
+            if (valor === 'MANUAL') {
+                bloqueManualSec.style.display = 'flex';
+                inputManualSec.required = true;
+                inputManualSec.focus();
+            } else {
+                bloqueManualSec.style.display = 'none';
+                inputManualSec.required = false;
+                inputManualSec.value = '';
+            }
+        }
+
+        function abrirModalEditar(id, cedula, anoEstudiante, materiaActual, anoEscolar, momento, nota, tipoNota, docente, fecha, observaciones) {
+            const tipoLimpio = tipoNota ? tipoNota.trim() : "REGULAR";
+
+            document.getElementById('modal_id_nota').value = id;
+            document.getElementById('modal_cedula_estudiante').value = cedula;
+            document.getElementById('modal_visual_cedula').value = cedula;
+            document.getElementById('modal_label_cedula').textContent = cedula;
+            document.getElementById('modal_ano_escolar').value = anoEscolar;
+            document.getElementById('modal_numero_momento').value = momento;
+            document.getElementById('modal_nota_numerica').value = nota;
+            document.getElementById('modal_tipo_nota').value = tipoLimpio;
+            document.getElementById('modal_cedula_docente').value = docente;
+            document.getElementById('modal_fecha_evaluacion').value = fecha;
+            document.getElementById('modal_observaciones').value = observaciones;
+            document.getElementById('modal_select_ano').value = anoEstudiante;
+            document.getElementById('modal_hidden_ano_estudiante').value = anoEstudiante;
+
+            filtrarMateriasModal(anoEstudiante, materiaActual, tipoLimpio);
+            document.getElementById('modal_hidden_materia').value = materiaActual;
+
+            calcularEstadoDinamicoModal();
+            document.getElementById('modalEditar').style.display = 'flex';
+        }
+
+        function cerrarModalEditar() {
+            document.getElementById('modalEditar').style.display = 'none';
+        }
+
+        function filtrarMateriasModal(ano, materiaSeleccionada = "", tipoNota = "REGULAR") {
+            const selectMateria = document.getElementById('modal_select_materia');
+            selectMateria.innerHTML = '';
+
+            if (tipoNota === "PENDIENTE") {
+                let anoNum = parseInt(ano);
+                for (let i = 1; i < anoNum; i++) {
+                    if (baseMaterias[i]) {
+                        baseMaterias[i].forEach(m => {
+                            const opt = document.createElement('option');
+                            opt.value = m.id;
+                            opt.textContent = `${m.nombre} (${i}° Año)`;
+                            if (m.id === materiaSeleccionada) opt.selected = true;
+                            selectMateria.appendChild(opt);
+                        });
+                    }
+                }
+            } else {
+                if (baseMaterias[ano]) {
+                    baseMaterias[ano].forEach(m => {
+                        const opt = document.createElement('option');
+                        opt.value = m.id;
+                        opt.textContent = m.nombre;
+                        if (m.id === materiaSeleccionada) opt.selected = true;
+                        selectMateria.appendChild(opt);
+                    });
+                }
+            }
+
+            let encontrada = false;
+            for (let i = 0; i < selectMateria.options.length; i++) {
+                if (selectMateria.options[i].value === materiaSeleccionada) {
+                    encontrada = true;
+                    break;
+                }
+            }
+
+            if (materiaSeleccionada && !encontrada) {
+                const opt = document.createElement('option');
+                opt.value = materiaSeleccionada;
+                opt.textContent = `${materiaSeleccionada} (Historial/Manual)`;
+                opt.selected = true;
+                selectMateria.appendChild(opt);
+            }
+        }
+
+        function calcularEstadoDinamicoModal() {
+            const tipo = document.getElementById('modal_tipo_nota').value.trim();
+            const nota = parseFloat(document.getElementById('modal_nota_numerica').value) || 0;
+            const feedback = document.getElementById('modal_feedback_estado');
+            const selectMomento = document.getElementById('modal_numero_momento');
+            const anoEstudiante = document.getElementById('modal_select_ano').value;
+            const materiaActual = document.getElementById('modal_hidden_materia').value;
+
+            if (nota < 1 || nota > 20) {
+                feedback.textContent = "Nota fuera de rango (1-20)";
+                feedback.style.color = "#e53e3e";
+                feedback.style.fontWeight = "bold";
+                return;
+            }
+
+            if (tipo === "REVISION") {
+                selectMomento.value = "3";
+            }
+
+            filtrarMateriasModal(anoEstudiante, materiaActual, tipo);
+
+            if (nota >= 10) {
+                feedback.textContent = tipo === "REVISION" ? "Estado: Aprobado (En Revisión)" : "Estado: Aprobado";
+                feedback.style.color = "#38a169";
+            } else {
+                feedback.textContent = tipo === "REVISION" ? "Estado: Reprobado (En Revisión)" : "Estado: Reprobado";
+                feedback.style.color = "#e53e3e";
+            }
+            feedback.style.fontWeight = "bold";
+        }
+
+        function mostrarAlertaObservacion(elemento) {
+            const cedula = elemento.getAttribute('data-cedula');
+            const texto = elemento.getAttribute('data-observaciones');
+            alert("Observación Pedagógica\nEstudiante: " + cedula + "\n\n» " + texto);
+        }
+
+        document.getElementById('buscadorHistorial').addEventListener('keyup', function () {
+            let filtro = this.value.toLowerCase();
+            let filas = document.querySelectorAll('#tablaCalificaciones tbody tr');
+
+            filas.forEach(fila => {
+                let textoFila = fila.textContent.toLowerCase();
+                if (textoFila.includes(filtro) || textoFila.includes("no existen calificaciones")) {
+                    fila.style.display = '';
+                } else {
+                    fila.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

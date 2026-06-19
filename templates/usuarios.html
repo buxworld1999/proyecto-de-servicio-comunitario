@@ -3,19 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Usuarios - U.E.E Carmen Ruíz</title>
+    <title>Gestión de Usuarios — PRISMA</title>
     <link rel="stylesheet" href="static/gestion_user.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="static/theme-apply.js"></script>
 </head>
 
 <body>
     <div class="container">
-        <!-- Panel de Creación -->
+
+        <!-- ── Panel de Creación ── -->
         <div class="form-container">
             <h1>Crear Usuario</h1>
 
             {% with messages = get_flashed_messages() %}
             {% if messages %}
             <div class="alert-info">
+                <i class="fa-solid fa-circle-check"></i>
                 {{ messages[0] }}
             </div>
             {% endif %}
@@ -27,7 +31,7 @@
                     <div class="form-group">
                         <label>Asociar a Personal</label>
                         <select name="cedula_personal" required>
-                            <option value="">-- Seleccionar Trabajador --</option>
+                            <option value="">— Seleccionar trabajador —</option>
                             {% for p in personal_disponible %}
                             <option value="{{ p.cedula }}">{{ p.nombres }} {{ p.apellidos }} ({{ p.cedula }})</option>
                             {% endfor %}
@@ -59,11 +63,13 @@
                         </select>
                     </div>
                 </div>
-                <button type="submit" class="btn-submit">Crear Cuenta</button>
+                <button type="submit" class="btn-submit">
+                    <i class="fa-solid fa-user-plus"></i> Crear Cuenta
+                </button>
             </form>
         </div>
 
-        <!-- Tabla de Cuentas Existentes -->
+        <!-- ── Tabla de Cuentas Existentes ── -->
         <div class="table-container">
             <h2>Cuentas de Usuarios</h2>
             <div class="table-responsive">
@@ -82,44 +88,55 @@
                         <tr>
                             <td><strong>{{ u.codigo_usuario }}</strong></td>
                             <td>{{ u.nombre_personal }}</td>
-                            <td><span style="text-transform: uppercase;">{{ u.rol }}</span></td>
                             <td>
-                                <span
-                                    style="color: {{ '#10b981' if u.estado == 'A' else '#ef4444' }}; font-weight: bold;">
-                                    {{ 'Activo' if u.estado == 'A' else 'Inactivo' }}
-                                </span>
+                                <span class="role-pill">{{ u.rol }}</span>
                             </td>
                             <td>
-                                <!-- Cambiar Estado -->
-                                <form method="POST" action="/usuarios" style="display:inline;">
-                                    <input type="hidden" name="accion" value="cambiar_estado">
-                                    <input type="hidden" name="usuario_id" value="{{ u.id }}">
-                                    <input type="hidden" name="estado_actual" value="{{ u.estado }}">
-                                    <button type="submit"
-                                        class="btn-action {{ 'btn-danger' if u.estado == 'A' else 'btn-success' }}">
-                                        {{ 'Desactivar' if u.estado == 'A' else 'Activar' }}
-                                    </button>
-                                </form>
+                                {% if u.estado == 'A' %}
+                                <span class="badge-activo"><i class="fa-solid fa-circle-dot fa-xs"></i> Activo</span>
+                                {% else %}
+                                <span class="badge-inactivo"><i class="fa-solid fa-circle-minus fa-xs"></i> Inactivo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="inline-actions">
+                                    <!-- Cambiar Estado -->
+                                    <form method="POST" action="/usuarios" style="display:inline;">
+                                        <input type="hidden" name="accion" value="cambiar_estado">
+                                        <input type="hidden" name="usuario_id" value="{{ u.id }}">
+                                        <input type="hidden" name="estado_actual" value="{{ u.estado }}">
+                                        <button type="submit"
+                                            class="btn-action {{ 'btn-danger' if u.estado == 'A' else 'btn-success' }}">
+                                            {{ 'Desactivar' if u.estado == 'A' else 'Activar' }}
+                                        </button>
+                                    </form>
 
-                                <!-- Cambiar Contraseña -->
-                                <form method="POST" action="/usuarios" style="display:inline; margin-left: 10px;">
-                                    <input type="hidden" name="accion" value="cambiar_clave">
-                                    <input type="hidden" name="usuario_id" value="{{ u.id }}">
-                                    <input type="password" name="nueva_clave" placeholder="Nueva clave" required
-                                        style="width: 100px; padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: #fff;">
-                                    <button type="submit" class="btn-action btn-primary">Cambiar Clave</button>
-                                </form>
+                                    <!-- Cambiar Contraseña -->
+                                    <form method="POST" action="/usuarios" style="display:inline;">
+                                        <input type="hidden" name="accion" value="cambiar_clave">
+                                        <input type="hidden" name="usuario_id" value="{{ u.id }}">
+                                        <input type="password" name="nueva_clave" placeholder="Nueva clave"
+                                            class="inline-clave-input" required>
+                                        <button type="submit" class="btn-action btn-primary">
+                                            <i class="fa-solid fa-key fa-xs"></i> Cambiar
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="5" style="text-align: center;">No hay cuentas creadas en el sistema.</td>
+                            <td colspan="5" style="text-align:center; color:#94a3b8; padding: 32px;">
+                                <i class="fa-regular fa-folder-open" style="font-size:1.5rem; display:block; margin-bottom:8px; color:#cbd5e1;"></i>
+                                No hay cuentas creadas en el sistema.
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
+
     </div>
 </body>
 </html>
