@@ -1,0 +1,217 @@
+ @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+ :root {
+     --surface: #ffffff;
+     --surface-2: #f8fafc;
+     --text: #1e293b;
+     --text-sub: #64748b;
+     --label: #475569;
+     --border: #e2e8f0;
+     --input-bg: #ffffff;
+     --primary: #2563eb;
+     --primary-dk: #1d4ed8;
+     --success: #10b981;
+     --fs-bg: rgba(248, 250, 252, 0.6);
+ }
+
+ html.dark {
+     --surface: #0f172a;
+     --surface-2: #1e293b;
+     --text: #f1f5f9;
+     --text-sub: #94a3b8;
+     --label: #cbd5e1;
+     --border: #334155;
+     --input-bg: #1e293b;
+     --input-text: #f1f5f9;
+     --primary: #3b82f6;
+     --primary-dk: #2563eb;
+     --success: #4ade80;
+     --fs-bg: rgba(30, 41, 59, 0.5);
+ }
+
+
+ * {
+     box-sizing: border-box;
+     margin: 0;
+     padding: 0;
+ }
+
+ body {
+     font-family: 'Outfit', sans-serif;
+     background: transparent;
+     color: var(--text);
+     padding: 16px;
+     font-size: 14px;
+ }
+
+ .form-container {
+     max-width: 100%;
+     margin: 0;
+     background: var(--surface);
+     border: 1px solid var(--border);
+     border-radius: 12px;
+     padding: 20px 24px;
+     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07), 0 4px 16px rgba(0, 0, 0, 0.05);
+ }
+
+ h2 {
+     text-align: center;
+     font-size: 1.25rem;
+     font-weight: 700;
+     color: var(--text);
+     margin-bottom: 18px;
+     padding-bottom: 14px;
+     border-bottom: 1px solid var(--border);
+ }
+
+ fieldset {
+     border: none;
+     background: var(--fs-bg);
+     border-radius: 8px;
+     padding: 14px 16px;
+     margin-bottom: 12px;
+     border-left: 3px solid var(--primary);
+ }
+
+ legend {
+     font-weight: 600;
+     font-size: 0.82rem;
+     color: var(--primary);
+     text-transform: uppercase;
+     letter-spacing: 0.5px;
+     margin-bottom: 10px;
+     display: inline-block;
+ }
+
+ .form-grid {
+     display: grid;
+     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+     gap: 10px;
+ }
+
+ .form-group {
+     display: flex;
+     flex-direction: column;
+     gap: 4px;
+ }
+
+ .form-group label {
+     font-size: 11px;
+     font-weight: 600;
+     color: var(--label);
+     text-transform: uppercase;
+     letter-spacing: 0.4px;
+ }
+
+ input[type="text"],
+ input[type="number"],
+ input[type="date"],
+ input[type="email"],
+ select,
+ textarea {
+     width: 100%;
+     padding: 8px 10px;
+     background: var(--input-bg);
+     border: 1px solid var(--border);
+     border-radius: 6px;
+     color: var(--text);
+     font-family: 'Outfit', sans-serif;
+     font-size: 13px;
+     transition: border-color 0.2s, box-shadow 0.2s;
+     box-sizing: border-box;
+     outline: none;
+ }
+
+ input:focus,
+ select:focus,
+ textarea:focus {
+     border-color: var(--primary);
+     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+ }
+
+ .btn-submit {
+     display: block;
+     width: 100%;
+     padding: 11px;
+     margin-top: 18px;
+     background: var(--primary);
+     color: white;
+     border: none;
+     border-radius: 8px;
+     font-family: 'Outfit', sans-serif;
+     font-size: 14px;
+     font-weight: 600;
+     cursor: pointer;
+     transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+     letter-spacing: 0.3px;
+ }
+
+ .btn-submit:hover {
+     background: var(--primary-dk);
+     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+     transform: translateY(-1px);
+ }
+
+ .alert {
+     background: rgba(16, 185, 129, 0.08);
+     border: 1px solid rgba(16, 185, 129, 0.3);
+     color: #065f46;
+     padding: 12px 16px;
+     border-radius: 8px;
+     margin-bottom: 16px;
+     text-align: center;
+     font-weight: 600;
+     font-size: 13px;
+ }
+
+ .gray-section {
+     background: var(--surface-2);
+     padding: 10px;
+     border-radius: 6px;
+     margin-top: 8px;
+ }
+
+ /* ── Drop Zone — simple y auténtica ── */
+ .drop-zone {
+     border: 1px dashed var(--border);
+     border-radius: 10px;
+     padding: 24px 16px;
+     background: var(--surface-2);
+     cursor: pointer;
+     text-align: center;
+     transition: border-color 0.2s, background 0.2s;
+     margin-bottom: 16px;
+ }
+
+ .drop-zone:hover,
+ .drop-zone.drag-over {
+     border-color: var(--primary);
+     background: rgba(37, 99, 235, 0.04);
+ }
+
+ .drop-zone i.drop-icon {
+     font-size: 2rem;
+     color: var(--primary);
+     margin-bottom: 8px;
+     display: inline-block;
+ }
+
+ .drop-zone h3 {
+     font-size: 0.95rem;
+     font-weight: 600;
+     color: var(--text);
+     margin-bottom: 4px;
+ }
+
+ .drop-zone p {
+     font-size: 0.8rem;
+     color: var(--text-sub);
+     margin: 0;
+ }
+
+ #file-name-display {
+     margin-top: 8px;
+     font-weight: 600;
+     color: var(--success);
+     font-size: 0.85rem;
+ }

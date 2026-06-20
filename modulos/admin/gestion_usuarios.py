@@ -40,11 +40,32 @@ def gestion_usuarios():
 
         # Acción A: Crear un nuevo usuario
         if accion == 'crear':
-            v_cedula = request.form.get('cedula_personal')
+            v_rol = request.form.get('rol', 'docente').strip().lower()
             v_codigo = request.form.get('codigo_usuario', '').strip()
             v_clave = request.form.get('clave', '').strip()
-            v_rol = request.form.get('rol', 'docente').strip().lower()
             v_estado = request.form.get('estado', 'A')
+
+            v_cedula = request.form.get('cedula_personal')
+
+            # Si es admin, puede que estemos usando cedula_admin y nombre_admin
+            if v_rol == 'admin' and request.form.get('cedula_admin') and request.form.get('nombre_admin'):
+                v_cedula = request.form.get('cedula_admin').strip()
+                v_nombre = request.form.get('nombre_admin').strip()
+                
+                # Verificar si ya existe en personal, si no, lo creamos
+                try:
+                    per_exist = supabase.table("personal").select("cedula").eq("cedula", v_cedula).execute()
+                    if not per_exist.data:
+                        # Insertar como nuevo personal
+                        supabase.table("personal").insert({
+                            "cedula": v_cedula,
+                            "nombres": v_nombre,
+                            "apellidos": "",
+                            "estado": "A"
+                        }).execute()
+                except Exception as e:
+                    flash(f"Error al verificar/crear personal para el admin: {str(e)}")
+                    return redirect(url_for('usuarios'))
 
             if not v_cedula or not v_codigo or not v_clave:
                 flash("Todos los campos obligatorios son requeridos.")

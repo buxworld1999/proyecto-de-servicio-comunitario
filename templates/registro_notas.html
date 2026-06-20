@@ -6,51 +6,7 @@
     <title>Registro de Notas | PRISMA</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='academico.css') }}">
-    <style>
-        .planilla-header {
-            background: linear-gradient(135deg, #1e293b, #0f172a);
-            color: #e2e8f0;
-            border-radius: 12px;
-            padding: 16px 20px;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-        .planilla-info span { font-size: 13px; opacity: .8; display: block; }
-        .planilla-info strong { font-size: 15px; }
-        .estado-cerrado {
-            background: #fff1f2; border: 2px solid #fca5a5;
-            border-radius: 10px; padding: 12px 18px;
-            color: #b91c1c; font-weight: 600; font-size: 14px;
-            display: flex; align-items: center; gap: 10px;
-            margin-bottom: 16px;
-        }
-        .num-lista {
-            display: inline-block;
-            width: 28px; height: 28px;
-            background: #e2e8f0;
-            border-radius: 50%;
-            text-align: center; line-height: 28px;
-            font-size: 12px; font-weight: 700;
-            color: #475569;
-        }
-        .estudiante-nombre { font-weight: 600; color: #1e293b; }
-        .estudiante-cedula { font-size: 11px; color: #64748b; }
-        .filtros-panel {
-            background: #fff; border-radius: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,.07);
-            padding: 20px 24px; margin-bottom: 20px;
-        }
-        .tag-docente {
-            display: inline-flex; align-items: center; gap: 6px;
-            background: #ede9fe; color: #6d28d9;
-            padding: 4px 12px; border-radius: 20px;
-            font-size: 12px; font-weight: 700;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for(\'static\', filename=\'registro_notas.css\') }}">
     <script src="static/theme-apply.js"></script>
 </head>
 <body>
