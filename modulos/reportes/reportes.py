@@ -57,7 +57,7 @@ def reportes():
         flash(f"Error al cargar el feed de acontecimientos: {str(e)}", "danger")
 
     return render_template(
-        'reportes.html', 
+        'reportes/reportes.html', 
         usuario_nombre=session.get('nombre', 'Usuario'),
         usuario_rol=session.get('rol', ''),
         acontecimientos=acontecimientos

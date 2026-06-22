@@ -112,7 +112,7 @@ def momentos_view():
     total_cerrados  = sum(1 for m in momentos_raw if m.get('estado') == 'C')
 
     return render_template(
-        'momentos.html',
+        'academico/momentos.html',
         anos             = anos,
         momentos_dict    = momentos_dict,
         momentos_raw     = momentos_raw,

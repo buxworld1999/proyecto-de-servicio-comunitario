@@ -136,4 +136,4 @@ def evaluaciones_view():
         notas_registradas = []
         flash(f"Error al conectar con la base de datos: {str(e)}", "error")
 
-    return render_template('evaluaciones_notas.html', calificaciones=notas_registradas, mapa_materias=mapa_materias)
+    return render_template('evaluacion/evaluaciones_notas.html', calificaciones=notas_registradas, mapa_materias=mapa_materias)

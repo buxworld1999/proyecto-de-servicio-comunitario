@@ -141,7 +141,7 @@ def boletines_view():
         return redirect(url_for('boletines', ano=ano_sel, seccion=sec_sel, cedula=cedula_buscar))
 
     return render_template(
-        'boletines.html',
+        'evaluacion/boletines.html',
         anos               = anos,
         secciones          = secciones,
         boletines          = boletines,
@@ -410,7 +410,7 @@ def boletin_ver_view(boletin_id):
         ]
 
     return render_template(
-        'boletin_ver.html',
+        'evaluacion/boletin_ver.html',
         boletin       = boletin,
         estudiante    = estudiante,
         seccion_info  = seccion_info,

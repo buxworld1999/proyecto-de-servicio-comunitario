@@ -59,4 +59,4 @@ def secciones_view():
         flash(f"Error al cargar secciones: {str(e)}")
         agrupacion = {}
 
-    return render_template('secciones.html', agrupacion=agrupacion)
+    return render_template('academico/secciones.html', agrupacion=agrupacion)

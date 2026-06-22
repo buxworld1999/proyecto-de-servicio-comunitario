@@ -53,4 +53,4 @@ def personal():
     except Exception as e:
         flash(f"Error al obtener la lista de personal: {str(e)}")
 
-    return render_template('personal.html', lista_personal=lista_personal)
+    return render_template('personal/personal.html', lista_personal=lista_personal)

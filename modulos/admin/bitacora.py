@@ -163,7 +163,7 @@ def bitacora_view():
         r['color'] = _CATEGORIA_COLOR.get(r.get('categoria', ''), '#64748b')
 
     return render_template(
-        'bitacora.html',
+        'admin/bitacora.html',
         registros       = registros,
         total           = total,
         pagina          = pagina,

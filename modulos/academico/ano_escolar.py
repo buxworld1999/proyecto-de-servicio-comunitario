@@ -46,7 +46,7 @@ def ano_escolar_view():
         periodos_registrados = []
         flash(f"Error al cargar el historial desde Supabase: {str(e)}", "error")
 
-    return render_template('ano_escolar.html', periodos=periodos_registrados)
+    return render_template('academico/ano_escolar.html', periodos=periodos_registrados)
 
 
 def activar_ano_logic(codigo_ano):

@@ -116,7 +116,7 @@ def vista_terminal():
     """Renderiza la página HTML del terminal."""
     with _lock:
         logs_iniciales = list(_log_buffer)
-    return render_template('admin_terminal.html', logs_iniciales=logs_iniciales)
+    return render_template('admin/admin_terminal.html', logs_iniciales=logs_iniciales)
 
 
 def sse_stream():

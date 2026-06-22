@@ -77,7 +77,7 @@ def materias_view():
     total_inactivas = len(materias) - total_activas
 
     return render_template(
-        'materias.html',
+        'academico/materias.html',
         materias        = materias,
         grados          = grados,
         grados_dict     = grados_dict,

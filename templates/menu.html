@@ -22,6 +22,9 @@
     <header class="topbar">
 
         <div class="logo-container">
+            <button id="sidebarToggle" class="sidebar-toggle-btn" aria-label="Alternar menú">
+                <i class="fa-solid fa-bars"></i>
+            </button>
             <img src="{{ url_for('static', filename='fondo_escuela.jpg') }}" class="logo-img"
                 alt="Logo Unidad Educativa Carmen Ruíz">
             <div class="logo-text">
@@ -308,6 +311,22 @@
     <!-- JAVASCRIPT                                                   -->
     <!-- ============================================================ -->
     <script>
+
+        // ============================================================
+        // MENÚ DESPLEGABLE (SIDEBAR TOGGLE)
+        // ============================================================
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('sidebar');
+
+        // Restaurar estado guardado del sidebar
+        if (localStorage.getItem('prisma_sidebar') === 'collapsed') {
+            sidebar.classList.add('collapsed');
+        }
+
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            localStorage.setItem('prisma_sidebar', sidebar.classList.contains('collapsed') ? 'collapsed' : 'open');
+        });
 
         // ============================================================
         // TEMA OSCURO / CLARO

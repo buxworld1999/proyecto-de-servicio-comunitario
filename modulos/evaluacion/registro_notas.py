@@ -324,7 +324,7 @@ def registro_notas_view():
                 materia=materia_form, momento=momento_form))
 
     return render_template(
-        'registro_notas.html',
+        'evaluacion/registro_notas.html',
         anos                 = anos,
         secciones            = secciones,
         materias             = materias,

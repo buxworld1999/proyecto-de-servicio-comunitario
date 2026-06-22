@@ -105,7 +105,7 @@ def carga_masiva_notas_view():
     # ── GET: mostrar formulario ───────────────────────────────────────
     if request.method != 'POST':
         return render_template(
-            'carga_masiva_notas.html',
+            'evaluacion/carga_masiva_notas.html',
             anos=anos, secciones=secciones, materias=materias, momentos=momentos,
             ano_sel=ano_sel, seccion_sel=seccion_sel, secciones_todas=secciones_todas,
         )
@@ -168,7 +168,7 @@ def carga_masiva_notas_view():
     if not registros:
         flash("El motor no encontró registros de notas en el archivo.", "danger")
         return render_template(
-            'carga_masiva_notas.html',
+            'evaluacion/carga_masiva_notas.html',
             anos=anos, secciones=secciones, materias=materias, momentos=momentos,
             ano_sel=ano_form, secciones_todas=secciones_todas,
             procesado=True,
@@ -315,7 +315,7 @@ def carga_masiva_notas_view():
     momento_nombre = mom_info.get('nombre', f"Momento {num_momento}")
 
     return render_template(
-        'carga_masiva_notas.html',
+        'evaluacion/carga_masiva_notas.html',
         anos=anos, secciones=secciones, materias=materias, momentos=momentos,
         ano_sel=ano_form, secciones_todas=secciones_todas,
         procesado=True,

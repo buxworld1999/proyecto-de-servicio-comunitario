@@ -67,7 +67,7 @@ def registro_estudiantes():
             
         return redirect(url_for('registro_estudiantes'))
 
-    return render_template('registro_estudiantes.html')
+    return render_template('estudiantes/registro_estudiantes.html')
 
 def descargar_plantilla_estudiantes_view():
     """Genera y descarga una plantilla Excel vacía para la carga masiva."""

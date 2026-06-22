@@ -46,7 +46,7 @@ def activos_institucion():
 
     # Retornamos las variables exactas que pide tu HTML: 'activos' y 'total'
     return render_template(
-        'activos.html',
+        'admin/activos.html',
         activos=activos_lista,
         total=valor_total_inventario
     )

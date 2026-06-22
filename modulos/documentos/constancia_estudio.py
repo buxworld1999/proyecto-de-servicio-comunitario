@@ -73,7 +73,7 @@ def constancia_estudio():
                 error_busqueda = f"Error al consultar: {str(e)}"
 
     return render_template(
-        'constancia_estudio.html',
+        'documentos/constancia_estudio.html',
         alumno=alumno,
         error_busqueda=error_busqueda,
         formatos=formatos_auto,

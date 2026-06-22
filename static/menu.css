@@ -89,7 +89,26 @@ body {
 .logo-container {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
+}
+
+.sidebar-toggle-btn {
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background 0.2s, color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar-toggle-btn:hover {
+    background: rgba(125, 125, 125, 0.1);
+    color: var(--primary);
 }
 
 .logo-img {
@@ -269,7 +288,13 @@ body {
     padding: 20px 16px;
     overflow: hidden;
 
-    transition: width 0.3s;
+    transition: width 0.3s ease, padding 0.3s ease;
+}
+
+.sidebar.collapsed {
+    width: 0;
+    padding-left: 0;
+    padding-right: 0;
 }
 
 /* Encabezado del sidebar */

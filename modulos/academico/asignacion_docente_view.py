@@ -139,7 +139,7 @@ def asignacion_docente_view():
     total_asignaciones = len(asignaciones)
 
     return render_template(
-        'asignacion_docente.html',
+        'academico/asignacion_docente.html',
         anos                    = anos,
         docentes                = docentes,
         materias                = materias,

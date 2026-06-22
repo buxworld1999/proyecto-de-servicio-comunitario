@@ -212,7 +212,7 @@ def notas_certificadas_view():
                 historial.append(bol)
 
     return render_template(
-        'notas_certificadas.html',
+        'evaluacion/notas_certificadas.html',
         anos          = anos,
         anos_lista    = anos,
         ano_sel       = ano_sel,
@@ -406,7 +406,7 @@ def nota_certificada_ver_view():
     emisor_nombre       = session.get('nombre', 'Secretaría')
 
     return render_template(
-        'nota_certificada_ver.html',
+        'evaluacion/nota_certificada_ver.html',
         estudiante          = estudiante,
         ano_info            = ano_info,
         institucion         = institucion,

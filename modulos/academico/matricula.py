@@ -40,7 +40,7 @@ def matricula_view():
     estudiantes = get_estudiantes()
     anos = get_anos_escolares()
     secciones = get_secciones()
-    return render_template('matricula.html', estudiantes=estudiantes, anos=anos, secciones=secciones)
+    return render_template('estudiantes/matricula.html', estudiantes=estudiantes, anos=anos, secciones=secciones)
 
 def matricula_automatica_view():
     """Realiza la matrícula masiva basada en los campos anio y seccion de los estudiantes."""

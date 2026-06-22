@@ -29,4 +29,4 @@ def buscar_estu():
                 error_busqueda = f"Error al conectar con la base de datos: {str(e)}"
 
     # Retorna la plantilla pasándole las variables (estén llenas o vacías)
-    return render_template('buscar_estu.html', estudiante=estudiante, error=error_busqueda)
+    return render_template('estudiantes/buscar_estu.html', estudiante=estudiante, error=error_busqueda)

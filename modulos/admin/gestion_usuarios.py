@@ -169,7 +169,7 @@ def gestion_usuarios():
         return redirect(url_for('usuarios'))
 
     return render_template(
-        'usuarios.html',
+        'admin/usuarios.html',
         usuarios=usuarios_lista,
         personal_disponible=personal_disponible,
         rol_usuario=session.get('rol', '')
