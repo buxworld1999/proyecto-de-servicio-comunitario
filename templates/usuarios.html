@@ -62,7 +62,9 @@
                             <option value="secretaria">Secretaria</option>
                             <option value="coordinador">Coordinador</option>
                             <option value="director">Director</option>
+                            {% if rol_usuario == 'admin' %}
                             <option value="admin">Administrador</option>
+                            {% endif %}
                         </select>
                     </div>
                     <div class="form-group">
@@ -129,6 +131,15 @@
                                             class="inline-clave-input" required>
                                         <button type="submit" class="btn-action btn-primary">
                                             <i class="fa-solid fa-key fa-xs"></i> Cambiar
+                                        </button>
+                                    </form>
+
+                                    <!-- Eliminar Usuario -->
+                                    <form method="POST" action="/usuarios" style="display:inline;" onsubmit="return confirm('¿Estás seguro de eliminar a este usuario?');">
+                                        <input type="hidden" name="accion" value="eliminar">
+                                        <input type="hidden" name="usuario_id" value="{{ u.id }}">
+                                        <button type="submit" class="btn-action btn-danger" style="margin-left: 5px; background: #dc3545;">
+                                            <i class="fa-solid fa-trash fa-xs"></i> Eliminar
                                         </button>
                                     </form>
                                 </div>

@@ -2,7 +2,7 @@
 # Módulo de Gestión de Usuarios para PRISMA
 # Unidad Educativa Carmen Ruíz
 
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash, session
 from db import supabase
 
 def gestion_usuarios():
@@ -11,9 +11,19 @@ def gestion_usuarios():
     try:
         usuarios_resp = supabase.table("usuario").select("*").execute()
         usuarios_lista = usuarios_resp.data or []
+        
+        # 3. Calcular qué personal ya tiene cuenta ANTES de filtrar la lista visual para el director
+        cedulas_con_usuario = {u['cedula_personal'] for u in usuarios_lista if u.get('cedula_personal')}
+
+        #rol director vea el panel de usuarios menos lo de admin
+        rol_actual = session.get('rol', '')
+        if rol_actual == 'director':
+            #que vea menos lo del admin (ignorando mayúsculas)
+            usuarios_lista = [u for u in usuarios_lista if str(u.get('rol') or '').strip().lower() != 'admin']
     except Exception as e:
         flash(f"Error al obtener usuarios: {str(e)}")
         usuarios_lista = []
+        cedulas_con_usuario = set()
 
     # 2. Obtener todo el personal para mapear los nombres reales de los usuarios
     try:
@@ -31,7 +41,6 @@ def gestion_usuarios():
         u['nombre_personal'] = personal_dict.get(u['cedula_personal'], "No asociado")
 
     # 3. Filtrar personal que NO tiene un usuario creado aún
-    cedulas_con_usuario = {u['cedula_personal'] for u in usuarios_lista if u.get('cedula_personal')}
     personal_disponible = [p for p in personal_lista if p['cedula'] not in cedulas_con_usuario]
 
     # ── PROCESAR ACCIONES (POST) ──
@@ -41,6 +50,12 @@ def gestion_usuarios():
         # Acción A: Crear un nuevo usuario
         if accion == 'crear':
             v_rol = request.form.get('rol', 'docente').strip().lower()
+            
+            rol_actual = session.get('rol', '')
+            if rol_actual == 'director' and v_rol == 'admin':
+                flash("No tienes permisos para crear un usuario administrador.")
+                return redirect(url_for('usuarios'))
+
             v_codigo = request.form.get('codigo_usuario', '').strip()
             v_clave = request.form.get('clave', '').strip()
             v_estado = request.form.get('estado', 'A')
@@ -90,6 +105,16 @@ def gestion_usuarios():
             v_estado_actual = request.form.get('estado_actual')
             nuevo_estado = 'I' if v_estado_actual == 'A' else 'A'
 
+            rol_actual = session.get('rol', '')
+            if rol_actual == 'director':
+                try:
+                    user_resp = supabase.table("usuario").select("rol").eq("id", v_usuario_id).execute()
+                    if user_resp.data and str(user_resp.data[0].get('rol') or '').strip().lower() == 'admin':
+                        flash("No tienes permisos para modificar a un usuario administrador.")
+                        return redirect(url_for('usuarios'))
+                except Exception:
+                    pass
+
             try:
                 supabase.table("usuario").update({"estado": nuevo_estado}).eq("id", v_usuario_id).execute()
                 flash("Estado del usuario actualizado.")
@@ -101,6 +126,16 @@ def gestion_usuarios():
             v_usuario_id = request.form.get('usuario_id')
             v_nueva_clave = request.form.get('nueva_clave', '').strip()
 
+            rol_actual = session.get('rol', '')
+            if rol_actual == 'director':
+                try:
+                    user_resp = supabase.table("usuario").select("rol").eq("id", v_usuario_id).execute()
+                    if user_resp.data and str(user_resp.data[0].get('rol') or '').strip().lower() == 'admin':
+                        flash("No tienes permisos para cambiar la contraseña de un usuario administrador.")
+                        return redirect(url_for('usuarios'))
+                except Exception:
+                    pass
+
             if not v_nueva_clave:
                 flash("La contraseña no puede estar vacía.")
                 return redirect(url_for('usuarios'))
@@ -111,10 +146,31 @@ def gestion_usuarios():
             except Exception as e:
                 flash(f"Error al actualizar la contraseña: {str(e)}")
 
+        # Acción D: Eliminar usuario
+        elif accion == 'eliminar':
+            v_usuario_id = request.form.get('usuario_id')
+
+            rol_actual = session.get('rol', '')
+            if rol_actual == 'director':
+                try:
+                    user_resp = supabase.table("usuario").select("rol").eq("id", v_usuario_id).execute()
+                    if user_resp.data and str(user_resp.data[0].get('rol') or '').strip().lower() == 'admin':
+                        flash("No tienes permisos para eliminar a un usuario administrador.")
+                        return redirect(url_for('usuarios'))
+                except Exception:
+                    pass
+
+            try:
+                supabase.table("usuario").delete().eq("id", v_usuario_id).execute()
+                flash("Usuario eliminado correctamente.")
+            except Exception as e:
+                flash(f"Error al eliminar usuario: {str(e)}")
+
         return redirect(url_for('usuarios'))
 
     return render_template(
         'usuarios.html',
         usuarios=usuarios_lista,
-        personal_disponible=personal_disponible
+        personal_disponible=personal_disponible,
+        rol_usuario=session.get('rol', '')
     )

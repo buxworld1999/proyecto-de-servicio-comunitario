@@ -25,7 +25,7 @@ PERMISOS = {
         'personal', 'estudiantes', 'matricula',
         'evaluaciones', 'momentos', 'notas_certificadas',
         'citaciones', 'labor_social',
-        'materias', 'asignacion_docente', 'reportes', 'configuracion', 'activos'
+        'materias', 'asignacion_docente', 'reportes', 'configuracion', 'activos', 'usuarios'
     ],
     'coordinador': [
         'personal', 'estudiantes', 'matricula',

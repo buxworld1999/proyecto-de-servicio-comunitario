@@ -170,7 +170,7 @@ from modulos.admin.gestion_usuarios import gestion_usuarios as gestion_usuarios_
 
 @app.route('/usuarios', methods=['GET', 'POST'])
 @login_required
-@rol_required('admin')
+@rol_required('admin', 'director')
 def usuarios():
     return gestion_usuarios_func()
 
