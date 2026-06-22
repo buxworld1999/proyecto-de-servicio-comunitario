@@ -132,71 +132,166 @@
             <!-- VISTA BIENVENIDA (visible al cargar la página) -->
             <div id="vista-bienvenida">
 
-                <!-- Hero de bienvenida -->
-                <div class="hero">
-                    <div class="hero-overlay">
-
-                        <p class="hero-greeting">Bienvenido de vuelta,</p>
-                        <h2 class="hero-name">{{ usuario_nombre.split(' ')[0] }}</h2>
-                        <p class="hero-sub">Sistema de Gestión Escolar PRISMA</p>
-
-                        <div class="hero-badges">
-                            <span class="hero-badge role-{{ usuario_rol }}">
-                                <i class="fa-solid fa-shield-halved"></i>
-                                {{ usuario_rol | upper }}
-                            </span>
-                            <span class="hero-badge-secondary">
-                                <i class="fa-solid fa-id-card"></i>
-                                {{ usuario_codigo }}
-                            </span>
-                            <span class="hero-badge-secondary" id="hora-actual">
-                                <i class="fa-regular fa-clock"></i>
-                                Cargando...
-                            </span>
+                <!-- Cabecera del dashboard -->
+                <div class="dash-header">
+                    <div>
+                        <div class="dash-title">Dashboard</div>
+                        <div class="dash-subtitle" id="hora-actual">
+                            <i class="fa-regular fa-calendar"></i> Cargando...
                         </div>
-
+                    </div>
+                    <div class="dash-user-info">
+                        <span class="dash-saludo">{{ usuario_nombre.split(' ')[0] }}</span>
+                        <span class="dash-rol role-{{ usuario_rol }}">
+                            <i class="fa-solid fa-shield-halved"></i> {{ usuario_rol | upper }}
+                        </span>
+                        <span class="dash-ano">
+                            <i class="fa-solid fa-calendar-check"></i> {{ stats.ano_activo }}
+                        </span>
                     </div>
                 </div>
 
-                <!-- Tarjetas de acceso rápido (módulos del rol) -->
-                {% if menu_items %}
-                <div class="quick-section">
+                <!-- ═══════════════════ FILA 1: KPIs grandes ═══════════════════ -->
+                <div class="kpi-grid">
 
-                    <h3 class="quick-title">
-                        <i class="fa-solid fa-bolt"></i>
-                        Acceso Rápido
-                        <span class="quick-count">
-                            {% set total = namespace(n=0) %}
-                            {% for g in menu_items %}{% set total.n = total.n + g['items']|length %}{% endfor %}
-                            {{ total.n }} módulo{{ 's' if total.n != 1 else '' }} disponible{{ 's' if total.n != 1 else
-                            '' }}
-                        </span>
-                    </h3>
+                    <div class="kpi-card kpi-blue" onclick="loadModule('/registro_estu')">
+                        <div class="kpi-top">
+                            <div class="kpi-icon-wrap"><i class="fa-solid fa-users"></i></div>
+                            <i class="fa-solid fa-arrow-trend-up kpi-trend-icon"></i>
+                        </div>
+                        <div class="kpi-value">{{ stats.total_estudiantes }}</div>
+                        <div class="kpi-label">Estudiantes Registrados</div>
+                        <div class="kpi-bar"><div class="kpi-bar-fill" style="width:85%"></div></div>
+                    </div>
 
-                    <div class="quick-cards" id="quick-cards">
+                    <div class="kpi-card kpi-green" onclick="loadModule('/matricula')">
+                        <div class="kpi-top">
+                            <div class="kpi-icon-wrap"><i class="fa-solid fa-user-check"></i></div>
+                            <i class="fa-solid fa-arrow-trend-up kpi-trend-icon"></i>
+                        </div>
+                        <div class="kpi-value">{{ stats.matriculados }}</div>
+                        <div class="kpi-label">Matriculados {{ stats.ano_activo }}</div>
+                        <div class="kpi-bar"><div class="kpi-bar-fill" style="width:72%"></div></div>
+                    </div>
 
-                        {% for grupo in menu_items %}
-                        {% for item in grupo['items'] %}
-                        <a href="{{ item.url }}" target="contenido" class="quick-card"
-                            aria-label="Ir a {{ item.label }}">
-                            <div class="quick-card-icon">
-                                <i class="{{ item.icono }}"></i>
+                    <div class="kpi-card kpi-cyan" onclick="loadModule('/matricula')">
+                        <div class="kpi-top">
+                            <div class="kpi-icon-wrap"><i class="fa-solid fa-circle-check"></i></div>
+                            <i class="fa-solid fa-arrow-trend-up kpi-trend-icon"></i>
+                        </div>
+                        <div class="kpi-value">{{ stats.activos }}</div>
+                        <div class="kpi-label">Estudiantes Activos</div>
+                        <div class="kpi-bar"><div class="kpi-bar-fill" style="width:90%"></div></div>
+                    </div>
+
+                    <div class="kpi-card kpi-orange" onclick="loadModule('/registro_estu')">
+                        <div class="kpi-top">
+                            <div class="kpi-icon-wrap"><i class="fa-solid fa-user-clock"></i></div>
+                            <i class="fa-solid fa-triangle-exclamation kpi-trend-icon" style="color:#fcd34d;"></i>
+                        </div>
+                        <div class="kpi-value">{{ stats.sin_matricula }}</div>
+                        <div class="kpi-label">Sin Matrícula</div>
+                        <div class="kpi-bar"><div class="kpi-bar-fill" style="width:30%"></div></div>
+                    </div>
+
+                </div>
+
+                <!-- ═══════════════════ FILA 2: Cards secundarias ══════════════ -->
+                <div class="stats-row">
+
+                    <div class="stat-card" onclick="loadModule('/personal')">
+                        <div class="stat-icon-wrap stat-purple">
+                            <i class="fa-solid fa-chalkboard-user"></i>
+                        </div>
+                        <div class="stat-body">
+                            <div class="stat-number">{{ stats.total_personal }}</div>
+                            <div class="stat-name">Personal Total</div>
+                            <div class="stat-hint">docentes y administrativos</div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right stat-chevron"></i>
+                    </div>
+
+                    <div class="stat-card" onclick="loadModule('/asignacion_docente')">
+                        <div class="stat-icon-wrap stat-teal">
+                            <i class="fa-solid fa-person-chalkboard"></i>
+                        </div>
+                        <div class="stat-body">
+                            <div class="stat-number">{{ stats.docentes_asignados }}</div>
+                            <div class="stat-name">Asignaciones Docentes</div>
+                            <div class="stat-hint">materias asignadas este año</div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right stat-chevron"></i>
+                    </div>
+
+                    <div class="stat-card" onclick="loadModule('/secciones')">
+                        <div class="stat-icon-wrap stat-indigo">
+                            <i class="fa-solid fa-door-open"></i>
+                        </div>
+                        <div class="stat-body">
+                            <div class="stat-number">{{ stats.total_secciones }}</div>
+                            <div class="stat-name">Secciones Activas</div>
+                            <div class="stat-hint">aulas configuradas</div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right stat-chevron"></i>
+                    </div>
+
+                    <div class="stat-card" onclick="loadModule('/boletines')">
+                        <div class="stat-icon-wrap stat-pink">
+                            <i class="fa-solid fa-file-invoice"></i>
+                        </div>
+                        <div class="stat-body">
+                            <div class="stat-number">{{ stats.boletines }}</div>
+                            <div class="stat-name">Boletines Generados</div>
+                            <div class="stat-hint">{{ stats.ano_activo }}</div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right stat-chevron"></i>
+                    </div>
+
+                </div>
+
+                <!-- ═══════════════ ACTIVIDAD RECIENTE (solo admin) ══════════ -->
+                {% if actividad_reciente %}
+                <div class="activity-card">
+                    <div class="activity-header">
+                        <div>
+                            <div class="activity-title">Actividad Reciente</div>
+                            <div class="activity-sub">Últimas acciones registradas en el sistema</div>
+                        </div>
+                        <a href="{{ url_for('bitacora') }}" target="contenido" class="activity-ver-todo"
+                           onclick="loadModule('/bitacora')">Ver todo →</a>
+                    </div>
+                    <div class="activity-list">
+                        {% for item in actividad_reciente %}
+                        <div class="activity-item">
+                            <div class="activity-dot" style="background:
+                                {% if item.categoria == 'login' %}#10b981
+                                {% elif item.categoria == 'notas' %}#06b6d4
+                                {% elif item.categoria == 'matricula' %}#8b5cf6
+                                {% elif item.categoria == 'estudiante' %}#3b82f6
+                                {% elif item.categoria == 'usuario' %}#ef4444
+                                {% elif item.categoria == 'personal' %}#f59e0b
+                                {% else %}#64748b{% endif %};">
+                                <i class="fa-solid {{ item.icono or 'fa-circle' }}"></i>
                             </div>
-                            <div class="quick-card-label">{{ item.label }}</div>
-                            <div class="quick-card-group">{{ grupo.titulo }}</div>
-                            <div class="quick-card-arrow">
-                                <i class="fa-solid fa-arrow-right"></i>
+                            <div class="activity-body">
+                                <div class="activity-name">
+                                    <span class="activity-cat">[{{ item.categoria | title }}]</span>
+                                    {{ item.usuario_nombre or '—' }}
+                                </div>
+                                <div class="activity-desc">
+                                    {{ item.accion }}
+                                    <span class="activity-time"> • {{ item.hace }}</span>
+                                </div>
                             </div>
-                        </a>
+                        </div>
                         {% endfor %}
-                        {% endfor %}
-
                     </div>
                 </div>
                 {% endif %}
 
             </div>
             <!-- /vista-bienvenida -->
+
 
             <!-- IFRAME — Visible cuando el usuario abre un módulo -->
             <div class="content-card" id="content-iframe-wrapper" style="display: none;">
@@ -222,24 +317,27 @@
         const themeBtn = document.getElementById("themeToggle");
         const savedTheme = localStorage.getItem("prisma_tema");
 
-        if (savedTheme === "dark") {
-            document.body.classList.add("dark");
+        // Dark is DEFAULT. Switch to light only if user chose it.
+        if (savedTheme === "light") {
+            document.body.classList.add("light");
+            themeBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+        } else {
             themeBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
         }
 
         themeBtn.addEventListener("click", () => {
-            document.body.classList.toggle("dark");
-            const isDark = document.body.classList.contains("dark");
-            themeBtn.innerHTML = isDark
-                ? '<i class="fa-solid fa-sun"></i>'
-                : '<i class="fa-solid fa-moon"></i>';
-            localStorage.setItem("prisma_tema", isDark ? "dark" : "light");
+            document.body.classList.toggle("light");
+            const isLight = document.body.classList.contains("light");
+            themeBtn.innerHTML = isLight
+                ? '<i class="fa-solid fa-moon"></i>'
+                : '<i class="fa-solid fa-sun"></i>';
+            localStorage.setItem("prisma_tema", isLight ? "light" : "dark");
 
             // Notificar al iframe del cambio de tema en tiempo real
             const iframe = document.getElementById('iframe-contenido');
             if (iframe && iframe.contentWindow) {
                 iframe.contentWindow.postMessage(
-                    { type: 'prisma_theme', dark: isDark },
+                    { type: 'prisma_theme', dark: !isLight },
                     '*'
                 );
             }
@@ -358,6 +456,22 @@
 
         actualizarHora();
         setInterval(actualizarHora, 30000);
+
+        // ============================================================
+        // loadModule — abre un módulo desde las KPI cards del dashboard
+        // ============================================================
+        function loadModule(url) {
+            const iframe = document.getElementById('iframe-contenido');
+            iframe.src = url;
+            mostrarIframe();
+
+            // Sincronizar active en sidebar
+            document.querySelectorAll('a.menu-item[target="contenido"]').forEach(link => {
+                if (link.getAttribute('href') === url) {
+                    setActiveMenuItem(link);
+                }
+            });
+        }
 
     </script>
 </body>

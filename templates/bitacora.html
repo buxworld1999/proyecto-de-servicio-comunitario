@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitácora del Sistema | PRISMA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='academico.css') }}">
+    <script src="static/theme-apply.js"></script>
+    <style>
+        .bita-filters { display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; }
+        .bita-filters .ac-field { min-width:160px; }
+
+        .bita-table { width:100%; border-collapse:collapse; font-size:13px; }
+        .bita-table th { background:#f8fafc; color:#64748b; font-weight:600; font-size:11px;
+                         text-transform:uppercase; letter-spacing:.8px; padding:10px 14px;
+                         border-bottom:2px solid #e2e8f0; text-align:left; }
+        .dark .bita-table th { background:#1e293b; color:#94a3b8; border-bottom-color:#334155; }
+
+        .bita-table td { padding:11px 14px; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+        .dark .bita-table td { border-bottom-color:#1e293b; }
+        .bita-table tr:hover td { background:#f8fafc; }
+        .dark .bita-table tr:hover td { background:#1e293b44; }
+
+        .bita-icon { width:34px; height:34px; border-radius:10px; display:flex;
+                     align-items:center; justify-content:center; font-size:14px;
+                     color:white; flex-shrink:0; }
+
+        .bita-accion { display:flex; align-items:center; gap:10px; }
+        .bita-accion-txt { font-weight:600; font-size:13px; color:#0f172a; }
+        .dark .bita-accion-txt { color:#f1f5f9; }
+        .bita-ruta { font-size:11px; color:#94a3b8; font-family:monospace; }
+
+        .bita-user { font-weight:600; font-size:13px; }
+        .bita-rol  { font-size:10px; text-transform:uppercase; font-weight:700;
+                     padding:2px 8px; border-radius:20px; margin-top:2px; display:inline-block; }
+
+        .rol-admin     { background:rgba(239,68,68,.12); color:#ef4444; }
+        .rol-director  { background:rgba(59,130,246,.12); color:#3b82f6; }
+        .rol-coordinador { background:rgba(139,92,246,.12); color:#8b5cf6; }
+        .rol-secretaria  { background:rgba(16,185,129,.12); color:#10b981; }
+        .rol-docente   { background:rgba(245,158,11,.12); color:#f59e0b; }
+
+        .bita-fecha { font-size:12px; color:#64748b; white-space:nowrap; }
+        .bita-ip    { font-size:11px; color:#94a3b8; font-family:monospace; }
+
+        .bita-http-ok  { color:#10b981; font-weight:600; }
+        .bita-http-err { color:#ef4444; font-weight:600; }
+
+        .bita-pagination { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:16px; }
+        .bita-pg-btn { padding:6px 14px; border-radius:8px; border:1px solid #e2e8f0;
+                       background:#fff; color:#0f172a; font-size:13px; cursor:pointer;
+                       text-decoration:none; transition:all .2s; }
+        .dark .bita-pg-btn { background:#1e293b; border-color:#334155; color:#f1f5f9; }
+        .bita-pg-btn:hover { border-color:#3b82f6; color:#3b82f6; }
+        .bita-pg-btn.active { background:#3b82f6; border-color:#3b82f6; color:white; }
+        .bita-pg-btn:disabled { opacity:.4; cursor:not-allowed; }
+
+        .cat-badge { display:inline-block; padding:3px 10px; border-radius:20px;
+                     font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px; }
+
+        .bita-empty { text-align:center; padding:48px 20px; color:#94a3b8; }
+        .bita-empty i { font-size:42px; margin-bottom:14px; display:block; }
+
+        .stats-bar { display:flex; gap:16px; flex-wrap:wrap; margin-bottom:20px; }
+        .stat-pill { background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px;
+                     padding:10px 16px; display:flex; align-items:center; gap:10px; }
+        .dark .stat-pill { background:#1e293b; border-color:#334155; }
+        .stat-pill-num { font-size:22px; font-weight:800; color:#0f172a; }
+        .dark .stat-pill-num { color:#f1f5f9; }
+        .stat-pill-lbl { font-size:11px; color:#64748b; }
+    </style>
+</head>
+<body>
+<div class="ac-page-lg">
+
+    <div class="ac-header">
+        <div class="ac-header-left">
+            <div class="ac-header-icon" style="background:linear-gradient(135deg,#6366f1,#4f46e5);">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div>
+                <h1>Bitácora del Sistema</h1>
+                <p>Monitoreo de actividad de todos los usuarios — Solo Administradores</p>
+            </div>
+        </div>
+        <a href="{{ url_for('menu') }}" target="_top" class="ac-btn ac-btn-ghost no-print">
+            <i class="fa-solid fa-arrow-left"></i> Menú
+        </a>
+    </div>
+
+    {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in msgs %}
+    <div class="ac-alert ac-alert-{{ 'success' if cat == 'success' else 'danger' }}">
+        <i class="fa-solid fa-circle-exclamation"></i> {{ msg }}
+    </div>
+    {% endfor %}
+    {% endwith %}
+
+    <!-- Resumen rápido -->
+    <div class="stats-bar">
+        <div class="stat-pill">
+            <i class="fa-solid fa-list-check" style="color:#6366f1; font-size:20px;"></i>
+            <div>
+                <div class="stat-pill-num">{{ total }}</div>
+                <div class="stat-pill-lbl">Registros totales</div>
+            </div>
+        </div>
+        <div class="stat-pill">
+            <i class="fa-solid fa-file-alt" style="color:#3b82f6; font-size:20px;"></i>
+            <div>
+                <div class="stat-pill-num">Pág. {{ pagina }}/{{ total_paginas }}</div>
+                <div class="stat-pill-lbl">Página actual</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="ac-card" style="margin-bottom:20px;">
+        <div class="ac-card-title">
+            <i class="fa-solid fa-filter"></i> Filtros de búsqueda
+        </div>
+        <form method="GET" action="{{ url_for('bitacora') }}" class="bita-filters">
+            <div class="ac-field">
+                <label>Usuario</label>
+                <input type="text" name="usuario" class="ac-input"
+                    value="{{ filtro_usuario }}" placeholder="Buscar por nombre...">
+            </div>
+            <div class="ac-field">
+                <label>Categoría</label>
+                <select name="categoria" class="ac-select">
+                    <option value="">— Todas —</option>
+                    {% for cat in categorias %}
+                    <option value="{{ cat }}" {% if cat == filtro_cat %}selected{% endif %}
+                        style="text-transform:capitalize;">{{ cat | title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="ac-field">
+                <label>Fecha</label>
+                <input type="date" name="fecha" class="ac-input" value="{{ filtro_fecha }}">
+            </div>
+            <div class="ac-field" style="align-self:flex-end;">
+                <button type="submit" class="ac-btn ac-btn-primary">
+                    <i class="fa-solid fa-search"></i> Filtrar
+                </button>
+                <a href="{{ url_for('bitacora') }}" class="ac-btn ac-btn-ghost" style="margin-left:8px;">
+                    <i class="fa-solid fa-rotate-left"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tabla de registros -->
+    <div class="ac-card" style="padding:0; overflow:hidden;">
+        {% if registros %}
+        <div class="ac-table-wrap">
+            <table class="bita-table">
+                <thead>
+                    <tr>
+                        <th>Acción</th>
+                        <th>Usuario</th>
+                        <th>Categoría</th>
+                        <th>HTTP</th>
+                        <th>IP</th>
+                        <th>Fecha y Hora</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in registros %}
+                    <tr>
+                        <td>
+                            <div class="bita-accion">
+                                <div class="bita-icon" style="background:{{ r.color }};">
+                                    <i class="fa-solid {{ r.icono }}"></i>
+                                </div>
+                                <div>
+                                    <div class="bita-accion-txt">{{ r.accion }}</div>
+                                    <div class="bita-ruta">{{ r.metodo }} {{ r.ruta }}</div>
+                                    {% if r.detalle %}
+                                    <div class="bita-ruta" style="color:#94a3b8;">{{ r.detalle }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="bita-user">{{ r.usuario_nombre or '—' }}</div>
+                            <span class="bita-rol rol-{{ r.usuario_rol }}">{{ r.usuario_rol }}</span>
+                        </td>
+                        <td>
+                            <span class="cat-badge"
+                                style="background:{{ r.color }}22; color:{{ r.color }}; border:1px solid {{ r.color }}44;">
+                                {{ r.categoria | title }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="{{ 'bita-http-ok' if r.codigo_http < 400 else 'bita-http-err' }}">
+                                {{ r.codigo_http }}
+                            </span>
+                        </td>
+                        <td class="bita-ip">{{ r.ip or '—' }}</td>
+                        <td class="bita-fecha">
+                            {% if r.fecha_hora %}
+                            {{ r.fecha_hora[:10] }}<br>
+                            <span style="color:#94a3b8;">{{ r.fecha_hora[11:16] }} UTC</span>
+                            {% else %}—{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación -->
+        <div style="padding:16px 20px; border-top:1px solid #f1f5f9;" class="bita-pagination">
+            {% if pagina > 1 %}
+            <a href="?pagina={{ pagina-1 }}&usuario={{ filtro_usuario }}&categoria={{ filtro_cat }}&fecha={{ filtro_fecha }}"
+               class="bita-pg-btn"><i class="fa-solid fa-chevron-left"></i> Anterior</a>
+            {% endif %}
+
+            {% for p in range([1, pagina-2]|max, [total_paginas+1, pagina+3]|min) %}
+            <a href="?pagina={{ p }}&usuario={{ filtro_usuario }}&categoria={{ filtro_cat }}&fecha={{ filtro_fecha }}"
+               class="bita-pg-btn {{ 'active' if p == pagina }}">{{ p }}</a>
+            {% endfor %}
+
+            {% if pagina < total_paginas %}
+            <a href="?pagina={{ pagina+1 }}&usuario={{ filtro_usuario }}&categoria={{ filtro_cat }}&fecha={{ filtro_fecha }}"
+               class="bita-pg-btn">Siguiente <i class="fa-solid fa-chevron-right"></i></a>
+            {% endif %}
+
+            <span style="margin-left:auto; font-size:12px; color:#94a3b8;">
+                Mostrando {{ registros|length }} de {{ total }} registros
+            </span>
+        </div>
+
+        {% else %}
+        <div class="bita-empty">
+            <i class="fa-solid fa-clipboard-list"></i>
+            <p>No hay registros de actividad que coincidan con los filtros.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+</body>
+</html>

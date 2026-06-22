@@ -196,10 +196,10 @@
 
                     <div class="ac-field" style="margin-bottom:14px;">
                         <label>Sección</label>
-                        <select name="codigo_seccion" class="ac-select" required>
-                            <option value="">-- Selecciona sección --</option>
+                        <select name="codigo_seccion" id="select_seccion" class="ac-select" required>
+                            <option value="" data-grado="">-- Selecciona sección --</option>
                             {% for s in secciones %}
-                            <option value="{{ s.codigo }}">
+                            <option value="{{ s.codigo }}" data-grado="{{ s.codigo_grado }}">
                                 {{ s.codigo }} ({{ s.codigo_grado }}° — {{ s.letra }})
                             </option>
                             {% endfor %}
@@ -208,10 +208,10 @@
 
                     <div class="ac-field" style="margin-bottom:14px;">
                         <label>Materia</label>
-                        <select name="codigo_materia" class="ac-select" required>
-                            <option value="">-- Selecciona materia --</option>
+                        <select name="codigo_materia" id="select_materia" class="ac-select" required>
+                            <option value="" data-grado="">-- Selecciona materia --</option>
                             {% for m in materias %}
-                            <option value="{{ m.codigo }}">{{ m.nombre }}</option>
+                            <option value="{{ m.codigo }}" data-grado="{{ m.codigo_grado }}">{{ m.nombre }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -239,5 +239,37 @@
 
     </div>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const seccionSelect = document.getElementById('select_seccion');
+    const materiaSelect = document.getElementById('select_materia');
+    
+    if (seccionSelect && materiaSelect) {
+        // Guardar todas las materias en memoria
+        const todasMaterias = Array.from(materiaSelect.options).slice(1);
+        
+        seccionSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const grado = selectedOption.getAttribute('data-grado');
+            
+            // Limpiar materias
+            materiaSelect.innerHTML = '<option value="" data-grado="">-- Selecciona materia --</option>';
+            
+            if (grado) {
+                // Agregar solo las que coinciden con el grado
+                todasMaterias.forEach(opt => {
+                    if (opt.getAttribute('data-grado') === grado) {
+                        materiaSelect.appendChild(opt.cloneNode(true));
+                    }
+                });
+            } else {
+                // Si no hay sección, poner todas de nuevo
+                todasMaterias.forEach(opt => materiaSelect.appendChild(opt.cloneNode(true)));
+            }
+        });
+    }
+});
+</script>
 </body>
 </html>

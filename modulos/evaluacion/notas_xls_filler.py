@@ -111,25 +111,25 @@ def llenar_xls_mppe(tipo, estudiante, institucion, notas_por_anio,
 
     # ── Institución ───────────────────────────────────────────────────
     try:
-        ws.write(6 + offset, 1,  institucion.get('codigo_dea', ''))
-        ws.write(6 + offset, 6,  institucion.get('nombre', ''))
-        ws.write(7 + offset, 1,  institucion.get('direccion', ''))
-        ws.write(7 + offset, 15, institucion.get('telefono', ''))
-        ws.write(8 + offset, 1,  institucion.get('municipio', ''))
-        ws.write(8 + offset, 6,  institucion.get('estado', ''))
-        ws.write(8 + offset, 15, institucion.get('zona_educativa', ''))
+        ws.write(5 + offset, 2,  institucion.get('codigo_dea', ''))
+        ws.write(5 + offset, 10, institucion.get('nombre', ''))
+        ws.write(6 + offset, 2,  institucion.get('direccion', ''))
+        ws.write(6 + offset, 16, institucion.get('telefono', ''))
+        ws.write(7 + offset, 2,  institucion.get('municipio', ''))
+        ws.write(7 + offset, 9,  institucion.get('estado', ''))
+        ws.write(7 + offset, 16, institucion.get('zona_educativa', ''))
     except Exception as e:
         print(f"[XLS] Error escribiendo institución: {e}")
 
     # ── Datos del Estudiante ──────────────────────────────────────────
     try:
-        ws.write(9  + offset, 1,  estudiante.get('cedula', ''))
-        ws.write(9  + offset, 8,  str(estudiante.get('fecha_nacimiento', '')))
-        ws.write(10 + offset, 1,  (estudiante.get('apellidos') or '').upper())
-        ws.write(10 + offset, 10, (estudiante.get('nombres') or '').upper())
-        ws.write(11 + offset, 1,  (estudiante.get('lugar_nacimiento') or '').upper())
-        ws.write(11 + offset, 10, (estudiante.get('estado_nacimiento') or '').upper())
-        ws.write(11 + offset, 16, (estudiante.get('municipio_nacimiento') or '').upper())
+        ws.write(9  + offset, 3,  estudiante.get('cedula', ''))
+        ws.write(9  + offset, 10, str(estudiante.get('fecha_nacimiento', '')))
+        ws.write(10 + offset, 3,  (estudiante.get('apellidos') or '').upper())
+        ws.write(10 + offset, 11, (estudiante.get('nombres') or '').upper())
+        ws.write(11 + offset, 4,  (estudiante.get('lugar_nacimiento') or '').upper())
+        ws.write(11 + offset, 11, (estudiante.get('estado_nacimiento') or '').upper())
+        ws.write(11 + offset, 17, (estudiante.get('municipio_nacimiento') or '').upper())
     except Exception as e:
         print(f"[XLS] Error escribiendo datos del estudiante: {e}")
 

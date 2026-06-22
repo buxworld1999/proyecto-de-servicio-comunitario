@@ -19,7 +19,7 @@ PERMISOS = {
         'evaluaciones', 'momentos', 'notas_certificadas',
         'constancias', 'citaciones', 'labor_social',
         'materias', 'asignacion_docente', 'reportes', 'configuracion', 'activos',
-        'terminal'
+        'terminal', 'bitacora'
     ],
     'director': [
         'personal', 'estudiantes', 'matricula',
@@ -171,6 +171,13 @@ MODULOS_ITEMS = {
             'icono': 'fa-solid fa-terminal'
         },
     ],
+    'bitacora': [
+        {
+            'label': 'Bitácora de Actividad',
+            'url':   '/bitacora',
+            'icono': 'fa-solid fa-shield-halved'
+        },
+    ],
 }
 
 
@@ -191,7 +198,7 @@ MENU_GRUPOS = [
     {'titulo': 'Académico',      'modulos': ['materias', 'asignacion_docente']},
     {'titulo': 'Bienes e Inventario', 'modulos': ['activos']},
     {'titulo': 'Reportes',       'modulos': ['reportes']},
-    {'titulo': 'Sistema',        'modulos': ['configuracion', 'terminal']},
+    {'titulo': 'Sistema',        'modulos': ['configuracion', 'terminal', 'bitacora']},
 ]
 
 

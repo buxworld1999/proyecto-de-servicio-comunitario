@@ -78,9 +78,7 @@ def descargar_plantilla_estudiantes_view():
     ]
     df = pd.DataFrame(columns=columnas)
     
-    # Agregar una fila de ejemplo (opcional)
-    df.loc[0] = ["12345678", "V", "JUAN CARLOS", "PEREZ RAMIREZ", "M", "2010-05-14", "CARACAS", "DISTRITO CAPITAL", "LIBERTADOR", "CALLE 1", "0412-0000000", "juan@example.com", "1er Año", "A"]
-    
+    # Se devuelve la tabla solo con las columnas, sin datos de ejemplo.
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
         df.to_excel(writer, index=False, sheet_name='Estudiantes')
@@ -105,10 +103,12 @@ def cargar_estudiantes_masivo_view():
         return redirect(url_for('registro_estudiantes'))
         
     try:
-        df = pd.read_excel(archivo, engine='openpyxl')
+        filename_lower = archivo.filename.lower()
+        if filename_lower.endswith('.csv'):
+            df = pd.read_csv(archivo)
+        else:
+            df = pd.read_excel(archivo)
         
-        # Omitir la primera fila si parece ser el ejemplo de Juan Carlos (opcional)
-        # o simplemente intentar procesar todo
         exitosos = 0
         errores = 0
         

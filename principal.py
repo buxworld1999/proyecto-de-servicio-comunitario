@@ -27,6 +27,7 @@ from modulos.evaluacion.notas_certificadas_mod import notas_certificadas_view, n
 from modulos.evaluacion.carga_masiva_notas    import carga_masiva_notas_view
 from modulos.academico.materias_mod          import materias_view
 from modulos.academico.asignacion_docente_view import asignacion_docente_view as asignacion_docente_view_func
+from modulos.admin.bitacora import bitacora_view, registrar_accion
 
 # Cargar variables de entorno
 load_dotenv()
@@ -76,6 +77,28 @@ def not_found(e):
 
 
 # ===================================================================
+# BITÁCORA — Hook automático: registra toda actividad relevante
+# ===================================================================
+
+@app.after_request
+def log_actividad(response):
+    """
+    Se ejecuta después de CADA request.
+    Registra en Supabase las acciones importantes de los usuarios.
+    """
+    try:
+        ruta = request.path
+        metodo = request.method
+        codigo = response.status_code
+        # Solo registrar si hay sesión activa (no login page)
+        if 'usuario_id' in session:
+            registrar_accion(ruta, metodo, codigo)
+    except Exception:
+        pass  # Nunca interrumpir el flujo por un error de bitácora
+    return response
+
+
+# ===================================================================
 # RUTAS PÚBLICAS (sin autenticación requerida)
 # ===================================================================
 
@@ -111,12 +134,105 @@ def menu():
     Todo se renderiza desde este único endpoint.
     """
     menu_items = get_menu_items(session['rol'])
+
+    # ── Estadísticas del dashboard ─────────────────────────────────────────
+    stats = {}
+    try:
+        # Total estudiantes registrados
+        r = supabase.table('estudiante').select('cedula', count='exact').execute()
+        stats['total_estudiantes'] = r.count or 0
+
+        # Año escolar activo
+        r_ano = supabase.table('ano_escolar').select('codigo').eq('activo', True).limit(1).execute()
+        ano_activo = r_ano.data[0]['codigo'] if r_ano.data else None
+        stats['ano_activo'] = ano_activo or '—'
+
+        if ano_activo:
+            # Matriculados en el año activo
+            r_mat = supabase.table('matricula').select('id', count='exact').eq('codigo_ano_escolar', ano_activo).execute()
+            stats['matriculados'] = r_mat.count or 0
+
+            # Estudiantes activos (estado A)
+            r_act = supabase.table('matricula').select('id', count='exact').eq('codigo_ano_escolar', ano_activo).eq('estado_matricula', 'A').execute()
+            stats['activos'] = r_act.count or 0
+
+            # Estudiantes sin matrícula este año (sin documentos / pendientes)
+            stats['sin_matricula'] = stats['total_estudiantes'] - stats['matriculados']
+        else:
+            stats['matriculados'] = 0
+            stats['activos'] = 0
+            stats['sin_matricula'] = 0
+
+        # Total personal
+        r_per = supabase.table('personal').select('cedula', count='exact').execute()
+        stats['total_personal'] = r_per.count or 0
+
+        # Total docentes asignados este año
+        if ano_activo:
+            r_doc = supabase.table('asignacion_docente').select('id', count='exact').eq('codigo_ano_escolar', ano_activo).execute()
+            stats['docentes_asignados'] = r_doc.count or 0
+        else:
+            stats['docentes_asignados'] = 0
+
+        # Secciones activas
+        r_sec = supabase.table('seccion').select('codigo', count='exact').execute()
+        stats['total_secciones'] = r_sec.count or 0
+
+        # Boletines generados este año
+        if ano_activo:
+            r_bol = supabase.table('boletin').select('id', count='exact').eq('codigo_ano_escolar', ano_activo).execute()
+            stats['boletines'] = r_bol.count or 0
+        else:
+            stats['boletines'] = 0
+
+    except Exception as e:
+        print(f"[MENU] Error cargando estadísticas: {e}")
+        stats = {
+            'total_estudiantes': '—', 'matriculados': '—', 'activos': '—',
+            'sin_matricula': '—', 'total_personal': '—', 'docentes_asignados': '—',
+            'total_secciones': '—', 'boletines': '—', 'ano_activo': '—'
+        }
+    # ──────────────────────────────────────────────────────────────────────────
+
+    # ── Actividad Reciente (solo si es admin) ──────────────────────────────────
+    actividad_reciente = []
+    if session.get('rol') == 'admin':
+        try:
+            from datetime import datetime, timezone, timedelta
+            r_act = supabase.table('bitacora').select(
+                'usuario_nombre, usuario_rol, accion, icono, categoria, fecha_hora'
+            ).order('fecha_hora', desc=True).limit(8).execute()
+
+            ahora = datetime.now(timezone.utc)
+            for item in (r_act.data or []):
+                fh = item.get('fecha_hora', '')
+                try:
+                    dt = datetime.fromisoformat(fh.replace('Z', '+00:00'))
+                    diff = ahora - dt
+                    mins = int(diff.total_seconds() / 60)
+                    if mins < 1:
+                        item['hace'] = 'ahora mismo'
+                    elif mins < 60:
+                        item['hace'] = f'{mins} min atrás'
+                    elif mins < 1440:
+                        item['hace'] = f'{mins // 60}h atrás'
+                    else:
+                        item['hace'] = f'{mins // 1440}d atrás'
+                except Exception:
+                    item['hace'] = '—'
+                actividad_reciente.append(item)
+        except Exception as e:
+            print(f"[MENU] Error cargando actividad: {e}")
+    # ──────────────────────────────────────────────────────────────────────────
+
     return render_template(
         'menu.html',
-        menu_items     = menu_items,
-        usuario_nombre = session.get('nombre', 'Usuario'),
-        usuario_rol    = session.get('rol', ''),
-        usuario_codigo = session.get('codigo', '')
+        menu_items          = menu_items,
+        usuario_nombre      = session.get('nombre', 'Usuario'),
+        usuario_rol         = session.get('rol', ''),
+        usuario_codigo      = session.get('codigo', ''),
+        stats               = stats,
+        actividad_reciente  = actividad_reciente
     )
 
 @app.route('/descargar_nota_xls')
@@ -396,6 +512,18 @@ def admin_terminal():
 def admin_terminal_stream():
     """Endpoint SSE que transmite logs en vivo."""
     return sse_stream()
+
+# ===================================================================
+# MÓDULO BITÁCORA (solo admin)
+# ===================================================================
+
+@app.route('/bitacora')
+@login_required
+@rol_required('admin')
+def bitacora():
+    """Bitácora de actividad del sistema — solo administradores."""
+    return bitacora_view()
+
 
 # ===================================================================
 # PUNTO DE ENTRADA
