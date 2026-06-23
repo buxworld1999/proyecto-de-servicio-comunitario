@@ -12,7 +12,13 @@
 <body>
 
     <div class="form-container">
-        <h2 style="text-align:center; margin-bottom:20px;">Registro Completo de Estudiantes</h2>
+        <h2 style="text-align:center; margin-bottom:20px;">
+            {% if estudiante %}
+                Editar Datos del Estudiante
+            {% else %}
+                Registro Completo de Estudiantes
+            {% endif %}
+        </h2>
 
         {% with messages = get_flashed_messages() %}
         {% if messages %}
@@ -49,33 +55,33 @@
 
         <h3
             style="margin-top: 2rem; margin-bottom: 1rem; color: var(--text); font-size: 1.4rem; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
-            Registro Individual</h3>
+            {{ 'Editar Datos del Estudiante' if estudiante else 'Registro Individual' }}</h3>
 
-        <form method="POST" action="/registro_estu">
+        <form method="POST" action="{{ url_for('editar_estu', cedula=estudiante.cedula) if estudiante else url_for('registro_estudiantes') }}">
             <fieldset>
                 <legend>1. Identificación y Datos Personales</legend>
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Cédula</label>
-                        <input type="text" name="cedula" required>
+                        <input type="text" name="cedula" required value="{{ estudiante.cedula if estudiante else '' }}" {{ 'readonly style=background-color:#eee;cursor:not-allowed;' if estudiante else '' }}>
                     </div>
                     <div class="form-group">
                         <label>Nacionalidad</label>
-                        <input type="text" name="nacionalidad" placeholder="Ej: Venezolana" required>
+                        <input type="text" name="nacionalidad" placeholder="Ej: Venezolana" required value="{{ estudiante.nacionalidad if estudiante and estudiante.nacionalidad else '' }}">
                     </div>
                     <div class="form-group">
                         <label>Nombres</label>
-                        <input type="text" name="nombres" required>
+                        <input type="text" name="nombres" required value="{{ estudiante.nombres if estudiante and estudiante.nombres else '' }}">
                     </div>
                     <div class="form-group">
                         <label>Apellidos</label>
-                        <input type="text" name="apellidos" required>
+                        <input type="text" name="apellidos" required value="{{ estudiante.apellidos if estudiante and estudiante.apellidos else '' }}">
                     </div>
                     <div class="form-group">
                         <label>Género</label>
                         <select name="genero" required>
-                            <option value="M">Masculino</option>
-                            <option value="F">Femenino</option>
+                            <option value="M" {{ 'selected' if estudiante and estudiante.genero == 'M' else '' }}>Masculino</option>
+                            <option value="F" {{ 'selected' if estudiante and estudiante.genero == 'F' else '' }}>Femenino</option>
                         </select>
                     </div>
                 </div>
@@ -86,19 +92,19 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Fecha de Nacimiento</label>
-                        <input type="date" name="fecha_nacimiento" required>
+                        <input type="date" name="fecha_nacimiento" required value="{{ estudiante.fecha_nacimiento if estudiante and estudiante.fecha_nacimiento else '' }}">
                     </div>
                     <div class="form-group">
                         <label>Lugar de Nacimiento</label>
-                        <input type="text" name="lugar_nacimiento">
+                        <input type="text" name="lugar_nacimiento" value="{{ estudiante.lugar_nacimiento if estudiante and estudiante.lugar_nacimiento else '' }}">
                     </div>
                     <div class="form-group">
                         <label>Estado de Nacimiento</label>
-                        <input type="text" name="estado_nacimiento">
+                        <input type="text" name="estado_nacimiento" value="{{ estudiante.estado_nacimiento if estudiante and estudiante.estado_nacimiento else '' }}">
                     </div>
                     <div class="form-group">
                         <label>Municipio de Nacimiento</label>
-                        <input type="text" name="municipio_nacimiento">
+                        <input type="text" name="municipio_nacimiento" value="{{ estudiante.municipio_nacimiento if estudiante and estudiante.municipio_nacimiento else '' }}">
                     </div>
                 </div>
             </fieldset>
@@ -108,16 +114,16 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Teléfono</label>
-                        <input type="text" name="telefono">
+                        <input type="text" name="telefono" value="{{ estudiante.telefono if estudiante and estudiante.telefono else '' }}">
                     </div>
                     <div class="form-group">
                         <label>Correo Electrónico</label>
-                        <input type="email" name="correo">
+                        <input type="email" name="correo" value="{{ estudiante.correo if estudiante and estudiante.correo else '' }}">
                     </div>
                 </div>
                 <div class="form-group" style="margin-top:10px;">
                     <label>Dirección de Habitación</label>
-                    <textarea name="direccion" rows="2"></textarea>
+                    <textarea name="direccion" rows="2">{{ estudiante.direccion if estudiante and estudiante.direccion else '' }}</textarea>
                 </div>
             </fieldset>
 
@@ -126,33 +132,33 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Estatura (metros)</label>
-                        <input type="number" step="0.01" name="estatura" placeholder="Ej: 1.65">
+                        <input type="number" step="0.01" name="estatura" placeholder="Ej: 1.65" value="{{ estudiante.estatura if estudiante and estudiante.estatura else '' }}">
                     </div>
                     <div class="form-group">
                         <label>Peso (kg)</label>
-                        <input type="number" step="0.1" name="peso" placeholder="Ej: 55.4">
+                        <input type="number" step="0.1" name="peso" placeholder="Ej: 55.4" value="{{ estudiante.peso if estudiante and estudiante.peso else '' }}">
                     </div>
                     <div class="form-group">
                         <label>Talla de Camisa</label>
-                        <input type="text" name="talla_camisa" placeholder="Ej: S, M, 14">
+                        <input type="text" name="talla_camisa" placeholder="Ej: S, M, 14" value="{{ estudiante.talla_camisa if estudiante and estudiante.talla_camisa else '' }}">
                     </div>
                     <div class="form-group">
                         <label>Talla de Pantalón</label>
-                        <input type="text" name="talla_pantalon" placeholder="Ej: 30, 12">
+                        <input type="text" name="talla_pantalon" placeholder="Ej: 30, 12" value="{{ estudiante.talla_pantalon if estudiante and estudiante.talla_pantalon else '' }}">
                     </div>
                     <div class="form-group">
                         <label>Talla de Zapatos</label>
-                        <input type="text" name="talla_zapatos" placeholder="Ej: 37">
+                        <input type="text" name="talla_zapatos" placeholder="Ej: 37" value="{{ estudiante.talla_zapatos if estudiante and estudiante.talla_zapatos else '' }}">
                     </div>
                 </div>
                 <div class="form-grid" style="margin-top:10px;">
                     <div class="form-group">
                         <label>Condiciones Médicas</label>
-                        <textarea name="conditions_medicas" rows="2" placeholder="Alergias, asma, etc."></textarea>
+                        <textarea name="conditions_medicas" rows="2" placeholder="Alergias, asma, etc.">{{ estudiante.conditions_medicas if estudiante and estudiante.conditions_medicas else '' }}</textarea>
                     </div>
                     <div class="form-group">
                         <label>Medicamentos</label>
-                        <textarea name="medicamentos" rows="2" placeholder="Tratamientos fijos..."></textarea>
+                        <textarea name="medicamentos" rows="2" placeholder="Tratamientos fijos...">{{ estudiante.medicamentos if estudiante and estudiante.medicamentos else '' }}</textarea>
                     </div>
                 </div>
             </fieldset>
@@ -162,38 +168,38 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Plantel de Procedencia</label>
-                        <input type="text" name="plantel_procedencia">
+                        <input type="text" name="plantel_procedencia" value="{{ estudiante.plantel_procedencia if estudiante and estudiante.plantel_procedencia else '' }}">
                     </div>
                     <div class="form-group">
                         <label>Fecha de Ingreso</label>
-                        <input type="date" name="fecha_ingreso">
+                        <input type="date" name="fecha_ingreso" value="{{ estudiante.fecha_ingreso if estudiante and estudiante.fecha_ingreso else '' }}">
                     </div>
                     <div class="form-group">
                         <label>Estado Estudiantil</label>
                         <select name="estado_estudiante">
-                            <option value="A">Activo</option>
-                            <option value="I">Inactivo</option>
+                            <option value="A" {{ 'selected' if estudiante and estudiante.estado_estudiante == 'A' else '' }}>Activo</option>
+                            <option value="I" {{ 'selected' if estudiante and estudiante.estado_estudiante == 'I' else '' }}>Inactivo</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Año de Estudio</label>
                         <select name="anio" required>
-                            <option value="1er Año">1er Año</option>
-                            <option value="2do Año">2do Año</option>
-                            <option value="3er Año">3er Año</option>
-                            <option value="4to Año">4to Año</option>
-                            <option value="5to Año">5to Año</option>
+                            <option value="1er Año" {{ 'selected' if estudiante and estudiante.anio == '1er Año' else '' }}>1er Año</option>
+                            <option value="2do Año" {{ 'selected' if estudiante and estudiante.anio == '2do Año' else '' }}>2do Año</option>
+                            <option value="3er Año" {{ 'selected' if estudiante and estudiante.anio == '3er Año' else '' }}>3er Año</option>
+                            <option value="4to Año" {{ 'selected' if estudiante and estudiante.anio == '4to Año' else '' }}>4to Año</option>
+                            <option value="5to Año" {{ 'selected' if estudiante and estudiante.anio == '5to Año' else '' }}>5to Año</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Sección</label>
                         <select name="seccion" required>
-                            <option value="A">A</option>
-                            <option value="B">B</option>
-                            <option value="C">C</option>
-                            <option value="D">D</option>
-                            <option value="E">E</option>
-                            <option value="F">F</option>
+                            <option value="A" {{ 'selected' if estudiante and estudiante.seccion == 'A' else '' }}>A</option>
+                            <option value="B" {{ 'selected' if estudiante and estudiante.seccion == 'B' else '' }}>B</option>
+                            <option value="C" {{ 'selected' if estudiante and estudiante.seccion == 'C' else '' }}>C</option>
+                            <option value="D" {{ 'selected' if estudiante and estudiante.seccion == 'D' else '' }}>D</option>
+                            <option value="E" {{ 'selected' if estudiante and estudiante.seccion == 'E' else '' }}>E</option>
+                            <option value="F" {{ 'selected' if estudiante and estudiante.seccion == 'F' else '' }}>F</option>
                         </select>
                     </div>
                 </div>
@@ -201,14 +207,46 @@
                 <div class="form-grid gray-section">
                     <div class="form-group">
                         <label>Fecha de Retiro (Si aplica)</label>
-                        <input type="date" name="fecha_retiro">
+                        <input type="date" name="fecha_retiro" value="{{ estudiante.fecha_retiro if estudiante and estudiante.fecha_retiro else '' }}">
                     </div>
                     <div class="form-group">
                         <label>Motivo de Retiro</label>
-                        <input type="text" name="motivo_retiro" placeholder="Ej: Traslado">
+                        <input type="text" name="motivo_retiro" placeholder="Ej: Traslado" value="{{ estudiante.motivo_retiro if estudiante and estudiante.motivo_retiro else '' }}">
                     </div>
                 </div>
             </fieldset>
+
+            {% if estudiante %}
+            <fieldset>
+                <legend>Módulo Académico (Calificaciones)</legend>
+                <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">
+                    Notas y calificaciones descargables por cada año cursado.
+                </p>
+
+                {% set current_year = estudiante.anio[0]|int if estudiante.anio and estudiante.anio[0].isdigit() else 1 %}
+
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    {% for year in range(1, current_year + 1) %}
+                    <div style="background-color: var(--bg-card, #1c1c24); border: 1px solid var(--border, #2a2a35); border-radius: 8px; padding: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <h4 style="margin: 0; font-size: 14px; text-transform: uppercase;">{{ year }}ER AÑO</h4>
+                            <button type="button" style="background: none; border: none; color: var(--text-muted); cursor: pointer;">
+                                <i class="fa-solid fa-chevron-up"></i>
+                            </button>
+                        </div>
+                        <div style="background-color: rgba(255,255,255,0.02); border: 1px dashed var(--border, #2a2a35); border-radius: 6px; padding: 30px; text-align: center; color: var(--text-muted);">
+                            <i class="fa-solid fa-file-excel" style="font-size: 24px; margin-bottom: 10px; color: var(--border, #2a2a35);"></i>
+                            <p style="margin: 0; font-size: 12px;">Este año académico no posee notas cargadas aún mediante archivos xlsx.</p>
+                            <!-- Simulate download button -->
+                            <button type="button" style="margin-top: 15px; background: transparent; border: 1px solid var(--primary, #00cccc); color: var(--primary, #00cccc); padding: 8px 16px; border-radius: 6px; font-size: 12px; cursor: pointer;">
+                                <i class="fa-solid fa-download"></i> Descargar Notas
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </fieldset>
+            {% endif %}
 
             <button type="submit" class="btn-submit">Guardar Estudiante</button>
         </form>
@@ -246,6 +284,21 @@
             });
         }
     </script>
+
+    <script>
+        // Select values
+        {% if estudiante %}
+        document.querySelector("select[name='genero']").value = "{{ estudiante.genero }}";
+        document.querySelector("select[name='estado_estudiante']").value = "{{ estudiante.estado_estudiante }}";
+        document.querySelector("select[name='anio']").value = "{{ estudiante.anio }}";
+        document.querySelector("select[name='seccion']").value = "{{ estudiante.seccion }}";
+        
+        // Hide file upload if editing
+        document.getElementById('upload-form').style.display = 'none';
+        document.querySelector('a.btn-submit').style.display = 'none';
+        {% endif %}
+    </script>
+
 </body>
 
 </html>

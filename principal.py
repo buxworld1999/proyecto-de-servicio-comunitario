@@ -265,6 +265,21 @@ def descargar_plantilla_estudiantes():
 @rol_required('admin', 'director', 'coordinador', 'secretaria')
 def cargar_estudiantes_masivo():
     return cargar_estudiantes_masivo_view()
+
+from modulos.estudiantes.directorio_estudiantil import directorio_estudiantil_view
+from modulos.estudiantes.regis_estudiante import editar_estudiante_view
+
+@app.route('/directorio_estudiantil', methods=['GET'])
+@login_required
+@rol_required('admin', 'director', 'coordinador', 'secretaria')
+def directorio_estudiantil():
+    return directorio_estudiantil_view()
+
+@app.route('/editar_estu/<cedula>', methods=['GET', 'POST'])
+@login_required
+@rol_required('admin', 'director', 'coordinador', 'secretaria')
+def editar_estu(cedula):
+    return editar_estudiante_view(cedula)
 from modulos.personal.registrar_personal import personal as registrar_personal_func
 
 @app.route('/personal', methods=['GET', 'POST'])
@@ -347,12 +362,21 @@ def ejecutar_promocion():
     flash("Promoción Automática ejecutada. Revisa los periodos para verificar el nuevo año activo.", "success")
     return redirect(url_for('anio_escolar'))
 
+from modulos.academico.registrar_representantes import representantes_view
 
-@app.route('/representantes')
+@app.route('/representantes', methods=['GET', 'POST'])
 @login_required
 @rol_required('admin', 'director', 'coordinador', 'secretaria')
 def representantes():
-    return _modulo_en_desarrollo("Representantes", "fa-people-roof")
+    return representantes_view()
+
+from modulos.academico.registrar_representantes import buscar_representante_api
+
+@app.route('/api/consultar_representante/<cedula>', methods=['GET'])
+@login_required
+def consultar_representante(cedula):
+    return buscar_representante_api(cedula)
+
 
 # ===================================================================
 # MÓDULO DE ACTIVOS (INVENTARIO DE BIENES DE LA INSTITUCIÓN)

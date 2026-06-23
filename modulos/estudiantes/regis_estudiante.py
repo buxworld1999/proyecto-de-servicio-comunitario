@@ -69,6 +69,68 @@ def registro_estudiantes():
 
     return render_template('estudiantes/registro_estudiantes.html')
 
+def editar_estudiante_view(cedula):
+    """
+    Ruta para editar un estudiante existente. Reutiliza el formulario de registro.
+    """
+    # 1. Obtener datos actuales del estudiante
+    try:
+        response = supabase.table("estudiante").select("*").eq("cedula", cedula).single().execute()
+        estudiante = response.data
+    except Exception as e:
+        flash(f"Error al buscar estudiante: {str(e)}", "danger")
+        return redirect(url_for('directorio_estudiantil'))
+
+    if request.method == 'POST':
+        # 2. Capturar los nuevos datos (igual que en registro_estudiantes)
+        v_genero = request.form.get('genero', 'M')
+        genero_filtrado = v_genero.strip().upper()[0] if v_genero else 'M'
+        
+        v_estado = request.form.get('estado_estudiante', 'A')
+        estado_filtrado = v_estado.strip().upper()[0] if v_estado else 'A'
+
+        datos_estudiante = {
+            "nacionalidad": request.form.get('nacionalidad'),
+            "nombres": request.form.get('nombres'),
+            "apellidos": request.form.get('apellidos'),
+            "genero": genero_filtrado,
+            
+            "fecha_nacimiento": request.form.get('fecha_nacimiento') or None,
+            "lugar_nacimiento": request.form.get('lugar_nacimiento') or None,
+            "estado_nacimiento": request.form.get('estado_nacimiento') or None,
+            "municipio_nacimiento": request.form.get('municipio_nacimiento') or None,
+            
+            "direccion": request.form.get('direccion') or None,
+            "telefono": request.form.get('telefono') or None,
+            "correo": request.form.get('correo') or None,
+            
+            "estatura": float(request.form.get('estatura')) if request.form.get('estatura') else None,
+            "peso": float(request.form.get('peso')) if request.form.get('peso') else None,
+            "talla_camisa": request.form.get('talla_camisa') or None,
+            "talla_pantalon": request.form.get('talla_pantalon') or None,
+            "talla_zapatos": request.form.get('talla_zapatos') or None,
+            "condiciones_medicas": request.form.get('condiciones_medicas') or None,
+            "medicamentos": request.form.get('medicamentos') or None,
+            
+            "plantel_procedencia": request.form.get('plantel_procedencia') or None,
+            "fecha_ingreso": request.form.get('fecha_ingreso') or None,
+            "anio": request.form.get('anio'),
+            "seccion": request.form.get('seccion'),
+            "estado_estudiante": estado_filtrado,
+            "fecha_retiro": request.form.get('fecha_retiro') or None,
+            "motivo_retiro": request.form.get('motivo_retiro') or None
+        }
+
+        try:
+            # 3. Actualizar en Supabase
+            supabase.table("estudiante").update(datos_estudiante).eq("cedula", cedula).execute()
+            flash("Perfil del estudiante actualizado con éxito.", "success")
+            return redirect(url_for('directorio_estudiantil'))
+        except Exception as e:
+            flash(f"Error al actualizar: {str(e)}", "danger")
+
+    return render_template('estudiantes/registro_estudiantes.html', estudiante=estudiante)
+
 def descargar_plantilla_estudiantes_view():
     """Genera y descarga una plantilla Excel vacía para la carga masiva."""
     columnas = [

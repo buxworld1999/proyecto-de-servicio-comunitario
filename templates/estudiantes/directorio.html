@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Directorio Estudiantil - PRISMA</title>
+    <link rel="icon" href="/static/fondo_escuela.jpg" type="image/png">
+    <script src="/static/theme-apply.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #f5f6fa;
+            --bg-card: #ffffff;
+            --text-dark: #1e293b;
+            --text-light: #1e293b;
+            --text-muted-light: #64748b;
+            --border-dark: #e2e8f0;
+            --border-input: #cbd5e1;
+            --input-bg: #f8fafc;
+            --input-text: #1e293b;
+            --bg-table-header: #f1f5f9;
+            --bg-hover: rgba(0, 0, 0, 0.03);
+            --accent-purple: #5d67f6;
+            --accent-purple-hover: #4e4feb;
+            --accent-blue: #2563eb;
+            --danger: #ef4444;
+        }
+
+        html.dark {
+            --bg-page: #0f172a;
+            --bg-card: #0b0f19;
+            --text-dark: #f1f5f9;
+            --text-light: #ffffff;
+            --text-muted-light: #94a3b8;
+            --border-dark: #1e293b;
+            --border-input: #334155;
+            --input-bg: #111827;
+            --input-text: #ffffff;
+            --bg-table-header: rgba(17, 24, 39, 0.8);
+            --bg-hover: rgba(255, 255, 255, 0.02);
+            --accent-purple: #5d67f6;
+            --accent-purple-hover: #4e4feb;
+            --accent-blue: #3b82f6;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-dark);
+            padding: 20px;
+        }
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.5rem;
+            margin: 0;
+            color: var(--text-light, #ffffff);
+        }
+        .btn-primary {
+            background-color: var(--accent-purple);
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: var(--accent-purple-hover);
+        }
+        .card-container {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .search-bar {
+            margin-bottom: 20px;
+        }
+        .search-bar input {
+            width: 100%;
+            max-width: 400px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border-input);
+            background-color: var(--input-bg);
+            color: var(--input-text);
+            outline: none;
+        }
+        .search-bar input:focus {
+            border-color: var(--accent-purple);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-dark);
+        }
+        th {
+            font-weight: 600;
+            color: var(--text-muted-light);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            background-color: var(--bg-table-header);
+        }
+        tr:hover {
+            background-color: var(--bg-hover);
+        }
+        .actions-cell {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .btn-edit {
+            color: var(--accent-blue);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+        .btn-delete {
+            color: var(--danger);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-container">
+        <h2>Directorio Estudiantil</h2>
+    </div>
+
+    <div class="card-container">
+        <div class="search-bar">
+            <input type="text" placeholder="Buscar estudiante por cédula o nombre...">
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Cédula</th>
+                    <th>Nombres y Apellidos</th>
+                    <th>Año y Sección</th>
+                    <th>Estado</th>
+                    <th style="text-align: center;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if estudiantes %}
+                    {% for est in estudiantes %}
+                    <tr>
+                        <td>{{ est.cedula }}</td>
+                        <td>{{ est.nombres }} {{ est.apellidos }}</td>
+                        <td>{{ est.anio }} - "{{ est.seccion }}"</td>
+                        <td>
+                            {% if est.is_matriculado %}
+                                <span style="color: #10b981; font-weight: 600;">Matriculado</span>
+                            {% else %}
+                                <span style="color: #ef4444; font-weight: 600;">No Matriculado</span>
+                            {% endif %}
+                        </td>
+                        <td class="actions-cell">
+                            <a href="/editar_estu/{{ est.cedula }}" class="btn-edit" title="Editar"><i class="fa-solid fa-pen-to-square"></i></a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center;">No hay estudiantes registrados.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.querySelector('.search-bar input');
+            const tableRows = document.querySelectorAll('tbody tr');
+
+            if (searchInput) {
+                searchInput.addEventListener('input', function(e) {
+                    const term = e.target.value.toLowerCase();
+                    
+                    tableRows.forEach(row => {
+                        if (row.cells.length <= 1) return;
+
+                        // Buscar que la cédula empiece con el término, o que el nombre lo contenga
+                        const cedula = row.cells[0].textContent.toLowerCase().trim();
+                        const nombre = row.cells[1].textContent.toLowerCase();
+                        
+                        if (cedula.startsWith(term) || nombre.includes(term)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Representantes | PRISMA</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Estilos Personalizados -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='estudiantes/representantes.css') }}">
+    <!-- Tema PRISMA -->
+    <script src="{{ url_for('static', filename='theme-apply.js') }}"></script>
+</head>
+<body>
+    {# Alertas Flash de Flask #}
+    <style>
+        body {
+            background: transparent;
+            margin: 0;
+            padding: 0;
+        }
+        .content-area {
+            padding: 24px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+    </style>
+
+    <main class="content-area">
+                <div class="prisma-card">
+                    <!-- Alertas Flash de Flask -->
+                    {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div
+                        class="alert-prisma {% if 'Error' in message or 'error' in message or 'falló' in message %}alert-error{% endif %}">
+                        <i data-lucide="info"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                    {% endwith %}
+
+                    <!-- Cabecera del Módulo -->
+                    <div class="card-header-prisma">
+                        <div class="card-title-group">
+                            <div class="card-icon-wrapper">
+                                <i data-lucide="contact-2"></i>
+                            </div>
+                            <h1 class="card-title-prisma">Gestión de Representantes</h1>
+                        </div>
+                        <p class="card-subtitle-prisma">Completa el formulario para registrar un representante legal o
+                            realiza búsquedas por cédula para consultar su información.</p>
+                    </div>
+
+                    <!-- Navegación de Pestañas (Tabs) -->
+                    <div class="tab-navigation-container">
+                        <button id="tab-btn-registro" class="tab-btn-prisma active"
+                            onclick="mostrarSeccion('registro')">
+                            <i data-lucide="user-plus"></i>
+                            <span>Nuevo Registro</span>
+                        </button>
+                        <button id="tab-btn-listado" class="tab-btn-prisma" onclick="mostrarSeccion('listado')">
+                            <i data-lucide="search"></i>
+                            <span>Consultar Representante</span>
+                        </button>
+                    </div>
+
+                    <!-- ── SECCIÓN 1: REGISTRO DE REPRESENTANTE ── -->
+                    <section id="seccion-registro">
+                        <form method="POST" action="/representantes">
+                            <div class="form-grid-prisma">
+                                <div class="form-group-prisma col-4">
+                                    <label>Cédula</label>
+                                    <input type="text" name="cedula" class="input-prisma" maxlength="10"
+                                        placeholder="Ej: 12345678" required>
+                                </div>
+                                <div class="form-group-prisma col-4">
+                                    <label>Nacionalidad</label>
+                                    <select name="nacionalidad" class="input-prisma">
+                                        <option value="V">Venezolana (V)</option>
+                                        <option value="E">Extranjera (E)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group-prisma col-4">
+                                    <label>Género</label>
+                                    <select name="genero" class="input-prisma">
+                                        <option value="M">Masculino</option>
+                                        <option value="F">Femenino</option>
+                                    </select>
+                                </div>
+                                <div class="form-group-prisma col-6">
+                                    <label>Nombres</label>
+                                    <input type="text" name="nombres" class="input-prisma"
+                                        placeholder="Nombres del representante" required>
+                                </div>
+                                <div class="form-group-prisma col-6">
+                                    <label>Apellidos</label>
+                                    <input type="text" name="apellidos" class="input-prisma"
+                                        placeholder="Apellidos del representante" required>
+                                </div>
+                                <div class="form-group-prisma col-4">
+                                    <label>Parentesco</label>
+                                    <input type="text" name="parentesco" class="input-prisma"
+                                        placeholder="Ej: Madre, Padre, Tío">
+                                </div>
+                                <div class="form-group-prisma col-4">
+                                    <label>Ocupación</label>
+                                    <input type="text" name="ocupacion" class="input-prisma"
+                                        placeholder="Profesión u oficio">
+                                </div>
+                                <div class="form-group-prisma col-4">
+                                    <label>Fecha de Nacimiento</label>
+                                    <input type="date" name="fecha_nacimiento" class="input-prisma">
+                                </div>
+                                <div class="form-group-prisma col-4">
+                                    <label>Teléfono</label>
+                                    <input type="tel" name="telefono" class="input-prisma" placeholder="Ej: 04140000000"
+                                        required>
+                                </div>
+                                <div class="form-group-prisma col-4">
+                                    <label>Correo Electrónico</label>
+                                    <input type="email" name="correo" class="input-prisma"
+                                        placeholder="correo@ejemplo.com">
+                                </div>
+                                <div class="form-group-prisma col-12">
+                                    <label>Dirección</label>
+                                    <input type="text" name="direccion" class="input-prisma"
+                                        placeholder="Dirección de habitación completa">
+                                </div>
+                                <div class="form-group-prisma col-12">
+                                    <label>Roles de Representación</label>
+                                    <div class="checkbox-group-prisma">
+                                        <label class="checkbox-label-prisma">
+                                            <input type="checkbox" name="es_madre" class="checkbox-prisma">
+                                            <span>Madre</span>
+                                        </label>
+                                        <label class="checkbox-label-prisma">
+                                            <input type="checkbox" name="es_padre" class="checkbox-prisma">
+                                            <span>Padre</span>
+                                        </label>
+                                        <label class="checkbox-label-prisma">
+                                            <input type="checkbox" name="es_representante_legal"
+                                                class="checkbox-prisma">
+                                            <span>Representante Legal</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Estudiantes Relacionados -->
+                            <div class="section-subtitle-prisma">
+                                <i data-lucide="graduation-cap"></i>
+                                <span>Estudiantes a Representar</span>
+                            </div>
+
+                            <div id="estudiantes-container">
+                                <div class="estudiante-item-prisma">
+                                    <div class="form-group-prisma">
+                                        <label>Cédula del Estudiante</label>
+                                        <input type="text" name="estudiantes[]" class="input-prisma" maxlength="10"
+                                            placeholder="Cédula del alumno" required>
+                                    </div>
+                                    <button type="button" class="btn-delete-estudiante"
+                                        onclick="this.parentElement.remove()" title="Eliminar estudiante"
+                                        style="visibility: hidden;">
+                                        <i data-lucide="trash-2"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="btn-group-prisma">
+                                <button type="button" class="btn-prisma btn-outline-prisma"
+                                    onclick="agregarEstudiante()">
+                                    <i data-lucide="user-plus-2"></i>
+                                    <span>Añadir otro estudiante</span>
+                                </button>
+                                <button type="submit" class="btn-prisma btn-primary-prisma">
+                                    <i data-lucide="save"></i>
+                                    <span>Guardar Representante</span>
+                                </button>
+                            </div>
+                        </form>
+                    </section>
+
+                    <!-- ── SECCIÓN 2: CONSULTA / BÚSQUEDA ── -->
+                    <section id="seccion-listado" style="display:none;">
+                        <div class="search-container-prisma">
+                            <div class="search-input-group">
+                                <label>Cédula del Representante</label>
+                                <input type="text" id="input-busqueda" class="input-prisma" placeholder="Ej: 12345678">
+                            </div>
+                            <button type="button" class="btn-search-prisma" onclick="buscarRepresentante()">
+                                <i data-lucide="search"></i>
+                                <span>Buscar</span>
+                            </button>
+                        </div>
+
+                        <!-- Detalles del Representante Encontrado -->
+                        <div id="resultado-busqueda" class="results-card-prisma" style="display: none;">
+                            <h3 class="results-title-prisma">
+                                <i data-lucide="user-check"></i>
+                                <span>Detalles del Representante</span>
+                            </h3>
+                            <div class="detail-row-prisma">
+                                <div class="detail-item-prisma">
+                                    <div class="detail-label">Cédula</div>
+                                    <div class="detail-val" id="res-cedula"></div>
+                                </div>
+                                <div class="detail-item-prisma">
+                                    <div class="detail-label">Nombre Completo</div>
+                                    <div class="detail-val" id="res-nombre"></div>
+                                </div>
+                                <div class="detail-item-prisma">
+                                    <div class="detail-label">Teléfono de Contacto</div>
+                                    <div class="detail-val" id="res-telefono"></div>
+                                </div>
+                            </div>
+
+                            <h3 class="results-title-prisma" style="margin-top: 24px;">
+                                <i data-lucide="graduation-cap"></i>
+                                <span>Hijos / Estudiantes Representados</span>
+                            </h3>
+                            <div class="table-responsive-prisma">
+                                <table class="table-prisma">
+                                    <thead>
+                                        <tr>
+                                            <th>Cédula del Alumno</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="res-estudiantes">
+                                        <!-- Cargado dinámicamente -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </main>
+
+    <script>
+        // Inicializar iconos de Lucide
+        lucide.createIcons();
+
+        function mostrarSeccion(id) {
+            document.getElementById('seccion-registro').style.display = (id === 'registro') ? 'block' : 'none';
+            document.getElementById('seccion-listado').style.display = (id === 'listado') ? 'block' : 'none';
+
+            const btnRegistro = document.getElementById('tab-btn-registro');
+            const btnListado = document.getElementById('tab-btn-listado');
+
+            if (id === 'registro') {
+                btnRegistro.classList.add('active');
+                btnListado.classList.remove('active');
+            } else {
+                btnRegistro.classList.remove('active');
+                btnListado.classList.add('active');
+                document.getElementById('input-busqueda').value = '';
+                document.getElementById('resultado-busqueda').style.display = 'none';
+            }
+        }
+
+        function agregarEstudiante() {
+            const container = document.getElementById('estudiantes-container');
+            const nuevoItem = document.createElement('div');
+            nuevoItem.className = 'estudiante-item-prisma';
+            nuevoItem.innerHTML = `
+                <div class="form-group-prisma">
+                    <label>Cédula del Estudiante</label>
+                    <input type="text" name="estudiantes[]" class="input-prisma" maxlength="10" placeholder="Cédula del alumno" required>
+                </div>
+                <button type="button" class="btn-delete-estudiante" onclick="this.parentElement.remove()" title="Eliminar estudiante">
+                    <i data-lucide="trash-2"></i>
+                </button>
+            `;
+            container.appendChild(nuevoItem);
+
+            // Re-renderizar iconos en el nuevo elemento dinámico
+            lucide.createIcons();
+        }
+
+        async function buscarRepresentante() {
+            const cedula = document.getElementById('input-busqueda').value.trim();
+            if (!cedula) {
+                alert("Por favor ingrese una cédula.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/consultar_representante/${cedula}`);
+                if (!response.ok) {
+                    throw new Error("Representante no encontrado o error en la petición");
+                }
+                const data = await response.json();
+
+                if (data && data.representante) {
+                    document.getElementById('res-cedula').textContent = data.representante.cedula;
+                    document.getElementById('res-nombre').textContent = `${data.representante.nombres} ${data.representante.apellidos}`;
+                    document.getElementById('res-telefono').textContent = data.representante.telefono || 'No registrado';
+
+                    const tbody = document.getElementById('res-estudiantes');
+                    tbody.innerHTML = '';
+
+                    if (data.estudiantes && data.estudiantes.length > 0) {
+                        data.estudiantes.forEach(est => {
+                            tbody.innerHTML += `<tr><td>${est.cedula_estudiante}</td></tr>`;
+                        });
+                    } else {
+                        tbody.innerHTML = `<tr><td style="color: var(--text-muted-light); font-style: italic;">No tiene estudiantes asociados</td></tr>`;
+                    }
+
+                    document.getElementById('resultado-busqueda').style.display = 'block';
+                }
+            } catch (error) {
+                console.error("Error al buscar:", error);
+                alert("No se encontró el representante o hubo un error en la conexión.");
+            }
+        }
+    </script>
+</body>
+</html>

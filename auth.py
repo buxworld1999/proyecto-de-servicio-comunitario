@@ -75,6 +75,11 @@ MODULOS_ITEMS = {
             'url':   '/buscar_estu',
             'icono': 'fa-solid fa-magnifying-glass'
         },
+        {
+            'label': 'Directorio Estudiantil',
+            'url':   '/directorio_estudiantil',
+            'icono': 'fa-solid fa-address-book'
+        },
     ],
     'matricula': [
         {
