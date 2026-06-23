@@ -3,10 +3,14 @@
      Diseño inspirado en APACUANA, adaptado al sistema PRISMA
   ══════════════════════════════════════════════════════ */
 
+:root {
+  --text-title: #1e293b;
+}
+
     body {
       font-family: 'Outfit', sans-serif;
       background-color: #f0f4f8;
-      color: #ffffff;
+      color: #1e293b;
       margin: 0;
       padding: 20px;
     }
@@ -477,3 +481,53 @@
     color: #fff;
     box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
   }
+
+/* ── MODO OSCURO (DARK MODE) ── */
+html.dark {
+    --text-title: #f1f5f9;
+}
+html.dark body {
+    background: #0f172a;
+    color: #f1f5f9;
+}
+html.dark .cm-subtitle {
+    color: #94a3b8;
+}
+html.dark .form-label {
+    color: #cbd5e1;
+}
+html.dark .form-select {
+    background: #1e293b;
+    border-color: #334155;
+    color: #f1f5f9;
+}
+html.dark .form-select:focus {
+    background: #0f172a;
+    border-color: #3b82f6;
+}
+html.dark .upload-mode-toggle {
+    background: rgba(30, 41, 59, 0.8);
+    border-color: #334155;
+}
+html.dark .upload-mode-toggle label {
+    color: #94a3b8;
+}
+html.dark .drop-zone {
+    background: linear-gradient(145deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.8) 100%);
+    border-color: #334155;
+}
+html.dark .drop-zone:hover,
+html.dark .drop-zone.drag-over {
+    border-color: #10b981;
+}
+html.dark .drop-zone h3 {
+    color: #f1f5f9;
+}
+html.dark .drop-zone p {
+    color: #94a3b8;
+}
+html.dark .glass-panel {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 16px;
+}

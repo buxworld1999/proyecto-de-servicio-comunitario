@@ -91,9 +91,9 @@
                         <tbody>
                             {% for m in materias %}
                             <tr>
-                                <td><code style="background:#f1f5f9; padding:2px 8px; border-radius:5px; font-size:12px;">{{ m.codigo }}</code></td>
+                                <td><code class="ac-code">{{ m.codigo }}</code></td>
                                 <td>
-                                    <strong style="color:#1e293b;">{{ m.nombre }}</strong>
+                                    <strong>{{ m.nombre }}</strong>
                                     {% if m.abreviatura %}
                                     <span style="font-size:11px; color:#94a3b8;"> ({{ m.abreviatura }})</span>
                                     {% endif %}
@@ -101,7 +101,7 @@
                                     <span class="badge badge-info" style="font-size:9px; margin-left:4px;">Obligatoria</span>
                                     {% endif %}
                                 </td>
-                                <td style="font-size:12px; color:#64748b;">{{ m.area_formacion or '—' }}</td>
+                                <td style="font-size:12px;">{{ m.area_formacion or '—' }}</td>
                                 <td>{{ grados_dict.get(m.codigo_grado, m.codigo_grado or '—') }}</td>
                                 <td style="text-align:center;">
                                     <span class="badge badge-neutral">{{ m.horas_semanales or '—' }}h</span>

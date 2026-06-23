@@ -31,7 +31,7 @@
             --border:    #334155;
             --input-bg:  #1e293b;
             --input-text:#f1f5f9;
-            --placeholder:#475569;
+            --placeholder:#94a3b8;
             --primary:   #3b82f6;
             --primary-dk:#2563eb;
             --th-bg:     #0f172a;
@@ -140,7 +140,7 @@
             background: var(--input-bg);
             border: 1px solid var(--border);
             border-radius: 7px;
-            color: var(--text);
+            color: var(--input-text);
             font-family: 'Outfit', sans-serif;
             font-size: 13px;
             transition: border-color 0.2s, box-shadow 0.2s;
@@ -154,7 +154,7 @@
         }
 
         .form-group input::placeholder {
-            color: var(--text-sub);
+            color: var(--placeholder);
         }
 
         .btn-submit {
@@ -212,7 +212,7 @@
             font-size: 13px;
             font-weight: 700;
             color: var(--text);
-            background: #f1f5f9;
+            background: var(--surface-2);
             border: 1px solid var(--border);
             border-radius: 8px;
             padding: 5px 14px;

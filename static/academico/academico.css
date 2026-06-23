@@ -436,3 +436,134 @@ body {
 
 /* ── TOOLTIP ── */
 [title] { cursor: help; }
+
+/* ── MOMENTO CARDS ── */
+.momento-card {
+    background: #f8faff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+}
+.momento-title {
+    font-size: 16px;
+    color: #0f172a;
+}
+
+/* ── MODO OSCURO (DARK MODE) ── */
+html.dark body {
+    background: #0f172a;
+    color: #f1f5f9;
+}
+html.dark .ac-card {
+    background: #1e293b;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    border: 1px solid #334155;
+}
+html.dark .ac-card-title {
+    color: #f1f5f9;
+    border-bottom: 2px solid #334155;
+}
+html.dark .ac-header h1 {
+    color: #f1f5f9;
+}
+html.dark .ac-header p {
+    color: #94a3b8;
+}
+html.dark .ac-field label {
+    color: #cbd5e1;
+}
+html.dark .ac-input,
+html.dark .ac-select {
+    background: #1e293b;
+    color: #f1f5f9;
+    border-color: #334155;
+}
+html.dark .ac-input:focus,
+html.dark .ac-select:focus {
+    background: #0f172a;
+    border-color: #3b82f6;
+}
+html.dark .ac-btn-ghost {
+    background: #1e293b;
+    color: #cbd5e1;
+    border-color: #334155;
+}
+html.dark .ac-btn-ghost:hover {
+    background: #334155;
+    color: #f1f5f9;
+}
+html.dark .ac-table thead tr {
+    background: #0f172a;
+    color: #94a3b8;
+}
+html.dark .ac-table td {
+    color: #cbd5e1;
+    border-bottom-color: #334155;
+}
+html.dark .ac-table tbody tr:hover {
+    background: rgba(255,255,255,0.04);
+}
+html.dark .ac-stat-card {
+    background: #1e293b;
+    border-top: none;
+    border-right: none;
+    border-bottom: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+html.dark .ac-stat-value {
+    color: #f1f5f9;
+}
+html.dark .ac-stat-label {
+    color: #94a3b8;
+}
+html.dark .ac-modal {
+    background: #1e293b;
+    border: 1px solid #334155;
+}
+html.dark .ac-modal-title {
+    color: #f1f5f9;
+}
+html.dark .ac-modal-footer {
+    border-top-color: #334155;
+}
+html.dark .ac-empty {
+    color: #64748b;
+}
+html.dark .nota-input {
+    background: #1e293b;
+    color: #f1f5f9;
+    border-color: #334155;
+}
+html.dark .nota-input:focus {
+    background: #0f172a;
+    border-color: #3b82f6;
+}
+/* ── AC-CODE ── */
+.ac-code {
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-size: 12px;
+    color: #334155;
+}
+
+html.dark .nota-input.aprobado { border-color: #10b981; background: rgba(16,185,129,0.1); color: #4ade80; }
+html.dark .nota-input.reprobado { border-color: #f43f5e; background: rgba(244,63,94,0.1); color: #fb7185; }
+html.dark .ac-divider {
+    border-top-color: #334155;
+}
+html.dark .momento-card {
+    background: #0f172a;
+    border-color: #334155;
+}
+html.dark .momento-title {
+    color: #f1f5f9;
+}
+html.dark .ac-code {
+    background: #1e293b;
+    color: #cbd5e1;
+}
+html.dark .badge-neutral { background: #334155; color: #cbd5e1; }
+html.dark .badge-info { background: rgba(59,130,246,0.15); color: #60a5fa; }
+html.dark .badge-purple { background: rgba(139,92,246,0.15); color: #a78bfa; }

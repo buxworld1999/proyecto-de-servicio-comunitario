@@ -89,13 +89,13 @@
 
             {% for num in [1, 2, 3] %}
             {% set m = momentos_dict.get(num, {}) %}
-            <div style="background:#f8faff; border:1.5px solid #e2e8f0; border-radius:12px; padding:20px; margin-bottom:16px;">
+            <div class="momento-card">
                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
                     <div style="display:flex; align-items:center; gap:10px;">
                         <div style="width:36px; height:36px; background:linear-gradient(135deg,#6366f1,#4338ca); border-radius:10px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:16px;">
                             {{ num }}
                         </div>
-                        <strong style="font-size:16px; color:#0f172a;">Momento {{ num }}</strong>
+                        <strong class="momento-title">Momento {{ num }}</strong>
                     </div>
                     {% if m %}
                     <div style="display:flex; align-items:center; gap:8px;">

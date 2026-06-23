@@ -49,6 +49,9 @@ html.dark {
     --badge-ok-fg: #4ade80;
     --badge-no-bg: rgba(100,116,139,0.15);
     --badge-no-fg: #94a3b8;
+    --promo-bg: rgba(239, 68, 68, 0.1);
+    --promo-icon: #f87171;
+    --promo-text: #fca5a5;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -109,6 +112,16 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 10px;
+}
+
+.card-promo {
+    background-color: var(--promo-bg, #fff5f5);
+}
+.card-promo h2 i {
+    color: var(--promo-icon, #e53e3e);
+}
+.card-promo p {
+    color: var(--promo-text, #4a5568);
 }
 
 /* ── Grid de formulario ── */

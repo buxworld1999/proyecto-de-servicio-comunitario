@@ -304,3 +304,75 @@ body {
     margin-bottom: 14px;
     font-weight: 500;
 }
+
+/* ── MODO OSCURO (DARK MODE) ── */
+html.dark body {
+    background: #0f172a;
+    color: #f1f5f9;
+}
+html.dark .card {
+    background: #1e293b;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+html.dark .page-header h1,
+html.dark .card-title {
+    color: #f1f5f9;
+}
+html.dark .page-header p {
+    color: #94a3b8;
+}
+html.dark .input-cedula,
+html.dark .input-opcion {
+    background: #0f172a;
+    border-color: #334155;
+    color: #f1f5f9;
+}
+html.dark .input-cedula:focus,
+html.dark .input-opcion:focus {
+    border-color: #3b82f6;
+}
+html.dark .formato-btn {
+    background: #0f172a;
+    border-color: #334155;
+    color: #f1f5f9;
+}
+html.dark .formato-btn:hover {
+    background: #1e293b;
+    border-color: #3b82f6;
+}
+html.dark .formato-btn .formato-nombre {
+    color: #f1f5f9;
+}
+html.dark .formato-btn.manual {
+    background: rgba(249,115,22,0.1);
+    border-color: #9a3412;
+}
+html.dark .formato-btn.manual:hover {
+    background: rgba(249,115,22,0.2);
+    border-color: #ea580c;
+}
+html.dark .chip-alumno {
+    background: rgba(22,163,74,0.1);
+    border-color: #14532d;
+}
+html.dark .chip-info strong {
+    color: #4ade80;
+}
+html.dark .chip-info span {
+    color: #86efac;
+}
+html.dark .alerta-error {
+    background: rgba(239,68,68,0.1);
+    border-color: #7f1d1d;
+    color: #fca5a5;
+}
+html.dark .aviso-manual {
+    background: rgba(249,115,22,0.1);
+    border-color: #9a3412;
+    color: #fdba74;
+}
+html.dark .icon-blue { background: rgba(59,130,246,0.2); color: #60a5fa; }
+html.dark .icon-green { background: rgba(34,197,94,0.2); color: #4ade80; }
+html.dark .icon-amber, html.dark .icon-orange { background: rgba(245,158,11,0.2); color: #fbbf24; }
+html.dark .opcion-group label { color: #cbd5e1; }
+html.dark .aviso-buscar { color: #94a3b8; }

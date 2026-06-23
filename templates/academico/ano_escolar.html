@@ -28,9 +28,9 @@
             {% endwith %}
 
 
-            <div class="card" style="border-top-color: #e53e3e; background-color: #fff5f5; margin-top: 20px;">
-                <h2><i class="fa-solid fa-rocket" style="color: #e53e3e;"></i> Promoción Automática de Fin de Año</h2>
-                <p style="color: #4a5568; margin-bottom: 15px; font-size: 14px;">
+            <div class="card card-promo" style="border-top-color: #e53e3e; margin-top: 20px;">
+                <h2><i class="fa-solid fa-rocket" class="promo-icon"></i> Promoción Automática de Fin de Año</h2>
+                <p class="promo-text" style="margin-bottom: 15px; font-size: 14px;">
                     <strong>¡Atención!</strong> Esta acción creará automáticamente el siguiente año escolar, promoverá a todos los estudiantes regulares a su siguiente grado, egresará a los estudiantes de 5to año y cerrará el año actual. 
                 </p>
                 <form action="{{ url_for('ejecutar_promocion') }}" method="POST" onsubmit="return confirm('¿Estás SEGURO de querer ejecutar la Promoción Automática? Esto modificará las secciones y el grado de todos los estudiantes.');">

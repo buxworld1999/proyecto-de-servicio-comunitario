@@ -21,22 +21,22 @@
         {% endwith %}
 
         <!-- BOTÓN MATRÍCULA MASIVA -->
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; text-align: center; margin-bottom: 30px;">
-            <h3 style="margin-top: 0; color: #0f172a;">Matrícula Automática</h3>
-            <p style="color: #64748b; font-size: 14px; margin-bottom: 15px;">
+        <div style="background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 20px; text-align: center; margin-bottom: 30px;">
+            <h3 style="margin-top: 0; color: var(--text);">Matrícula Automática</h3>
+            <p style="color: var(--text-sub); font-size: 14px; margin-bottom: 15px;">
                 Asigna a los estudiantes al año escolar activo de forma masiva,<br>
                 basado en el "Año" y "Sección" ingresados en su Registro Estudiantil.
             </p>
             <form method="POST" action="/matricula_automatica" onsubmit="return confirm('¿Está seguro de que desea matricular a todos los estudiantes de forma automática?');">
-                <button type="submit" class="btn-submit" style="background-color: #10b981; max-width: 300px; margin: 0 auto;">
+                <button type="submit" class="btn-submit" style="background-color: var(--success); max-width: 300px; margin: 0 auto;">
                     Generar Matrícula Automática
                 </button>
             </form>
         </div>
 
-        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin-bottom: 30px;">
+        <hr style="border: 0; border-top: 1px solid var(--border); margin-bottom: 30px;">
 
-        <h3 style="margin-bottom:20px; color: #0f172a;">Matrícula Individual</h3>
+        <h3 style="margin-bottom:20px; color: var(--text);">Matrícula Individual</h3>
         <form method="POST" action="/matricula">
             <div class="form-group">
                 <label>Estudiante</label>

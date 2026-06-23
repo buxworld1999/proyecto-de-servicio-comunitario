@@ -41,3 +41,14 @@
             padding: 4px 12px; border-radius: 20px;
             font-size: 12px; font-weight: 700;
         }
+
+/* ── MODO OSCURO (DARK MODE) ── */
+html.dark .filtros-panel {
+    background: #1e293b;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+html.dark .estudiante-nombre { color: #f1f5f9; }
+html.dark .estudiante-cedula { color: #94a3b8; }
+html.dark .num-lista { background: #334155; color: #cbd5e1; }
+html.dark .estado-cerrado { background: rgba(239,68,68,0.1); border-color: #7f1d1d; color: #fca5a5; }
+html.dark .tag-docente { background: rgba(139,92,246,0.15); color: #c4b5fd; }

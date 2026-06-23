@@ -6,7 +6,7 @@
     <title>U.E.E Carmen Ruíz - Registro</title>
     <link rel="icon" href="static/fondo_escuela.jpg" type="image/png">
     <link rel="stylesheet" href="{{ url_for('static', filename='estudiantes/registro_estudiantes.css') }}">
-
+    <script src="{{ url_for('static', filename='theme-apply.js') }}"></script>
 </head>
 
 <body>
@@ -32,7 +32,7 @@
                 <p>Carga masiva de estudiantes mediante planilla</p>
                 <div id="file-name-display"></div>
                 <button type="submit" id="btn-upload" class="btn-submit"
-                    style="display:none; margin-top: 1rem; width: auto; padding: 0.8rem 2rem; font-size: 1rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); margin-left: auto; margin-right: auto; position: relative; z-index: 10;"
+                    style="display:none; margin-top: 1rem; width: auto; padding: 0.8rem 2rem; font-size: 1rem; background: var(--success); margin-left: auto; margin-right: auto; position: relative; z-index: 10;"
                     onclick="event.stopPropagation();">
                     Procesar y Registrar Estudiantes
                 </button>
@@ -42,13 +42,13 @@
         <!-- Botón de descargar formato -->
         <div style="text-align:center; margin-top: 15px;">
             <a href="{{ url_for('descargar_plantilla_estudiantes') }}" class="btn-submit" 
-               style="display: inline-block; width: auto; padding: 0.8rem 2rem; font-size: 0.95rem; background: #3b82f6; text-decoration: none; color: white;">
+               style="display: inline-block; width: auto; padding: 0.8rem 2rem; font-size: 0.95rem; background: var(--primary); text-decoration: none; color: white;">
                 <i class="fa-solid fa-file-excel"></i> Descargar Formato Vacío
             </a>
         </div>
 
         <h3
-            style="margin-top: 2rem; margin-bottom: 1rem; color: #f1f5f9; font-size: 1.4rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+            style="margin-top: 2rem; margin-bottom: 1rem; color: var(--text); font-size: 1.4rem; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
             Registro Individual</h3>
 
         <form method="POST" action="/registro_estu">
