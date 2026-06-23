@@ -3,96 +3,392 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Búsqueda Completa de Estudiantes</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='estudiantes/buscar_estu.css') }}">
-    <script src="{{ url_for('static', filename='theme-apply.js') }}"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión y Búsqueda de Estudiantes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #0e1320;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .card {
+            background-color: #111827;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            color: #ffffff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title::before {
+            content: '';
+            display: inline-block;
+            width: 3px;
+            height: 1rem;
+            background-color: #60a5fa;
+            margin-right: 10px;
+            border-radius: 2px;
+        }
+
+        .label-text {
+            color: #aab1bf;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+            letter-spacing: 0.05rem;
+        }
+
+        .value-text {
+            color: #ffffff;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-control,
+        .form-select {
+            background-color: #1f293a;
+            color: #ffffff;
+            border: 1px solid #1f293a;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            padding: 10px 15px;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            background-color: #1f293a;
+            color: #ffffff;
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 1px #60a5fa;
+        }
+
+        .form-control::placeholder {
+            color: #6a768c;
+        }
+
+        .btn-primary {
+            background-color: #3b82f6;
+            border: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .btn-primary:hover,
+        .btn-primary:focus {
+            background-color: #2563eb;
+        }
+
+        .card-divider {
+            border-top: 1px solid #1d283c;
+            margin: 1rem 0;
+        }
+
+        .alert-custom-error {
+            background-color: #47111b;
+            color: #ef4444;
+            border: 1px solid #ef4444;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .badge-active {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+        }
+
+        .badge-inactive {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+        }
+
+        .badge-graduated {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+        }
+
+        .table-responsive {
+            margin-top: 20px;
+        }
+
+        .table-dark-custom {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 1px;
+            color: #ffffff;
+            font-size: 0.9rem;
+        }
+
+        .table-dark-custom thead th {
+            color: #aab1bf;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05rem;
+            padding: 10px 15px;
+            border-bottom: 1px solid #1d283c;
+        }
+
+        .table-dark-custom tbody td {
+            background-color: #111827;
+            padding: 15px;
+            border-bottom: 1px solid #0e1320;
+        }
+
+        .table-dark-custom tbody tr:hover td {
+            background-color: #1a2235;
+        }
+    </style>
 </head>
 
 <body>
 
-    <h1>Sistema de Registro UEECR</h1>
+    <div class="container mt-4">
+        <div class="row">
 
-    <div class="container">
+            <div class="col-md-3">
+                <div class="card">
+                    <h5 class="card-title">Buscar Estudiante</h5>
+                    <form action="{{ url_for('ruta_buscar_estu') }}" method="POST">
+                        <div class="mb-3">
+                            <label for="cedula_buscar" class="label-text">NÚMERO DE CÉDULA</label>
+                            <input type="text" class="form-control" id="cedula_buscar" name="cedula_buscar"
+                                placeholder="Ej: V-12345678" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Ejecutar Consulta</button>
+                    </form>
+                </div>
+            </div>
 
-        <div class="col-form">
-            <h3>Buscar Estudiante</h3>
-            <form action="/buscar_estu" method="POST">
-                <label for="cedula_buscar">Número de Cédula</label>
-                <input type="text" id="cedula_buscar" name="cedula_buscar" required placeholder="Ej: V-12345678">
-                <button type="submit">Ejecutar Consulta</button>
-            </form>
+            <div class="col-md-9">
 
-            {% if error %}
-            <div class="error">{{ error }}</div>
-            {% endif %}
+                {% if error %}
+                <div class="alert alert-custom-error p-3" role="alert">
+                    <strong>Atención:</strong> {{ error }}
+                </div>
+                {% endif %}
+
+                {% if estudiante %}
+                <div class="card mb-4">
+                    <h5 class="card-title mb-4">Ficha de Información</h5>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="label-text">NÚMERO DE CÉDULA</div>
+                            <div class="value-text">{{ estudiante.cedula }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="label-text">NACIONALIDAD</div>
+                            <div class="value-text">{{ estudiante.nacionalidad if estudiante.nacionalidad else 'V' }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="label-text">NOMBRES</div>
+                            <div class="value-text">{{ estudiante.nombres }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="label-text">APELLIDOS</div>
+                            <div class="value-text">{{ estudiante.apellidos }}</div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="label-text">FECHA DE NACIMIENTO</div>
+                            <div class="value-text">{{ estudiante.fecha_nacimiento if estudiante.fecha_nacimiento else
+                                'No registrada' }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="label-text">GÉNERO</div>
+                            <div class="value-text">{{ estudiante.genero if estudiante.genero else 'No registrado' }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="label-text">TELÉFONO</div>
+                            <div class="value-text">{{ estudiante.telefono if estudiante.telefono else 'No registrado'
+                                }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="label-text">CORREO ELECTRÓNICO</div>
+                            <div class="value-text">{{ estudiante.correo if estudiante.correo else 'No registrado' }}</div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="label-text">DIRECCIÓN DE HABITACIÓN</div>
+                            <div class="value-text">{{ estudiante.direccion if estudiante.direccion else 'No registrada' }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="label-text">ESTADO EN EL SISTEMA</div>
+                            <div class="value-text">
+                                {% if estudiante.estado_estudiante == 'A' %}
+                                <span class="badge-active">ACTIVO</span>
+                                {% elif estudiante.estado_estudiante == 'I' %}
+                                <span class="badge-inactive">INACTIVO</span>
+                                {% elif estudiante.estado_estudiante == 'E' %}
+                                <span class="badge-graduated">EGRESADO</span>
+                                {% else %}
+                                <span class="badge-inactive">{{ estudiante.estado_estudiante or 'No registrado' }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="card-title mt-4">Representante o Representantes</h5>
+                    <div class="card-divider"></div>
+
+                    {# --- BLOQUE CORREGIDO CON TU DISEÑO ORIGINAL --- #}
+                    {% if estudiante.estudiante_representante %}
+                    {% for relacion in estudiante.estudiante_representante %}
+                    {% set rep = relacion.representante %}
+                    <div class="row {% if not loop.last %}mb-4{% endif %}"
+                        style="border-bottom: 1px dashed #1f293a; padding-bottom: 10px;">
+                        <div class="col-md-6">
+                            <div class="label-text">NOMBRE DEL REPRESENTANTE</div>
+                            <div class="value-text">{{ rep.nombres }} {{ rep.apellidos }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="label-text">TELÉFONO DEL REPRESENTANTE</div>
+                            <div class="value-text">{{ rep.telefono if rep.telefono else 'Sin teléfono' }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="label-text">CÉDULA / PARENTESCO</div>
+                            <div class="value-text">{{ rep.cedula }} ({{ relacion.parentesco }})</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="label-text">REPRESENTANTE LEGAL</div>
+                            <div class="value-text">{{ 'Sí' if relacion.es_representante_legal else 'No' }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="alert alert-secondary text-light p-3" style="background-color: #1f293a; border: none;"
+                        role="alert">
+                        No se ha encontrado un representante vinculado para este estudiante.
+                    </div>
+                    {% endif %}
+                    {# --- FIN DEL BLOQUE --- #}
+
+                </div>
+                {% endif %}
+
+                <div class="card">
+                    <h5 class="card-title">Directorio General de Estudiantes</h5>
+
+                    <form action="{{ url_for('ruta_buscar_estu') }}" method="GET" class="row g-2 mb-3">
+                        <div class="col-md-4">
+                            <label for="anio" class="label-text d-block mb-1">FILTRAR POR AÑO</label>
+                            <select class="form-select" name="anio" id="anio">
+                                <option value="">Todos los Años</option>
+                                <option value="1er Año" {% if request.args.get('anio')=='1er Año' %}selected{% endif %}>
+                                    1er Año</option>
+                                <option value="2do Año" {% if request.args.get('anio')=='2do Año' %}selected{% endif %}>
+                                    2do Año</option>
+                                <option value="3er Año" {% if request.args.get('anio')=='3er Año' %}selected{% endif %}>
+                                    3er Año</option>
+                                <option value="4to Año" {% if request.args.get('anio')=='4to Año' %}selected{% endif %}>
+                                    4to Año</option>
+                                <option value="5to Año" {% if request.args.get('anio')=='5to Año' %}selected{% endif %}>
+                                    5to Año</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="seccion" class="label-text d-block mb-1">FILTRAR POR SECCIÓN</label>
+                            <select class="form-select" name="seccion" id="seccion">
+                                <option value="">Todas las Secciones</option>
+                                <option value="A" {% if request.args.get('seccion')=='A' %}selected{% endif %}>A
+                                </option>
+                                <option value="B" {% if request.args.get('seccion')=='B' %}selected{% endif %}>B
+                                </option>
+                                <option value="C" {% if request.args.get('seccion')=='C' %}selected{% endif %}>C
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end gap-2">
+                            <button type="submit" class="btn btn-primary w-100 mt-md-0 mt-2">Aplicar</button>
+                            <a href="{{ url_for('ruta_buscar_estu') }}"
+                                class="btn btn-outline-danger w-100 mt-md-0 mt-2">Limpiar</a>
+                        </div>
+                    </form>
+
+                    <div class="table-responsive">
+                        <table class="table-dark-custom">
+                            <thead>
+                                <tr>
+                                    <th>CÉDULA</th>
+                                    <th>NOMBRES</th>
+                                    <th>APELLIDOS</th>
+                                    <th>AÑO</th>
+                                    <th>SECCIÓN</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% if lista_estudiantes %}
+                                {% for estu in lista_estudiantes %}
+                                <tr>
+                                    <td>{{ estu.cedula }}</td>
+                                    <td>{{ estu.nombres }}</td>
+                                    <td>{{ estu.apellidos }}</td>
+                                    <td>{{ estu.anio }}</td>
+                                    <td>{{ estu.seccion }}</td>
+                                </tr>
+                                {% endfor %}
+                                {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-3">
+                                        No se han encontrado registros de estudiantes.
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
         </div>
-
-        <div class="col-tabla">
-            <h3>Ficha de Información</h3>
-
-            {% if estudiante %}
-            <table>
-                <tr>
-                    <th>Número de Cédula</th>
-                    <td>{{ estudiante.cedula }}</td>
-                </tr>
-                <tr>
-                    <th>Nacionalidad</th>
-                    <td>{{ estudiante.nacionalidad }}</td>
-                </tr>
-                <tr>
-                    <th>Nombres</th>
-                    <td>{{ estudiante.nombres }}</td>
-                </tr>
-                <tr>
-                    <th>Apellidos</th>
-                    <td>{{ estudiante.apellidos }}</td>
-                </tr>
-                <tr>
-                    <th>Fecha de Nacimiento</th>
-                    <td>{{ estudiante.fecha_nacimiento or 'No registrada' }}</td>
-                </tr>
-                <tr>
-                    <th>Género</th>
-                    <td>
-                        {% if estudiante.genero == 'M' %} Masculino {% elif estudiante.genero == 'F' %} Femenino {% else
-                        %} {{ estudiante.genero }} {% endif %}
-                    </td>
-                </tr>
-                <tr>
-                    <th>Teléfono</th>
-                    <td>{{ estudiante.telefono or 'No registrado' }}</td>
-                </tr>
-                <tr>
-                    <th>Correo Electrónico</th>
-                    <td>{{ estudiante.correo or 'No registrado' }}</td>
-                </tr>
-                <tr>
-                    <th>Dirección de Habitación</th>
-                    <td>{{ estudiante.direccion or 'No registrada' }}</td>
-                </tr>
-                <tr>
-                    <th>Estado en el Sistema</th>
-                    <td>
-                        {% if estudiante.estado_estudiante == 'A' %}
-                        <span class="badge-activo" style="background: rgba(16,185,129,0.1); color: #10b981; padding: 4px 8px; border-radius: 4px; font-weight: 600;">ACTIVO</span>
-                        {% else %}
-                        <span class="badge-inactivo" style="background: rgba(239,68,68,0.1); color: #ef4444; padding: 4px 8px; border-radius: 4px; font-weight: 600;">INACTIVO</span>
-                        {% endif %}
-                    </td>
-                </tr>
-            </table>
-            {% else %}
-            <p class="empty-msg">
-                Introduce un número de cédula en el panel izquierdo para consultar los registros de la base de datos.
-            </p>
-            {% endif %}
-        </div>
-
     </div>
 
-
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
