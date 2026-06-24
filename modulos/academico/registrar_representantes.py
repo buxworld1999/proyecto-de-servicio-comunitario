@@ -47,16 +47,32 @@ def representantes_view():
 
         return redirect(url_for('representantes'))
 
-    # Lógica GET para búsqueda (API interna)
-    # Se recomienda tener un endpoint separado para la consulta AJAX
-    return render_template('estudiantes/representantes.html')
+    # Lógica GET: Obtener todos los representantes para el listado
+    try:
+        res = supabase.table("representante").select("cedula, nombres, apellidos, telefono").execute()
+        lista_representantes = res.data or []
+    except Exception as e:
+        print(f"Error fetching representantes: {e}")
+        lista_representantes = []
+
+    return render_template('estudiantes/representantes.html', lista_representantes=lista_representantes)
 
 def buscar_representante_api(cedula):
     """Endpoint para buscar por cédula"""
     try:
-        # Consulta join simulada: Obtener representante y sus estudiantes
+        # Obtener datos del representante
         rep = supabase.table("representante").select("*").eq("cedula", cedula).single().execute()
-        est = supabase.table("estudiante_representante").select("cedula_estudiante").eq("cedula_representante", cedula).execute()
-        return {"representante": rep.data, "estudiantes": est.data}
+        
+        # Obtener las cédulas de los estudiantes asociados
+        est_rel = supabase.table("estudiante_representante").select("cedula_estudiante").eq("cedula_representante", cedula).execute()
+        cedulas_estudiantes = [e['cedula_estudiante'] for e in (est_rel.data or [])]
+        
+        estudiantes_detalles = []
+        if cedulas_estudiantes:
+            # Consultar los detalles de esos estudiantes en la tabla 'estudiante'
+            est_det = supabase.table("estudiante").select("cedula, nombres, apellidos, anio, seccion").in_("cedula", cedulas_estudiantes).execute()
+            estudiantes_detalles = est_det.data or []
+            
+        return {"representante": rep.data, "estudiantes": estudiantes_detalles}
     except Exception as e:
         return {"error": str(e)}, 404

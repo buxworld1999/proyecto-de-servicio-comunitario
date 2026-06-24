@@ -27,7 +27,7 @@ def gestion_usuarios():
 
     # 2. Obtener todo el personal para mapear los nombres reales de los usuarios
     try:
-        personal_resp = supabase.table("personal").select("cedula, nombres, apellidos").execute()
+        personal_resp = supabase.table("personal").select("cedula, nombres, apellidos, cargo, especialidad").execute()
         personal_lista = personal_resp.data or []
     except Exception as e:
         flash(f"Error al obtener personal: {str(e)}")
@@ -40,8 +40,17 @@ def gestion_usuarios():
     for u in usuarios_lista:
         u['nombre_personal'] = personal_dict.get(u['cedula_personal'], "No asociado")
 
-    # 3. Filtrar personal que NO tiene un usuario creado aún
-    personal_disponible = [p for p in personal_lista if p['cedula'] not in cedulas_con_usuario]
+    # 3. Filtrar personal que NO tiene un usuario creado aún y que cumpla con el perfil (docente, secretaria, etc.)
+    personal_disponible = []
+    palabras_clave = ['docente', 'profesor', 'profesora', 'maestro', 'maestra', 'secretaria', 'secretario', 'coordinador', 'coordinadora', 'director', 'directora', 'admin']
+
+    for p in personal_lista:
+        if p['cedula'] not in cedulas_con_usuario:
+            cargo = str(p.get('cargo') or '').lower()
+            especialidad = str(p.get('especialidad') or '').lower()
+            
+            if any(palabra in cargo for palabra in palabras_clave) or any(palabra in especialidad for palabra in palabras_clave):
+                personal_disponible.append(p)
 
     # ── PROCESAR ACCIONES (POST) ──
     if request.method == 'POST':

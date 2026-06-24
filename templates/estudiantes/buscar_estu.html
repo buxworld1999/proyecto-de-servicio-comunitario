@@ -7,26 +7,61 @@
     <title>Gestión y Búsqueda de Estudiantes</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
+    <script src="/static/theme-apply.js"></script>
     <style>
+        :root {
+            --bg-page: #f5f6fa;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --input-bg: #ffffff;
+            --input-border: #cbd5e1;
+            --table-bg: #ffffff;
+            --table-hover: #f8fafc;
+            --table-header-border: #e2e8f0;
+            --accent-blue: #3b82f6;
+            --accent-blue-hover: #2563eb;
+            --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        html.dark {
+            --bg-page: #0e1320;
+            --bg-card: #111827;
+            --text-main: #ffffff;
+            --text-muted: #aab1bf;
+            --border-color: #1d283c;
+            --input-bg: #1f293a;
+            --input-border: #1f293a;
+            --table-bg: #111827;
+            --table-hover: #1a2235;
+            --table-header-border: #1d283c;
+            --accent-blue: #3b82f6;
+            --accent-blue-hover: #2563eb;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
         body {
-            background-color: #0e1320;
-            color: #ffffff;
+            background-color: var(--bg-page);
+            color: var(--text-main);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 20px;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .card {
-            background-color: #111827;
-            border: none;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            box-shadow: var(--card-shadow);
             padding: 20px;
             margin-bottom: 20px;
+            transition: background-color 0.3s, border-color 0.3s;
         }
 
         .card-title {
-            color: #ffffff;
+            color: var(--text-main);
             font-size: 1.1rem;
             font-weight: 600;
             display: flex;
@@ -39,13 +74,13 @@
             display: inline-block;
             width: 3px;
             height: 1rem;
-            background-color: #60a5fa;
+            background-color: var(--accent-blue);
             margin-right: 10px;
             border-radius: 2px;
         }
 
         .label-text {
-            color: #aab1bf;
+            color: var(--text-muted);
             text-transform: uppercase;
             font-size: 0.75rem;
             font-weight: 700;
@@ -54,35 +89,36 @@
         }
 
         .value-text {
-            color: #ffffff;
+            color: var(--text-main);
             font-size: 0.95rem;
             margin-bottom: 1rem;
         }
 
         .form-control,
         .form-select {
-            background-color: #1f293a;
-            color: #ffffff;
-            border: 1px solid #1f293a;
+            background-color: var(--input-bg);
+            color: var(--text-main);
+            border: 1px solid var(--input-border);
             border-radius: 4px;
             font-size: 0.9rem;
             padding: 10px 15px;
+            transition: background-color 0.3s, border-color 0.3s, color 0.3s;
         }
 
         .form-control:focus,
         .form-select:focus {
-            background-color: #1f293a;
-            color: #ffffff;
-            border-color: #60a5fa;
-            box-shadow: 0 0 0 1px #60a5fa;
+            background-color: var(--input-bg);
+            color: var(--text-main);
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 1px var(--accent-blue);
         }
 
         .form-control::placeholder {
-            color: #6a768c;
+            color: var(--text-muted);
         }
 
         .btn-primary {
-            background-color: #3b82f6;
+            background-color: var(--accent-blue);
             border: none;
             font-weight: 600;
             font-size: 0.95rem;
@@ -92,16 +128,16 @@
 
         .btn-primary:hover,
         .btn-primary:focus {
-            background-color: #2563eb;
+            background-color: var(--accent-blue-hover);
         }
 
         .card-divider {
-            border-top: 1px solid #1d283c;
+            border-top: 1px solid var(--border-color);
             margin: 1rem 0;
         }
 
         .alert-custom-error {
-            background-color: #47111b;
+            background-color: rgba(239, 68, 68, 0.1);
             color: #ef4444;
             border: 1px solid #ef4444;
             border-radius: 4px;
@@ -131,7 +167,7 @@
 
         .badge-graduated {
             background: rgba(59, 130, 246, 0.1);
-            color: #3b82f6;
+            color: var(--accent-blue);
             padding: 5px 12px;
             border-radius: 4px;
             font-weight: 700;
@@ -146,29 +182,30 @@
         .table-dark-custom {
             width: 100%;
             border-collapse: separate;
-            border-spacing: 0 1px;
-            color: #ffffff;
+            border-spacing: 0;
+            color: var(--text-main);
             font-size: 0.9rem;
         }
 
         .table-dark-custom thead th {
-            color: #aab1bf;
+            color: var(--text-muted);
             text-transform: uppercase;
             font-size: 0.75rem;
             font-weight: 700;
             letter-spacing: 0.05rem;
             padding: 10px 15px;
-            border-bottom: 1px solid #1d283c;
+            border-bottom: 1px solid var(--table-header-border);
         }
 
         .table-dark-custom tbody td {
-            background-color: #111827;
+            background-color: var(--table-bg);
             padding: 15px;
-            border-bottom: 1px solid #0e1320;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.3s;
         }
 
         .table-dark-custom tbody tr:hover td {
-            background-color: #1a2235;
+            background-color: var(--table-hover);
         }
     </style>
 </head>
@@ -224,6 +261,17 @@
                         <div class="col-md-6">
                             <div class="label-text">APELLIDOS</div>
                             <div class="value-text">{{ estudiante.apellidos }}</div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="label-text">AÑO CURSANTE</div>
+                            <div class="value-text">{{ estudiante.anio if estudiante.anio else 'No asignado' }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="label-text">SECCIÓN</div>
+                            <div class="value-text">{{ estudiante.seccion if estudiante.seccion else 'No asignada' }}</div>
                         </div>
                     </div>
 
@@ -335,12 +383,12 @@
                             <label for="seccion" class="label-text d-block mb-1">FILTRAR POR SECCIÓN</label>
                             <select class="form-select" name="seccion" id="seccion">
                                 <option value="">Todas las Secciones</option>
-                                <option value="A" {% if request.args.get('seccion')=='A' %}selected{% endif %}>A
-                                </option>
-                                <option value="B" {% if request.args.get('seccion')=='B' %}selected{% endif %}>B
-                                </option>
-                                <option value="C" {% if request.args.get('seccion')=='C' %}selected{% endif %}>C
-                                </option>
+                                <option value="A" {% if request.args.get('seccion')=='A' %}selected{% endif %}>A</option>
+                                <option value="B" {% if request.args.get('seccion')=='B' %}selected{% endif %}>B</option>
+                                <option value="C" {% if request.args.get('seccion')=='C' %}selected{% endif %}>C</option>
+                                <option value="D" {% if request.args.get('seccion')=='D' %}selected{% endif %}>D</option>
+                                <option value="E" {% if request.args.get('seccion')=='E' %}selected{% endif %}>E</option>
+                                <option value="F" {% if request.args.get('seccion')=='F' %}selected{% endif %}>F</option>
                             </select>
                         </div>
                         <div class="col-md-4 d-flex align-items-end gap-2">

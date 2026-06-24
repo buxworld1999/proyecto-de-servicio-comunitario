@@ -501,7 +501,7 @@ body {
 .input-prisma:focus {
     border-color: var(--accent-purple);
     box-shadow: var(--shadow-glow);
-    background-color: #161e2e;
+    background-color: var(--bg-card);
 }
 
 .input-prisma::placeholder {

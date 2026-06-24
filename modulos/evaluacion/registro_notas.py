@@ -137,8 +137,21 @@ def registro_notas_view():
     materia_info         = None
     momento_info         = None
     momento_cerrado      = False
+    docente_asignado_info = None
 
     if all([ano_sel, seccion_sel, materia_sel, momento_sel]):
+        try:
+            resp_asig_doc = supabase.table("asignacion_docente").select(
+                "personal(nombres, apellidos)"
+            ).eq("codigo_ano_escolar", ano_sel) \
+             .eq("codigo_seccion", seccion_sel) \
+             .eq("codigo_materia", materia_sel) \
+             .limit(1).execute()
+            if resp_asig_doc.data and resp_asig_doc.data[0].get('personal'):
+                p = resp_asig_doc.data[0]['personal']
+                docente_asignado_info = f"{p.get('nombres', '')} {p.get('apellidos', '')}".strip()
+        except Exception:
+            pass
         try:
             num_momento = int(momento_sel)
         except ValueError:
@@ -238,6 +251,27 @@ def registro_notas_view():
             nota_min  = float(mat_info.get('nota_minima_aprobacion') or 10.0) if mat_info else 10.0
             hoy       = date.today().isoformat()
 
+            # --- VERIFICACIÓN DE DOCENTE ASIGNADO ---
+            try:
+                resp_asig_check = supabase.table("asignacion_docente").select("cedula_docente") \
+                    .eq("codigo_materia", materia_form) \
+                    .eq("codigo_seccion", seccion_form) \
+                    .eq("codigo_ano_escolar", ano_form) \
+                    .limit(1).execute()
+                
+                if not resp_asig_check.data:
+                    flash("⚠ No se pueden guardar las notas: no hay un docente asignado a esta materia y sección.", "danger")
+                    return redirect(url_for('registro_notas',
+                        ano=ano_form, seccion=seccion_form,
+                        materia=materia_form, momento=momento_form))
+                
+                docente_asignado_global = resp_asig_check.data[0]['cedula_docente']
+            except Exception as e:
+                flash(f"Error verificando docente asignado: {str(e)}", "danger")
+                return redirect(url_for('registro_notas',
+                    ano=ano_form, seccion=seccion_form,
+                    materia=materia_form, momento=momento_form))
+
             guardados = actualizados = errores = 0
 
             # Recorrer todas las cédulas enviadas
@@ -270,16 +304,7 @@ def registro_notas_view():
                     if cedula_docente_form:
                         docente_evaluador_final = cedula_docente_form
                     else:
-                        try:
-                            resp_asig = supabase.table("asignacion_docente").select("cedula_docente") \
-                                .eq("codigo_materia", materia_form) \
-                                .eq("codigo_seccion", seccion_form) \
-                                .eq("codigo_ano_escolar", ano_form) \
-                                .limit(1).execute()
-                            if resp_asig.data:
-                                docente_evaluador_final = resp_asig.data[0]['cedula_docente']
-                        except Exception:
-                            pass
+                        docente_evaluador_final = docente_asignado_global
 
                 dato = {
                     "cedula_estudiante":       cedula,
@@ -339,4 +364,5 @@ def registro_notas_view():
         momento_info         = momento_info,
         momento_cerrado      = momento_cerrado,
         rol                  = rol,
+        docente_asignado_info = docente_asignado_info,
     )

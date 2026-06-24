@@ -185,21 +185,21 @@
                         </form>
                     </section>
 
-                    <!-- ── SECCIÓN 2: CONSULTA / BÚSQUEDA ── -->
+                    <!-- ── SECCIÓN 2: CONSULTA / LISTADO ── -->
                     <section id="seccion-listado" style="display:none;">
                         <div class="search-container-prisma">
                             <div class="search-input-group">
                                 <label>Cédula del Representante</label>
                                 <input type="text" id="input-busqueda" class="input-prisma" placeholder="Ej: 12345678">
                             </div>
-                            <button type="button" class="btn-search-prisma" onclick="buscarRepresentante()">
+                            <button type="button" class="btn-search-prisma" onclick="buscarRepresentante(document.getElementById('input-busqueda').value)">
                                 <i data-lucide="search"></i>
                                 <span>Buscar</span>
                             </button>
                         </div>
 
                         <!-- Detalles del Representante Encontrado -->
-                        <div id="resultado-busqueda" class="results-card-prisma" style="display: none;">
+                        <div id="resultado-busqueda" class="results-card-prisma" style="display: none; margin-bottom: 30px;">
                             <h3 class="results-title-prisma">
                                 <i data-lucide="user-check"></i>
                                 <span>Detalles del Representante</span>
@@ -227,11 +227,50 @@
                                 <table class="table-prisma">
                                     <thead>
                                         <tr>
-                                            <th>Cédula del Alumno</th>
+                                            <th>Cédula</th>
+                                            <th>Nombre Completo</th>
+                                            <th>Año</th>
+                                            <th>Sección</th>
                                         </tr>
                                     </thead>
                                     <tbody id="res-estudiantes">
                                         <!-- Cargado dinámicamente -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Listado General de Representantes -->
+                        <div class="results-card-prisma">
+                            <h3 class="results-title-prisma">
+                                <i data-lucide="users"></i>
+                                <span>Listado de Representantes</span>
+                            </h3>
+                            <div class="table-responsive-prisma" style="max-height: 400px; overflow-y: auto;">
+                                <table class="table-prisma" style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="text-align: left; border-bottom: 1px solid var(--border-dark);">
+                                            <th style="padding: 12px; color: var(--text-muted-light); font-weight: 600; font-size: 13px;">Cédula</th>
+                                            <th style="padding: 12px; color: var(--text-muted-light); font-weight: 600; font-size: 13px;">Nombre Completo</th>
+                                            <th style="padding: 12px; color: var(--text-muted-light); font-weight: 600; font-size: 13px;">Teléfono</th>
+                                            <th style="padding: 12px; color: var(--text-muted-light); font-weight: 600; font-size: 13px;">Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for rep in lista_representantes %}
+                                        <tr style="border-bottom: 1px solid var(--border-dark); cursor: pointer;" class="tr-hover-prisma" onclick="buscarRepresentante('{{ rep.cedula }}')">
+                                            <td style="padding: 12px; color: var(--text-light);">{{ rep.cedula }}</td>
+                                            <td style="padding: 12px; color: var(--text-light);">{{ rep.nombres }} {{ rep.apellidos }}</td>
+                                            <td style="padding: 12px; color: var(--text-muted-light);">{{ rep.telefono or 'N/A' }}</td>
+                                            <td style="padding: 12px;">
+                                                <button class="btn-outline-prisma" style="padding: 4px 8px; font-size: 12px; border-radius: 4px; border: 1px solid var(--accent-purple); color: var(--accent-purple); cursor: pointer; background: transparent;">Ver</button>
+                                            </td>
+                                        </tr>
+                                        {% else %}
+                                        <tr>
+                                            <td colspan="4" style="padding: 16px; text-align: center; color: var(--text-muted-light);">No hay representantes registrados</td>
+                                        </tr>
+                                        {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
@@ -281,12 +320,15 @@
             lucide.createIcons();
         }
 
-        async function buscarRepresentante() {
-            const cedula = document.getElementById('input-busqueda').value.trim();
+        async function buscarRepresentante(cedulaParam) {
+            const cedula = cedulaParam || document.getElementById('input-busqueda').value.trim();
             if (!cedula) {
                 alert("Por favor ingrese una cédula.");
                 return;
             }
+
+            // Actualizar input por si se clicó desde la tabla
+            document.getElementById('input-busqueda').value = cedula;
 
             try {
                 const response = await fetch(`/api/consultar_representante/${cedula}`);
@@ -305,10 +347,17 @@
 
                     if (data.estudiantes && data.estudiantes.length > 0) {
                         data.estudiantes.forEach(est => {
-                            tbody.innerHTML += `<tr><td>${est.cedula_estudiante}</td></tr>`;
+                            tbody.innerHTML += `
+                                <tr>
+                                    <td>${est.cedula || 'N/A'}</td>
+                                    <td>${est.nombres || ''} ${est.apellidos || ''}</td>
+                                    <td>${est.anio || 'N/A'}</td>
+                                    <td>${est.seccion || 'N/A'}</td>
+                                </tr>
+                            `;
                         });
                     } else {
-                        tbody.innerHTML = `<tr><td style="color: var(--text-muted-light); font-style: italic;">No tiene estudiantes asociados</td></tr>`;
+                        tbody.innerHTML = `<tr><td colspan="4" style="color: var(--text-muted-light); font-style: italic; text-align: center;">No tiene estudiantes asociados</td></tr>`;
                     }
 
                     document.getElementById('resultado-busqueda').style.display = 'block';

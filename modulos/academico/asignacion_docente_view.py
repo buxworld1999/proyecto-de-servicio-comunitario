@@ -39,9 +39,16 @@ def asignacion_docente_view():
         anos = []
 
     try:
-        resp_doc = supabase.table("personal").select("cedula, nombres, apellidos, cargo") \
-            .eq("estado", "A").order("apellidos").execute()
-        docentes = resp_doc.data or []
+        # Obtener las cédulas de los usuarios registrados con el rol 'docente'
+        resp_usuarios = supabase.table("usuario").select("cedula_personal").eq("rol", "docente").eq("estado", "A").execute()
+        cedulas_validas = [u['cedula_personal'] for u in (resp_usuarios.data or []) if u.get('cedula_personal')]
+
+        if cedulas_validas:
+            resp_doc = supabase.table("personal").select("cedula, nombres, apellidos, cargo") \
+                .eq("estado", "A").in_("cedula", cedulas_validas).order("apellidos").execute()
+            docentes = resp_doc.data or []
+        else:
+            docentes = []
     except Exception as e:
         flash(f"Error cargando docentes: {str(e)}", "danger")
         docentes = []

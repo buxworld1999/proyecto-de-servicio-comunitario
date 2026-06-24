@@ -140,8 +140,10 @@ def menu():
     stats = {}
     try:
         # Total estudiantes registrados
-        r = supabase.table('estudiante').select('cedula', count='exact').execute()
-        stats['total_estudiantes'] = r.count or 0
+        r = supabase.table('estudiante').select('cedula').execute()
+        estudiantes_data = r.data or []
+        todas_cedulas = set(e['cedula'] for e in estudiantes_data)
+        stats['total_estudiantes'] = len(todas_cedulas)
 
         # Año escolar activo
         r_ano = supabase.table('ano_escolar').select('codigo').eq('activo', True).limit(1).execute()
@@ -150,19 +152,25 @@ def menu():
 
         if ano_activo:
             # Matriculados en el año activo
-            r_mat = supabase.table('matricula').select('id', count='exact').eq('codigo_ano_escolar', ano_activo).execute()
-            stats['matriculados'] = r_mat.count or 0
+            r_mat = supabase.table('matricula').select('cedula_estudiante, estado_matricula').eq('codigo_ano_escolar', ano_activo).execute()
+            matriculas_data = r_mat.data or []
+            
+            cedulas_matriculadas = set(m['cedula_estudiante'] for m in matriculas_data)
+            cedulas_activas = set(m['cedula_estudiante'] for m in matriculas_data if m.get('estado_matricula') == 'A')
+            
+            # Intersección para evitar contar matrículas huérfanas o duplicadas
+            valid_matriculados = todas_cedulas.intersection(cedulas_matriculadas)
+            valid_activos = todas_cedulas.intersection(cedulas_activas)
 
-            # Estudiantes activos (estado A)
-            r_act = supabase.table('matricula').select('id', count='exact').eq('codigo_ano_escolar', ano_activo).eq('estado_matricula', 'A').execute()
-            stats['activos'] = r_act.count or 0
+            stats['matriculados'] = len(valid_matriculados)
+            stats['activos'] = len(valid_activos)
 
-            # Estudiantes sin matrícula este año (sin documentos / pendientes)
+            # Estudiantes sin matrícula este año
             stats['sin_matricula'] = stats['total_estudiantes'] - stats['matriculados']
         else:
             stats['matriculados'] = 0
             stats['activos'] = 0
-            stats['sin_matricula'] = 0
+            stats['sin_matricula'] = stats['total_estudiantes']
 
         # Total personal
         r_per = supabase.table('personal').select('cedula', count='exact').execute()

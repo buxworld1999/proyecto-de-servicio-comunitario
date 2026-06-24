@@ -176,6 +176,16 @@
             <span>Año Escolar</span>
             <strong>{{ ano_sel }}</strong>
         </div>
+        <div class="planilla-info" style="{% if not docente_asignado_info %}color: var(--danger);{% endif %}">
+            <span>Docente</span>
+            <strong>
+                {% if docente_asignado_info %}
+                    <i class="fa-solid fa-chalkboard-user"></i> {{ docente_asignado_info }}
+                {% else %}
+                    <i class="fa-solid fa-triangle-exclamation"></i> No hay docente
+                {% endif %}
+            </strong>
+        </div>
         <div class="planilla-info">
             <span>Estudiantes</span>
             <strong>{{ estudiantes_planilla | length }}</strong>
