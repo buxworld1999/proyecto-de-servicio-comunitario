@@ -118,10 +118,10 @@
         </div>
 
         <div class="cm-download-container">
-          <a href="/static/downloads/Formato_Carga_Materia.xlsx" class="cm-btn-template" download>
+          <a href="/static/downloads/Formato_Carga_Materia.xlsx" class="cm-btn-template" id="btn-download-simple" download>
             <i class="fa-solid fa-file-excel" style="color:#10b981;"></i> Plantilla: 1 Materia
           </a>
-          <a href="/static/downloads/Formato_Sabana_MPPE_Ejemplo.xlsx" class="cm-btn-template" download>
+          <a href="/static/downloads/Formato_Sabana_MPPE_Ejemplo.xlsx" class="cm-btn-template" id="btn-download-sabana" style="display: none;" download>
             <i class="fa-solid fa-file-excel" style="color:#10b981;"></i> Plantilla: Sábana MPPE
           </a>
         </div>
@@ -475,6 +475,8 @@
       const containerMateria = document.getElementById('container-materia');
       const dropHelp = document.getElementById('drop-zone-help');
       const matSelect = document.getElementById('sel-materia');
+      const btnSimple = document.getElementById('btn-download-simple');
+      const btnSabana = document.getElementById('btn-download-sabana');
 
       if (modo === 'sabana') {
         if (containerMateria) containerMateria.style.display = 'none';
@@ -483,6 +485,8 @@
           matSelect.setAttribute('disabled', 'disabled'); // Deshabilita para que no viaje en el POST
         }
         if (dropHelp) dropHelp.textContent = 'Modo actual: Carga de Múltiples Materias (Formato Sábana MPPE)';
+        if (btnSimple) btnSimple.style.display = 'none';
+        if (btnSabana) btnSabana.style.display = 'inline-flex';
       } else {
         if (containerMateria) containerMateria.style.display = 'block';
         if (matSelect) {
@@ -490,6 +494,8 @@
           matSelect.setAttribute('required', 'required');
         }
         if (dropHelp) dropHelp.textContent = 'Modo actual: Carga de 1 materia (Columnas Cédula, Nombre, Nota)';
+        if (btnSimple) btnSimple.style.display = 'inline-flex';
+        if (btnSabana) btnSabana.style.display = 'none';
       }
     }
 
