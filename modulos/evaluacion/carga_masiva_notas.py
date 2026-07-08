@@ -4,16 +4,19 @@ PRISMA — Sistema de Gestión Escolar | Unidad Educativa Carmen Ruíz
 
 Flujo:
   1. Admin/Docente sube un .xlsx con columnas: Cédula, Apellidos, Nombres, Nota
-  2. Selecciona: Año Escolar, Sección, Materia, Momento Evaluativo
-  3. El motor parsea el Excel y mapea los datos
-  4. Por cada fila, busca al estudiante matriculado en esa sección/año por cédula
-  5. Hace upsert en la tabla 'evaluacion' de Supabase
-  6. Retorna resumen: insertadas, actualizadas, no encontradas, errores
+  2. Selecciona: Año Escolar, Sección, Materia (solo si es individual), Momento Evaluativo
+  3. Ingresa: Cédula del Docente Evaluador (para control de firmas/registros)
+  4. El motor parsea el Excel y mapea los datos
+  5. Por cada fila, busca al estudiante matriculado en esa sección/año por cédula
+  6. Hace upsert en la tabla 'evaluacion' de Supabase vinculando al docente ingresado
+  7. Retorna resumen: insertadas, actualizadas, no encontradas, errores
 """
 
 from datetime import date
 from flask import render_template, request, redirect, url_for, flash, session
 import re
+import io
+import pandas as pd
 from db import supabase
 from modulos.evaluacion.notas_excel_parser import NotasExcelParser
 from modulos.evaluacion.sabana_excel_parser import SabanaExcelParser
@@ -26,20 +29,6 @@ def _get_ano_activo():
         return resp.data[0]['codigo'] if resp.data else None
     except Exception:
         return None
-
-
-def _get_cedula_personal():
-    cedula = session.get('cedula_personal')
-    if cedula:
-        return cedula
-    try:
-        resp = supabase.table("usuario").select("cedula_personal") \
-            .eq("id", session.get('usuario_id')).limit(1).execute()
-        if resp.data:
-            return resp.data[0].get('cedula_personal')
-    except Exception:
-        pass
-    return None
 
 
 def _nota_resultado(nota: float, nota_min: float = 10.0) -> str:
@@ -90,7 +79,7 @@ def carga_masiva_notas_view():
         ]
 
     ano_sel = request.args.get('ano', _get_ano_activo() or '')
-    secciones = [s for s in secciones_todas if s.get('codigo_ano_escolar') == ano_sel]
+    secciones = [s for s in secciones_todas if s.get('codigo_ano_escolar') == _get_ano_activo()] if not ano_sel else [s for s in secciones_todas if s.get('codigo_ano_escolar') == ano_sel]
 
     seccion_sel = request.args.get('seccion', '')
     grado_sel = None
@@ -115,8 +104,11 @@ def carga_masiva_notas_view():
     tipo_carga   = request.form.get('tipo_carga', 'simple').strip()
     ano_form     = request.form.get('ano_escolar', '').strip()
     seccion_form = request.form.get('codigo_seccion', '').strip()
-    materia_form = request.form.get('codigo_materia', '').strip() if tipo_carga == 'simple' else 'MULTIPLE'
     momento_form = request.form.get('numero_momento', '').strip()
+    evaluador_form = request.form.get('cedula_evaluador', '').strip()  # <─ NUEVO CAMPO
+
+    # Si es carga simple, la materia es estrictamente obligatoria, si es sábana se ignora
+    materia_form = request.form.get('codigo_materia', '').strip() if tipo_carga == 'simple' else None
 
     # Validaciones básicas
     if not archivo or archivo.filename == '':
@@ -127,9 +119,21 @@ def carga_masiva_notas_view():
         flash("Solo se aceptan archivos .xlsx o .xls", "danger")
         return redirect(url_for('carga_masiva_notas', ano=ano_form))
 
-    if not all([ano_form, seccion_form, momento_form]) or (tipo_carga == 'simple' and not materia_form):
-        flash("Debes seleccionar Año Escolar, Sección, Materia y Momento.", "warning")
+    if not all([ano_form, seccion_form, momento_form, evaluador_form]) or (tipo_carga == 'simple' and not materia_form):
+        flash("Debes completar todos los campos requeridos, incluyendo la cédula del evaluador.", "warning")
         return redirect(url_for('carga_masiva_notas', ano=ano_form))
+
+    # ── VALIDAR SI EL DOCENTE EVALUADOR EXISTE EN LA TABLA PERSONAL ──
+    try:
+        check_docente = supabase.table("personal").select("cedula") \
+            .eq("cedula", evaluador_form).limit(1).execute()
+        if not check_docente.data:
+            flash(f"La cédula del evaluador '{evaluador_form}' no coincide con ningún docente en el sistema.", "danger")
+            return redirect(url_for('carga_masiva_notas', ano=ano_form))
+    except Exception as e:
+        flash(f"Error al verificar el docente evaluador: {str(e)}", "danger")
+        return redirect(url_for('carga_masiva_notas', ano=ano_form))
+    # ──────────────────────────────────────────────────────────────────
 
     try:
         num_momento = int(momento_form)
@@ -143,9 +147,12 @@ def carga_masiva_notas_view():
         flash("Este momento evaluativo está CERRADO. No se pueden cargar notas.", "warning")
         return redirect(url_for('carga_masiva_notas', ano=ano_form))
 
-    # Nota mínima de aprobación de la materia
-    mat_info = next((m for m in materias if m['codigo'] == materia_form), None)
-    nota_min = float(mat_info.get('nota_minima_aprobacion') or 10.0) if mat_info else 10.0
+    # Nota mínima de aprobación
+    if tipo_carga == 'simple':
+        mat_info = next((m for m in materias if m['codigo'] == materia_form), None)
+        nota_min = float(mat_info.get('nota_minima_aprobacion') or 10.0) if mat_info else 10.0
+    else:
+        nota_min = 10.0
 
     # ── 1. Parsear Excel ──────────────────────────────────────────────
     try:
@@ -157,7 +164,22 @@ def carga_masiva_notas_view():
             registros = resultado_dict.get('estudiantes', [])
             diagnostico = resultado_dict.get('diagnostico', {})
         else:
-            parser = NotasExcelParser(archivo)
+            # Parche de seguridad
+            df_temp = pd.read_excel(archivo)
+            df_temp.columns = df_temp.columns.str.strip().str.lower()
+            
+            if 'cedula' in df_temp.columns:
+                df_temp['cedula'] = df_temp['cedula'].astype(str).str.replace(r'\.0$', '', regex=True).str.strip()
+                
+            if 'nota' in df_temp.columns:
+                df_temp['nota'] = pd.to_numeric(df_temp['nota'], errors='coerce').fillna(0).astype(float)
+            
+            output = io.BytesIO()
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                df_temp.to_excel(writer, index=False, sheet_name='Sheet1')
+            output.seek(0)
+            
+            parser = NotasExcelParser(output)
             resultado = parser.parse()
             registros = resultado.registros
             diagnostico = resultado.diagnostico
@@ -170,13 +192,13 @@ def carga_masiva_notas_view():
         return render_template(
             'evaluacion/carga_masiva_notas.html',
             anos=anos, secciones=secciones, materias=materias, momentos=momentos,
-            ano_sel=ano_form, secciones_todas=secciones_todas,
+            ano_sel=ano_form, secciones_todas=secciones_todas, tipo_carga=tipo_carga,
             procesado=True,
             diagnostico=diagnostico,
             insertadas=[], actualizadas=[], no_encontradas=[], errores=[],
         )
 
-    # ── 2. Cargar lista de matriculados en esa sección/año ────────────
+    # ── 2. Cargar lista de matriculados ───────────────────────────────
     try:
         resp_mat_est = supabase.table("matricula").select(
             "cedula_estudiante, numero_lista, estudiante(nombres, apellidos)"
@@ -191,7 +213,6 @@ def carga_masiva_notas_view():
         return redirect(url_for('carga_masiva_notas', ano=ano_form))
 
     # ── 3. Cargar evaluaciones existentes ─────────────────────────────
-    # Si es carga simple, cargamos solo de esa materia. Si es sábana, cargamos todas las materias del momento.
     try:
         query_ev = supabase.table("evaluacion").select(
             "id, cedula_estudiante, codigo_materia"
@@ -199,29 +220,30 @@ def carga_masiva_notas_view():
         
         if tipo_carga == 'simple':
             query_ev = query_ev.eq("codigo_materia", materia_form)
+        else:
+            if matriculados:
+                query_ev = query_ev.in_("cedula_estudiante", list(matriculados.keys()))
             
         resp_ev = query_ev.execute()
         
-        eval_existentes = {} # {(cedula, codigo_materia): id}
+        eval_existentes = {}
         for e in (resp_ev.data or []):
             eval_existentes[(e['cedula_estudiante'], e['codigo_materia'])] = e['id']
-    except Exception as e:
+    except Exception:
         eval_existentes = {}
 
     # ── 4. Procesar cada registro del Excel ───────────────────────────
-    cedula_personal = _get_cedula_personal()
     hoy = date.today().isoformat()
 
-    insertadas    = []
-    actualizadas  = []
+    insertadas     = []
+    actualizadas   = []
     no_encontradas = []
-    errores       = []
+    errores        = []
 
     for reg in registros:
         cedula = reg.get('cedula', '')
         
-        # Obtener lista de notas a procesar (si es simple es 1, si es sábana pueden ser 10)
-        notas_a_procesar = [] # list of (codigo_materia, nota_valor)
+        notas_a_procesar = []
         if tipo_carga == 'sabana':
             for cod_mat, val in reg.get('notas', {}).items():
                 notas_a_procesar.append((cod_mat, val))
@@ -245,7 +267,6 @@ def carga_masiva_notas_view():
             })
             continue
 
-        # Verificar que el estudiante esté matriculado en esa sección
         if cedula not in matriculados:
             no_encontradas.append({
                 'fila':   reg.get('fila_excel'),
@@ -259,12 +280,10 @@ def carga_masiva_notas_view():
         est_info = mat_estu.get('estudiante') or {}
         nombre_completo = f"{est_info.get('apellidos','').strip()} {est_info.get('nombres','').strip()}".strip()
 
-        # Procesar cada materia para este estudiante
         for cod_materia, nota in notas_a_procesar:
             if nota is None:
                 continue
                 
-            # Buscar nota mínima para la materia específica (si no se encuentra, 10.0 por defecto)
             mat_obj = next((m for m in materias if m['codigo'] == cod_materia), None)
             nota_min_local = float(mat_obj.get('nota_minima_aprobacion') or 10.0) if mat_obj else nota_min
             resultado_nota = _nota_resultado(nota, nota_min_local)
@@ -277,7 +296,7 @@ def carga_masiva_notas_view():
                 "nota":                     nota,
                 "resultado":                resultado_nota,
                 "fecha_evaluacion":         hoy,
-                "cedula_docente_evaluador": cedula_personal,
+                "cedula_docente_evaluador": evaluador_form,  # <─ Usa la cédula enviada desde el HTML
             }
 
             try:
@@ -309,7 +328,6 @@ def carga_masiva_notas_view():
                     'motivo': f"Error Supabase en {cod_materia}: {str(e)}",
                 })
 
-    # ── 5. Nombre de la materia y sección para el resumen ─────────────
     materia_nombre = "Múltiples (Sábana)" if tipo_carga == 'sabana' else (mat_info.get('nombre') if mat_info else materia_form)
     mom_info = mom_check if mom_check else {}
     momento_nombre = mom_info.get('nombre', f"Momento {num_momento}")
@@ -317,7 +335,7 @@ def carga_masiva_notas_view():
     return render_template(
         'evaluacion/carga_masiva_notas.html',
         anos=anos, secciones=secciones, materias=materias, momentos=momentos,
-        ano_sel=ano_form, secciones_todas=secciones_todas,
+        ano_sel=ano_form, secciones_todas=secciones_todas, tipo_carga=tipo_carga,
         procesado=True,
         seccion_sel=seccion_form,
         materia_nombre=materia_nombre,

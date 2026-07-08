@@ -1,443 +1,504 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carga Masiva de Notas | PRISMA</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='academico/academico.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='evaluacion/carga_masiva_notas.css') }}">
-    <script src="{{ url_for('static', filename='theme-apply.js') }}"></script>
-</head>
-<body>
-<div class="cm-hero">
-  <h1 class="cm-title"><i class="fa-solid fa-file-excel" style="font-size:1.5rem;"></i> Carga Masiva de Notas</h1>
-  <p class="cm-subtitle">Sube un Excel con las calificaciones y el sistema las registrará automáticamente en la planilla</p>
 
-  {% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carga Masiva de Notas | PRISMA</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='academico/academico.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='evaluacion/carga_masiva_notas.css') }}">
+  <script src="{{ url_for('static', filename='theme-apply.js') }}"></script>
+</head>
+
+<body>
+  <div class="cm-hero">
+    <h1 class="cm-title"><i class="fa-solid fa-file-excel" style="font-size:1.5rem;"></i> Carga Masiva de Notas</h1>
+    <p class="cm-subtitle">Sube un Excel con las calificaciones y el sistema las registrará automáticamente en la
+      planilla</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
     {% for cat, msg in messages %}
-    <div style="background:rgba({% if cat=='danger' %}239,68,68{% elif cat=='warning' %}245,158,11{% else %}16,185,129{% endif %},.1);border:1px solid rgba({% if cat=='danger' %}239,68,68{% elif cat=='warning' %}245,158,11{% else %}16,185,129{% endif %},.3);color:{% if cat=='danger' %}#f87171{% elif cat=='warning' %}#fbbf24{% else %}#34d399{% endif %};padding:.9rem 1.2rem;border-radius:10px;margin-bottom:1rem;font-size:.9rem;">
+    <div
+      style="background:rgba({% if cat=='danger' %}239,68,68{% elif cat=='warning' %}245,158,11{% else %}16,185,129{% endif %},.1);border:1px solid rgba({% if cat=='danger' %}239,68,68{% elif cat=='warning' %}245,158,11{% else %}16,185,129{% endif %},.3);color:{% if cat=='danger' %}#f87171{% elif cat=='warning' %}#fbbf24{% else %}#34d399{% endif %};padding:.9rem 1.2rem;border-radius:10px;margin-bottom:1rem;font-size:.9rem;">
       {{ msg }}
     </div>
     {% endfor %}
-  {% endif %}
-  {% endwith %}
+    {% endif %}
+    {% endwith %}
 
-  {% if not procesado %}
-  {# ══ FORMULARIO DE CARGA ══════════════════════════════════ #}
-  <div class="glass-panel" style="padding:2rem;">
+    {% if not procesado %}
+    {# ══ FORMULARIO DE CARGA ══════════════════════════════════ #}
+    <div class="glass-panel" style="padding:2rem;">
 
-    <form method="POST" enctype="multipart/form-data" id="upload-form">
+      <form method="POST" enctype="multipart/form-data" id="upload-form">
 
-      {# ── Selector de Modo de Carga ────────────────────── #}
-      <div class="upload-mode-toggle">
-        <input type="radio" name="tipo_carga" id="modo_simple" value="simple" checked onchange="toggleModo(this.value)">
-        <label for="modo_simple"><i class="fa-solid fa-list-check"></i> Materia por Materia</label>
-        
-        <input type="radio" name="tipo_carga" id="modo_sabana" value="sabana" onchange="toggleModo(this.value)">
-        <label for="modo_sabana"><i class="fa-solid fa-table-cells"></i> Sábana MPPE (Completa)</label>
-      </div>
+        {# ── Selector de Modo de Carga ────────────────────── #}
+        <div class="upload-mode-toggle">
+          <input type="radio" name="tipo_carga" id="modo_simple" value="simple" checked
+            onchange="toggleModo(this.value)">
+          <label for="modo_simple"><i class="fa-solid fa-list-check"></i> Materia por Materia</label>
 
-      {# ── Contexto de la carga ─────────────────────────── #}
-      <div class="context-grid">
-        <div>
-          <label class="form-label">Año Escolar</label>
-          <select class="form-select" name="ano_escolar" id="sel-ano" onchange="window.location.href='?ano=' + this.value" required>
-            <option value="">— Selecciona —</option>
-            {% for a in anos %}
-            <option value="{{ a.codigo }}" {% if a.codigo == ano_sel %}selected{% endif %}>
-              {{ a.descripcion or a.codigo }}{% if a.activo %} ✓{% endif %}
-            </option>
-            {% endfor %}
-          </select>
+          <input type="radio" name="tipo_carga" id="modo_sabana" value="sabana" onchange="toggleModo(this.value)">
+          <label for="modo_sabana"><i class="fa-solid fa-table-cells"></i> Sábana MPPE (Completa)</label>
         </div>
-        <div>
-          <label class="form-label">Sección</label>
-          <select class="form-select" name="codigo_seccion" id="sel-seccion" onchange="window.location.href='?ano=' + document.getElementById('sel-ano').value + '&seccion=' + this.value" required>
-            <option value="">— Selecciona año primero —</option>
-            {% for s in secciones %}
-            <option value="{{ s.codigo }}" data-ano="{{ s.codigo_ano_escolar }}" data-grado="{{ s.codigo_grado }}" {% if s.codigo == seccion_sel %}selected{% endif %}>
-              {{ s.codigo }} — {{ s.codigo_grado }}° Año {{ s.letra }}
-            </option>
-            {% endfor %}
-          </select>
-        </div>
-        <div id="container-materia">
-          <label class="form-label">Materia</label>
-          <select class="form-select" name="codigo_materia" id="sel-materia" required>
-            <option value="">— Selecciona —</option>
-            {% for m in materias %}
-            <option value="{{ m.codigo }}" data-grado="{{ m.codigo_grado }}">
-              {{ m.nombre }}
-            </option>
-            {% endfor %}
-          </select>
-        </div>
-        <div>
-          <label class="form-label">Momento Evaluativo</label>
-          <select class="form-select" name="numero_momento" id="sel-momento" required>
-            <option value="">— Selecciona —</option>
-            {% for mom in momentos %}
-            <option value="{{ mom.numero }}" {% if mom.estado == 'C' %}disabled{% endif %}>
-              {{ mom.nombre }} {% if mom.estado == 'C' %}(Cerrado){% endif %}
-            </option>
-            {% endfor %}
-          </select>
-        </div>
-      </div>
 
-      {# ── Drop Zone ────────────────────────────────────── #}
-      <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
-        <input type="file" id="file-input" name="archivo_excel" accept=".xlsx,.xls" required style="display:none;">
-        <i class="fa-solid fa-cloud-arrow-up drop-icon"></i>
-        <h3>Arrastra tu archivo Excel aquí</h3>
-        <p id="drop-zone-help">Modo actual: Carga de 1 materia (Columnas Cédula, Nombre, Nota)</p>
-        <div id="file-name-display"></div>
-      </div>
-
-      <div style="display: flex; gap: 1rem; justify-content: center; margin-bottom: 2rem;">
-        <a href="/static/downloads/Formato_Carga_Materia.xlsx" class="btn-primary" style="text-decoration: none; font-size: 0.85rem; padding: 8px 12px; background: rgba(255,255,255,0.05); color: var(--text-light, #fff); border: 1px solid var(--border-light, #334155);" download>
-          <i class="fa-solid fa-file-excel" style="color:#10b981;"></i> Plantilla: 1 Materia
-        </a>
-        <a href="/static/downloads/Formato_Sabana_MPPE_Ejemplo.xlsx" class="btn-primary" style="text-decoration: none; font-size: 0.85rem; padding: 8px 12px; background: rgba(255,255,255,0.05); color: var(--text-light, #fff); border: 1px solid var(--border-light, #334155);" download>
-          <i class="fa-solid fa-file-excel" style="color:#10b981;"></i> Plantilla: Sábana MPPE
-        </a>
-      </div>
-
-      <div style="text-align:center;">
-        <button type="submit" id="btn-procesar">
-          <i class="fa-solid fa-bolt"></i> Procesar y Registrar Notas
-        </button>
-      </div>
-    </form>
-
-    {# ── Instrucciones ────────────────────────────────────── #}
-    <div style="margin-top:2rem;">
-      <h4 style="font-size:.9rem;font-weight:700;color:var(--text-title,#f1f5f9);margin-bottom:.5rem;">
-        Fases del proceso:
-      </h4>
-      <ul class="steps-list">
-        <li><i class="fa-solid fa-check-circle"></i> Selecciona el año, sección, materia y momento evaluativo</li>
-        <li><i class="fa-solid fa-check-circle"></i> El Excel debe tener columnas: Cédula, Apellidos, Nombres, Nota</li>
-        <li><i class="fa-solid fa-check-circle"></i> El motor detecta el encabezado automáticamente (hasta fila 30)</li>
-        <li><i class="fa-solid fa-check-circle"></i> Las notas se validan en el rango 0–20</li>
-        <li><i class="fa-solid fa-check-circle"></i> Solo se registran estudiantes matriculados en esa sección</li>
-        <li><i class="fa-solid fa-check-circle"></i> Registros existentes se actualizan; los nuevos se insertan</li>
-      </ul>
-    </div>
-  </div>
-
-  {% else %}
-  {# ══ RESULTADOS ══════════════════════════════════════════ #}
-
-  {# Barra de contexto #}
-  <div class="context-bar">
-    <div class="ctx-item">
-      <div class="ctx-label">Sección</div>
-      <div class="ctx-value">{{ seccion_sel }}</div>
-    </div>
-    <div class="ctx-item">
-      <div class="ctx-label">Materia</div>
-      <div class="ctx-value">{{ materia_nombre }}</div>
-    </div>
-    <div class="ctx-item">
-      <div class="ctx-label">Momento</div>
-      <div class="ctx-value">{{ momento_nombre }}</div>
-    </div>
-    <div class="ctx-item">
-      <div class="ctx-label">Total procesado</div>
-      <div class="ctx-value">{{ total_insertadas + total_actualizadas + total_no_encontradas + total_errores }}</div>
-    </div>
-  </div>
-
-  {# Tarjetas de resumen #}
-  <div class="summary-grid">
-    <div class="summary-card success">
-      <div class="num">{{ total_insertadas }}</div>
-      <div class="label">Notas insertadas</div>
-    </div>
-    <div class="summary-card info">
-      <div class="num">{{ total_actualizadas }}</div>
-      <div class="label">Notas actualizadas</div>
-    </div>
-    <div class="summary-card warning">
-      <div class="num">{{ total_no_encontradas }}</div>
-      <div class="label">No matriculados / Sin cédula</div>
-    </div>
-    <div class="summary-card danger">
-      <div class="num">{{ total_errores }}</div>
-      <div class="label">Errores</div>
-    </div>
-  </div>
-
-  {# ── Notas insertadas ───────────────────────────── #}
-  {% if insertadas %}
-  <div class="result-panel">
-    <details open>
-      <summary>
-        <i class="fa-solid fa-check-circle" style="color:#10b981;"></i>
-        Notas Insertadas ({{ insertadas|length }})
-        <i class="fa-solid fa-chevron-right arr" style="margin-left:auto;font-size:.8rem;"></i>
-      </summary>
-      <table class="result-table">
-        <thead><tr><th>Cédula</th><th>Estudiante</th><th>Nota</th><th>Resultado</th></tr></thead>
-        <tbody>
-          {% for r in insertadas %}
-          <tr>
-            <td>{{ r.cedula }}</td>
-            <td>{{ r.nombre }}</td>
-            <td><strong>{{ r.nota }}</strong></td>
-            <td>
-              {% if r.resultado == 'A' %}
-                <span class="badge-a">APROBADO</span>
-              {% else %}
-                <span class="badge-r">REPROBADO</span>
-              {% endif %}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </details>
-  </div>
-  {% endif %}
-
-  {# ── Notas actualizadas ─────────────────────────── #}
-  {% if actualizadas %}
-  <div class="result-panel">
-    <details>
-      <summary>
-        <i class="fa-solid fa-rotate" style="color:#818cf8;"></i>
-        Notas Actualizadas ({{ actualizadas|length }})
-        <i class="fa-solid fa-chevron-right arr" style="margin-left:auto;font-size:.8rem;"></i>
-      </summary>
-      <table class="result-table">
-        <thead><tr><th>Cédula</th><th>Estudiante</th><th>Nota</th><th>Resultado</th></tr></thead>
-        <tbody>
-          {% for r in actualizadas %}
-          <tr>
-            <td>{{ r.cedula }}</td>
-            <td>{{ r.nombre }}</td>
-            <td><strong>{{ r.nota }}</strong></td>
-            <td>
-              {% if r.resultado == 'A' %}
-                <span class="badge-a">APROBADO</span>
-              {% else %}
-                <span class="badge-r">REPROBADO</span>
-              {% endif %}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </details>
-  </div>
-  {% endif %}
-
-  {# ── No encontrados ─────────────────────────────── #}
-  {% if no_encontradas %}
-  <div class="result-panel">
-    <details>
-      <summary>
-        <i class="fa-solid fa-user-xmark" style="color:#f59e0b;"></i>
-        No Matriculados / Sin Cédula ({{ no_encontradas|length }})
-        <i class="fa-solid fa-chevron-right arr" style="margin-left:auto;font-size:.8rem;"></i>
-      </summary>
-      <table class="result-table">
-        <thead><tr><th>Fila</th><th>Cédula</th><th>Nombre en Excel</th><th>Motivo</th></tr></thead>
-        <tbody>
-          {% for r in no_encontradas %}
-          <tr>
-            <td>{{ r.fila or '—' }}</td>
-            <td>{{ r.cedula or '—' }}</td>
-            <td>{{ r.nombre }}</td>
-            <td style="color:#f59e0b;">{{ r.motivo }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </details>
-  </div>
-  {% endif %}
-
-  {# ── Errores ────────────────────────────────────── #}
-  {% if errores %}
-  <div class="result-panel">
-    <details>
-      <summary>
-        <i class="fa-solid fa-circle-xmark" style="color:#ef4444;"></i>
-        Registros con Error ({{ errores|length }})
-        <i class="fa-solid fa-chevron-right arr" style="margin-left:auto;font-size:.8rem;"></i>
-      </summary>
-      <table class="result-table">
-        <thead><tr><th>Fila</th><th>Cédula</th><th>Estudiante</th><th>Motivo</th></tr></thead>
-        <tbody>
-          {% for e in errores %}
-          <tr>
-            <td>{{ e.fila or '—' }}</td>
-            <td>{{ e.cedula }}</td>
-            <td>{{ e.nombre }}</td>
-            <td style="color:#f87171;">{{ e.motivo }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </details>
-  </div>
-  {% endif %}
-
-  {# ── Diagnóstico del archivo ────────────────────── #}
-  {% if diagnostico %}
-  <div class="result-panel" style="margin-top:1.25rem;">
-    <details>
-      <summary>
-        <i class="fa-solid fa-chart-bar" style="color:#94a3b8;"></i>
-        Diagnóstico del Archivo
-        <i class="fa-solid fa-chevron-right arr" style="margin-left:auto;font-size:.8rem;"></i>
-      </summary>
-      <div style="margin-top:.75rem;">
-        <div class="diag-row">
-          <span>Total filas analizadas</span>
-          <span style="color:var(--text-title,#f1f5f9);">{{ diagnostico.total_filas_raw }}</span>
-        </div>
-        <div class="diag-row">
-          <span>Filas omitidas</span>
-          <span>{{ diagnostico.filas_omitidas }}</span>
-        </div>
-        <div class="diag-row">
-          <span>Fila de encabezado detectada</span>
-          <span style="color:var(--text-title,#f1f5f9);">Fila {{ diagnostico.header_row_index }}</span>
-        </div>
-        <div class="diag-row">
-          <span>Columnas detectadas</span>
-          <span style="color:#818cf8;">{{ diagnostico.columnas_detectadas | join(', ') }}</span>
-        </div>
-        {% if diagnostico.columnas_faltantes %}
-        <div class="diag-row">
-          <span>Columnas no encontradas</span>
-          <span style="color:#f59e0b;">{{ diagnostico.columnas_faltantes | join(', ') }}</span>
-        </div>
-        {% endif %}
-        {% if diagnostico.advertencias %}
-        <div style="margin-top:.75rem;">
-          {% for adv in diagnostico.advertencias %}
-          <div style="color:#f59e0b;font-size:.82rem;padding:.25rem 0;">
-            <i class="fa-solid fa-triangle-exclamation"></i> {{ adv }}
+        {# ── Contexto de la carga ─────────────────────────── #}
+        <div class="context-grid">
+          <div>
+            <label class="form-label">Año Escolar</label>
+            <select class="form-select" name="ano_escolar" id="sel-ano"
+              onchange="window.location.href='?ano=' + this.value" required>
+              <option value="">— Selecciona —</option>
+              {% for a in anos %}
+              <option value="{{ a.codigo }}" {% if a.codigo==ano_sel %}selected{% endif %}>
+                {{ a.descripcion or a.codigo }}{% if a.activo %} ✓{% endif %}
+              </option>
+              {% endfor %}
+            </select>
           </div>
-          {% endfor %}
+          <div>
+            <label class="form-label">Sección</label>
+            <select class="form-select" name="codigo_seccion" id="sel-seccion"
+              onchange="window.location.href='?ano=' + document.getElementById('sel-ano').value + '&seccion=' + this.value"
+              required>
+              <option value="">— Selecciona año primero —</option>
+              {% for s in secciones %}
+              <option value="{{ s.codigo }}" data-ano="{{ s.codigo_ano_escolar }}" data-grado="{{ s.codigo_grado }}" {%
+                if s.codigo==seccion_sel %}selected{% endif %}>
+                {{ s.codigo }} — {{ s.codigo_grado }}° Año {{ s.letra }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div id="container-materia">
+            <label class="form-label">Materia</label>
+            <select class="form-select" name="codigo_materia" id="sel-materia" required>
+              <option value="">— Selecciona —</option>
+              {% for m in materias %}
+              <option value="{{ m.codigo }}" data-grado="{{ m.codigo_grado }}">
+                {{ m.nombre }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Momento Evaluativo</label>
+            <select class="form-select" name="numero_momento" id="sel-momento" required>
+              <option value="">— Selecciona —</option>
+              {% for mom in momentos %}
+              <option value="{{ mom.numero }}" {% if mom.estado=='C' %}disabled{% endif %}>
+                {{ mom.nombre }} {% if mom.estado == 'C' %}(Cerrado){% endif %}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          {# ── NUEVO CAMPO: Cédula del Docente Evaluador ────── #}
+          <div id="container-evaluador">
+            <label class="form-label" style="font-weight: 600;">Cédula del Docente Evaluador</label>
+            <div style="position: relative;">
+              <input type="text" class="form-select" name="cedula_evaluador" id="txt-evaluador"
+                placeholder="Ej: 12345678" style="padding-left: 2.2rem;" required>
+              <i class="fa-solid fa-id-card"
+                style="position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.4); font-size: 0.9rem;"></i>
+            </div>
+          </div>
         </div>
-        {% endif %}
+
+        {# ── Drop Zone ────────────────────────────────────── #}
+        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+          <input type="file" id="file-input" name="archivo_excel" accept=".xlsx,.xls" required style="display:none;">
+          <i class="fa-solid fa-cloud-arrow-up drop-icon"></i>
+          <h3>Arrastra tu archivo Excel aquí</h3>
+          <p id="drop-zone-help">Modo actual: Carga de 1 materia (Columnas Cédula, Nombre, Nota)</p>
+          <div id="file-name-display"></div>
+        </div>
+
+        <div class="cm-download-container">
+          <a href="/static/downloads/Formato_Carga_Materia.xlsx" class="cm-btn-template" download>
+            <i class="fa-solid fa-file-excel" style="color:#10b981;"></i> Plantilla: 1 Materia
+          </a>
+          <a href="/static/downloads/Formato_Sabana_MPPE_Ejemplo.xlsx" class="cm-btn-template" download>
+            <i class="fa-solid fa-file-excel" style="color:#10b981;"></i> Plantilla: Sábana MPPE
+          </a>
+        </div>
+
+        <div style="text-align:center;">
+          <button type="submit" id="btn-procesar">
+            <i class="fa-solid fa-bolt"></i> Procesar y Registrar Notas
+          </button>
+        </div>
+      </form>
+
+      {# ── Instrucciones ────────────────────────────────────── #}
+      <div style="margin-top:2rem;">
+        <h4 style="font-size:.9rem;font-weight:700;color:var(--text-title,#f1f5f9);margin-bottom:.5rem;">
+          Fases del proceso:
+        </h4>
+        <ul class="steps-list">
+          <li><i class="fa-solid fa-check-circle"></i> Selecciona el año, sección, materia y momento evaluativo</li>
+          <li><i class="fa-solid fa-check-circle"></i> El Excel debe tener columnas: Cédula, Apellidos, Nombres, Nota
+          </li>
+          <li><i class="fa-solid fa-check-circle"></i> El motor detecta el encabezado automáticamente (hasta fila 30)
+          </li>
+          <li><i class="fa-solid fa-check-circle"></i> Las notas se validan en el rango 0–20</li>
+          <li><i class="fa-solid fa-check-circle"></i> Solo se registran estudiantes matriculados en esa sección</li>
+          <li><i class="fa-solid fa-check-circle"></i> Registros existentes se actualizan; los nuevos se insertan</li>
+        </ul>
       </div>
-    </details>
+    </div>
+
+    {% else %}
+    {# ══ RESULTADOS ══════════════════════════════════════════ #}
+
+    {# Barra de contexto #}
+    <div class="context-bar">
+      <div class="ctx-item">
+        <div class="ctx-label">Sección</div>
+        <div class="ctx-value">{{ seccion_sel }}</div>
+      </div>
+      <div class="ctx-item">
+        <div class="ctx-label">Materia</div>
+        <div class="ctx-value">{{ materia_nombre }}</div>
+      </div>
+      <div class="ctx-item">
+        <div class="ctx-label">Momento</div>
+        <div class="ctx-value">{{ momento_nombre }}</div>
+      </div>
+      <div class="ctx-item">
+        <div class="ctx-label">Total procesado</div>
+        <div class="ctx-value">{{ total_insertadas + total_actualizadas + total_no_encontradas + total_errores }}</div>
+      </div>
+    </div>
+
+    {# Tarjetas de resumen #}
+    <div class="summary-grid">
+      <div class="summary-card success">
+        <div class="num">{{ total_insertadas }}</div>
+        <div class="label">Notas insertadas</div>
+      </div>
+      <div class="summary-card info">
+        <div class="num">{{ total_actualizadas }}</div>
+        <div class="label">Notas actualizadas</div>
+      </div>
+      <div class="summary-card warning">
+        <div class="num">{{ total_no_encontradas }}</div>
+        <div class="label">No matriculados / Sin cédula</div>
+      </div>
+      <div class="summary-card danger">
+        <div class="num">{{ total_errores }}</div>
+        <div class="label">Errores</div>
+      </div>
+    </div>
+
+    {# ── Notas insertadas ───────────────────────────── #}
+    {% if insertadas %}
+    <div class="result-panel">
+      <details open>
+        <summary>
+          <i class="fa-solid fa-check-circle" style="color:#10b981;"></i>
+          Notas Insertadas ({{ insertadas|length }})
+          <i class="fa-solid fa-chevron-right arr" style="margin-left:auto;font-size:.8rem;"></i>
+        </summary>
+        <table class="result-table">
+          <thead>
+            <tr>
+              <th>Cédula</th>
+              <th>Estudiante</th>
+              <th>Nota</th>
+              <th>Resultado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in insertadas %}
+            <tr>
+              <td>{{ r.cedula }}</td>
+              <td>{{ r.nombre }}</td>
+              <td><strong>{{ r.nota }}</strong></td>
+              <td>
+                {% if r.resultado == 'A' %}
+                <span class="badge-a">APROBADO</span>
+                {% else %}
+                <span class="badge-r">REPROBADO</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </details>
+    </div>
+    {% endif %}
+
+    {# ── Notas actualizadas ─────────────────────────── #}
+    {% if actualizadas %}
+    <div class="result-panel">
+      <details>
+        <summary>
+          <i class="fa-solid fa-rotate" style="color:#818cf8;"></i>
+          Notas Actualizadas ({{ actualizadas|length }})
+          <i class="fa-solid fa-chevron-right arr" style="margin-left:auto;font-size:.8rem;"></i>
+        </summary>
+        <table class="result-table">
+          <thead>
+            <tr>
+              <th>Cédula</th>
+              <th>Estudiante</th>
+              <th>Nota</th>
+              <th>Resultado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in actualizadas %}
+            <tr>
+              <td>{{ r.cedula }}</td>
+              <td>{{ r.nombre }}</td>
+              <td><strong>{{ r.nota }}</strong></td>
+              <td>
+                {% if r.resultado == 'A' %}
+                <span class="badge-a">APROBADO</span>
+                {% else %}
+                <span class="badge-r">REPROBADO</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </details>
+    </div>
+    {% endif %}
+
+    {# ── No encontrados ─────────────────────────────── #}
+    {% if no_encontradas %}
+    <div class="result-panel">
+      <details>
+        <summary>
+          <i class="fa-solid fa-user-xmark" style="color:#f59e0b;"></i>
+          No Matriculados / Sin Cédula ({{ no_encontradas|length }})
+          <i class="fa-solid fa-chevron-right arr" style="margin-left:auto;font-size:.8rem;"></i>
+        </summary>
+        <table class="result-table">
+          <thead>
+            <tr>
+              <th>Fila</th>
+              <th>Cédula</th>
+              <th>Nombre en Excel</th>
+              <th>Motivo</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in no_encontradas %}
+            <tr>
+              <td>{{ r.fila or '—' }}</td>
+              <td>{{ r.cedula or '—' }}</td>
+              <td>{{ r.nombre }}</td>
+              <td style="color:#f59e0b;">{{ r.motivo }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </details>
+    </div>
+    {% endif %}
+
+    {# ── Errores ────────────────────────────────────── #}
+    {% if errores %}
+    <div class="result-panel">
+      <details>
+        <summary>
+          <i class="fa-solid fa-circle-xmark" style="color:#ef4444;"></i>
+          Registros con Error ({{ errores|length }})
+          <i class="fa-solid fa-chevron-right arr" style="margin-left:auto;font-size:.8rem;"></i>
+        </summary>
+        <table class="result-table">
+          <thead>
+            <tr>
+              <th>Fila</th>
+              <th>Cédula</th>
+              <th>Estudiante</th>
+              <th>Motivo</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for e in errores %}
+            <tr>
+              <td>{{ e.fila or '—' }}</td>
+              <td>{{ e.cedula }}</td>
+              <td>{{ e.nombre }}</td>
+              <td style="color:#f87171;">{{ e.motivo }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </details>
+    </div>
+    {% endif %}
+
+    {# ── Diagnóstico del archivo ────────────────────── #}
+    {% if diagnostico %}
+    <div class="result-panel" style="margin-top:1.25rem;">
+      <details>
+        <summary>
+          <i class="fa-solid fa-chart-bar" style="color:#94a3b8;"></i>
+          Diagnóstico del Archivo
+          <i class="fa-solid fa-chevron-right arr" style="margin-left:auto;font-size:.8rem;"></i>
+        </summary>
+        <div style="margin-top:.75rem;">
+          <div class="diag-row">
+            <span>Total filas analizadas</span>
+            <span style="color:var(--text-title,#f1f5f9);">{{ diagnostico.total_filas_raw }}</span>
+          </div>
+          <div class="diag-row">
+            <span>Filas omitidas</span>
+            <span>{{ diagnostico.filas_omitidas }}</span>
+          </div>
+          <div class="diag-row">
+            <span>Fila de encabezado detectada</span>
+            <span style="color:var(--text-title,#f1f5f9);">Fila {{ diagnostico.header_row_index }}</span>
+          </div>
+          <div class="diag-row">
+            <span>Columnas detectadas</span>
+            <span style="color:#818cf8;">{{ diagnostico.columnas_detectadas | join(', ') }}</span>
+          </div>
+          {% if diagnostico.columnas_faltantes %}
+          <div class="diag-row">
+            <span>Columnas no encontradas</span>
+            <span style="color:#f59e0b;">{{ diagnostico.columnas_faltantes | join(', ') }}</span>
+          </div>
+          {% endif %}
+          {% if diagnostico.advertencias %}
+          <div style="margin-top:.75rem;">
+            {% for adv in diagnostico.advertencias %}
+            <div style="color:#f59e0b;font-size:.82rem;padding:.25rem 0;">
+              <i class="fa-solid fa-triangle-exclamation"></i> {{ adv }}
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </details>
+    </div>
+    {% endif %}
+
+    {# ── Acciones post-carga ────────────────────────── #}
+    <div style="text-align:center;margin-top:2rem;display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;">
+      <a href="{{ url_for('carga_masiva_notas') }}"
+        style="display:inline-block;background:linear-gradient(135deg,var(--primary,#4f46e5),#10b981);color:#fff;padding:.75rem 2rem;border-radius:10px;font-weight:700;text-decoration:none;">
+        <i class="fa-solid fa-rotate-left"></i> Cargar otro archivo
+      </a>
+      <a href="{{ url_for('registro_notas') }}"
+        style="display:inline-block;border:1px solid var(--primary,#4f46e5);color:var(--primary,#818cf8);padding:.75rem 2rem;border-radius:10px;font-weight:700;text-decoration:none;">
+        <i class="fa-solid fa-table-list"></i> Ir al Registro de Notas
+      </a>
+      <a href="{{ url_for('notas_certificadas') }}"
+        style="display:inline-block;border:1px solid #10b981;color:#10b981;padding:.75rem 2rem;border-radius:10px;font-weight:700;text-decoration:none;">
+        <i class="fa-solid fa-certificate"></i> Notas Certificadas
+      </a>
+    </div>
+
+    {% endif %}
   </div>
-  {% endif %}
 
-  {# ── Acciones post-carga ────────────────────────── #}
-  <div style="text-align:center;margin-top:2rem;display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;">
-    <a href="{{ url_for('carga_masiva_notas') }}"
-       style="display:inline-block;background:linear-gradient(135deg,var(--primary,#4f46e5),#10b981);color:#fff;padding:.75rem 2rem;border-radius:10px;font-weight:700;text-decoration:none;">
-      <i class="fa-solid fa-rotate-left"></i> Cargar otro archivo
-    </a>
-    <a href="{{ url_for('registro_notas') }}"
-       style="display:inline-block;border:1px solid var(--primary,#4f46e5);color:var(--primary,#818cf8);padding:.75rem 2rem;border-radius:10px;font-weight:700;text-decoration:none;">
-      <i class="fa-solid fa-table-list"></i> Ir al Registro de Notas
-    </a>
-    <a href="{{ url_for('notas_certificadas') }}"
-       style="display:inline-block;border:1px solid #10b981;color:#10b981;padding:.75rem 2rem;border-radius:10px;font-weight:700;text-decoration:none;">
-      <i class="fa-solid fa-certificate"></i> Notas Certificadas
-    </a>
+  {# ── Spinner overlay ─────────────────────────────────────── #}
+  <div id="spinner-overlay" style="display:flex;display:none;">
+    <div class="spinner"></div>
+    <p style="color:#fff;font-weight:600;font-size:.95rem;">Procesando archivo…</p>
+    <p style="color:rgba(255,255,255,.6);font-size:.8rem;">Analizando estructura, validando notas y guardando en
+      Supabase</p>
   </div>
 
-  {% endif %}
-</div>
-
-{# ── Spinner overlay ─────────────────────────────────────── #}
-<div id="spinner-overlay" style="display:flex;display:none;">
-  <div class="spinner"></div>
-  <p style="color:#fff;font-weight:600;font-size:.95rem;">Procesando archivo…</p>
-  <p style="color:rgba(255,255,255,.6);font-size:.8rem;">Analizando estructura, validando notas y guardando en Supabase</p>
-</div>
-
-{# ── Toast de confirmación ───────────────────────────────── #}
-{% if procesado %}
-<div class="toast-cm {% if total_errores == 0 and total_no_encontradas == 0 %}success{% else %}warning{% endif %}" id="result-toast">
-  <i class="fa-solid fa-{% if total_errores == 0 and total_no_encontradas == 0 %}circle-check{% else %}triangle-exclamation{% endif %}"
-     style="font-size:1.4rem;color:{% if total_errores == 0 and total_no_encontradas == 0 %}#10b981{% else %}#f59e0b{% endif %};flex-shrink:0;"></i>
-  <div>
-    <div class="toast-title">Carga completada · {{ seccion_sel }}</div>
-    <div class="toast-msg">
-      {{ total_insertadas }} insertadas · {{ total_actualizadas }} actualizadas · {{ total_no_encontradas }} no encontradas · {{ total_errores }} errores
+  {# ── Toast de confirmación ───────────────────────────────── #}
+  {% if procesado %}
+  <div class="toast-cm {% if total_errores == 0 and total_no_encontradas == 0 %}success{% else %}warning{% endif %}"
+    id="result-toast">
+    <i class="fa-solid fa-{% if total_errores == 0 and total_no_encontradas == 0 %}circle-check{% else %}triangle-exclamation{% endif %}"
+      style="font-size:1.4rem;color:{% if total_errores == 0 and total_no_encontradas == 0 %}#10b981{% else %}#f59e0b{% endif %};flex-shrink:0;"></i>
+    <div>
+      <div class="toast-title">Carga completada · {{ seccion_sel }}</div>
+      <div class="toast-msg">
+        {{ total_insertadas }} insertadas · {{ total_actualizadas }} actualizadas · {{ total_no_encontradas }} no
+        encontradas · {{ total_errores }} errores
+      </div>
     </div>
   </div>
-</div>
-<script>setTimeout(() => { const t = document.getElementById('result-toast'); if(t) t.style.opacity='0'; }, 7000);</script>
-{% endif %}
+  <script>setTimeout(() => { const t = document.getElementById('result-toast'); if (t) t.style.opacity = '0'; }, 7000);</script>
+  {% endif %}
 
-<script>
-// ── Drop zone ──────────────────────────────────────────────────────────────
-const dropZone  = document.getElementById('drop-zone');
-const fileInput = document.getElementById('file-input');
-const nameDisp  = document.getElementById('file-name-display');
-const btnProc   = document.getElementById('btn-procesar');
-const form      = document.getElementById('upload-form');
-const spinner   = document.getElementById('spinner-overlay');
+  <script>
+    // ── Drop zone ──────────────────────────────────────────────────────────────
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const nameDisp = document.getElementById('file-name-display');
+    const btnProc = document.getElementById('btn-procesar');
+    const form = document.getElementById('upload-form');
+    const spinner = document.getElementById('spinner-overlay');
 
-function handleFile(file) {
-  if (!file) return;
-  nameDisp.textContent = '📄 ' + file.name;
-  if (btnProc) btnProc.style.display = 'inline-block';
-}
-
-if (fileInput) fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
-
-if (dropZone) {
-  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-  dropZone.addEventListener('drop', e => {
-    e.preventDefault();
-    dropZone.classList.remove('drag-over');
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      const dt = new DataTransfer();
-      dt.items.add(file);
-      fileInput.files = dt.files;
-      handleFile(file);
+    function handleFile(file) {
+      if (!file) return;
+      nameDisp.textContent = '📄 ' + file.name;
+      if (btnProc) btnProc.style.display = 'inline-block';
     }
-  });
-}
 
-if (form) {
-  form.addEventListener('submit', () => {
-    if (spinner) { spinner.style.display = 'flex'; }
-  });
-}
+    if (fileInput) fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
 
-// ── Variables de la página ───────────────────────────────────────────────
-const selAno    = document.getElementById('sel-ano');
-const selSec    = document.getElementById('sel-seccion');
+    if (dropZone) {
+      dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+      dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+      dropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        const file = e.dataTransfer.files[0];
+        if (file) {
+          const dt = new DataTransfer();
+          dt.items.add(file);
+          fileInput.files = dt.files;
+          handleFile(file);
+        }
+      });
+    }
 
-function toggleModo(modo) {
-  const containerMateria = document.getElementById('container-materia');
-  const dropHelp = document.getElementById('drop-zone-help');
-  const matSelect = document.getElementById('sel-materia');
-  
-  if (modo === 'sabana') {
-    if (containerMateria) containerMateria.style.display = 'none';
-    if (matSelect) matSelect.removeAttribute('required');
-    if (dropHelp) dropHelp.textContent = 'Modo actual: Carga de Múltiples Materias (Formato Sábana MPPE)';
-  } else {
-    if (containerMateria) containerMateria.style.display = 'block';
-    if (matSelect) matSelect.setAttribute('required', 'required');
-    if (dropHelp) dropHelp.textContent = 'Modo actual: Carga de 1 materia (Columnas Cédula, Nombre, Nota)';
-  }
-}
+    if (form) {
+      form.addEventListener('submit', () => {
+        if (spinner) { spinner.style.display = 'flex'; }
+      });
+    }
 
-// Ejecutar toggleModo con el modo actual al cargar
-document.addEventListener("DOMContentLoaded", function() {
-  const modoSelect = document.querySelector('input[name="tipo_carga"]:checked');
-  if (modoSelect) toggleModo(modoSelect.value);
-});
+    // ── Variables de la página y control del modo de carga ─────────────────────
+    const selAno = document.getElementById('sel-ano');
+    const selSec = document.getElementById('sel-seccion');
+
+    function toggleModo(modo) {
+      const containerMateria = document.getElementById('container-materia');
+      const dropHelp = document.getElementById('drop-zone-help');
+      const matSelect = document.getElementById('sel-materia');
+
+      if (modo === 'sabana') {
+        if (containerMateria) containerMateria.style.display = 'none';
+        if (matSelect) {
+          matSelect.removeAttribute('required');
+          matSelect.setAttribute('disabled', 'disabled'); // Deshabilita para que no viaje en el POST
+        }
+        if (dropHelp) dropHelp.textContent = 'Modo actual: Carga de Múltiples Materias (Formato Sábana MPPE)';
+      } else {
+        if (containerMateria) containerMateria.style.display = 'block';
+        if (matSelect) {
+          matSelect.removeAttribute('disabled');
+          matSelect.setAttribute('required', 'required');
+        }
+        if (dropHelp) dropHelp.textContent = 'Modo actual: Carga de 1 materia (Columnas Cédula, Nombre, Nota)';
+      }
+    }
+
+    // Ejecutar toggleModo con el modo actual al cargar
+    document.addEventListener("DOMContentLoaded", function () {
+      const modoSelect = document.querySelector('input[name="tipo_carga"]:checked');
+      if (modoSelect) toggleModo(modoSelect.value);
+    });
+  </script>
 </body>
+
 </html>
