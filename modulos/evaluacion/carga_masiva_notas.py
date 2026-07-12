@@ -157,7 +157,12 @@ def carga_masiva_notas_view():
     # ── 1. Parsear Excel ──────────────────────────────────────────────
     try:
         if tipo_carga == 'sabana':
-            resultado_dict = SabanaExcelParser.parse(archivo)
+            # Buscar el grado (año) de la sección seleccionada, necesario para construir
+            # el código real de cada materia (ej: "CAST" + grado "3" = "CAST3")
+            sec_actual = next((s for s in secciones_todas if s.get('codigo') == seccion_form), None)
+            codigo_grado_actual = sec_actual.get('codigo_grado') if sec_actual else None
+
+            resultado_dict = SabanaExcelParser.parse(archivo, codigo_grado=codigo_grado_actual)
             if "error" in resultado_dict:
                 flash(f"Error en Sábana MPPE: {resultado_dict['error']}", "danger")
                 return redirect(url_for('carga_masiva_notas', ano=ano_form))

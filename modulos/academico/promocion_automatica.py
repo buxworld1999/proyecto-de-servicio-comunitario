@@ -34,6 +34,18 @@ def promover_ano():
     nuevo_ano_inicio = ano_inicio + 1
     nuevo_ano_fin = ano_fin + 1
     nuevo_codigo = f"{nuevo_ano_inicio}-{nuevo_ano_fin}"
+
+    # ── GUARDA DE SEGURIDAD: evita ejecutar la promoción dos veces ──────────
+    # Si el año siguiente YA existe en la base de datos, significa que este
+    # proceso ya se corrió antes (ej: alguien presionó el botón 2 veces).
+    # Volver a ejecutarlo duplicaría matrículas de todos los estudiantes.
+    res_check = supabase.table("ano_escolar").select("codigo").eq("codigo", nuevo_codigo).execute()
+    if res_check.data:
+        log(f"[BLOQUEADO] El año {nuevo_codigo} ya existe en el sistema. "
+            f"La Promoción Automática ya fue ejecutada anteriormente y NO se puede repetir "
+            f"(esto evita duplicar matrículas). Si de verdad necesitas revertir/repetir el proceso, "
+            f"debe hacerse manualmente en la base de datos.")
+        return "\n".join(mensajes)
     
     # Fechas automatizadas: 15 de septiembre al 15 de julio del siguiente año
     fecha_inicio_auto = f"{nuevo_ano_inicio}-09-15"
@@ -48,15 +60,17 @@ def promover_ano():
         "ano_fin": nuevo_ano_fin,
         "fecha_inicio": fecha_inicio_auto,
         "fecha_fin": fecha_fin_auto,
-        "estado": "A",
-        "activo": True
+        "estado": "I",
+        "activo": False   # se crea INACTIVO; se activa recién al final, cuando todo lo demás ya terminó bien
     }
     
     try:
         supabase.table("ano_escolar").insert(nuevo_ano_data).execute()
-        log(f"   [OK] Ano {nuevo_codigo} creado.")
+        log(f"   [OK] Año {nuevo_codigo} creado.")
     except Exception as e:
-        log(f"   [AVISO] Nota (El ano posiblemente ya exista): {str(e)}")
+        log(f"   [ERROR] No se pudo crear el año {nuevo_codigo}: {str(e)}")
+        log("[DETENIDO] No se continuará con la promoción porque el año nuevo no se creó.")
+        return "\n".join(mensajes)
         
     log("\n3. Generando nuevas secciones para el nuevo año...")
     grados = ["1", "2", "3", "4", "5"]
@@ -75,21 +89,18 @@ def promover_ano():
                 "turno": "M"
             }
             try:
-                # Si el código primary key choca porque usan "1A" para todos los años,
-                # tendrías que modificar el esquema de BD. Asumimos que la llave foránea se actualiza
-                # o usamos UPDATE si la lógica de negocio dice que se reusan las secciones.
-                # Por ahora, actualizaremos el año escolar de la sección a la nueva,
-                # ya que en el script anterior se crearon como '1A', '1B', etc.
                 supabase.table("seccion").update({"codigo_ano_escolar": nuevo_codigo}).eq("codigo", codigo_sec).execute()
                 secciones_creadas += 1
-            except:
-                pass
+            except Exception as e:
+                log(f"   [AVISO] No se pudo actualizar la sección {codigo_sec}: {str(e)}")
                 
     log(f"   [OK] {secciones_creadas} secciones preparadas para {nuevo_codigo}.")
     
     log("\n4. Promoviendo estudiantes...")
-    # Buscar todas las matrículas del año actual
-    res_mat = supabase.table("matricula").select("*").eq("codigo_ano_escolar", codigo_actual).execute()
+    # Buscar todas las matrículas ACTIVAS del año actual
+    res_mat = supabase.table("matricula").select("*") \
+        .eq("codigo_ano_escolar", codigo_actual) \
+        .eq("estado_matricula", "A").execute()
     matriculas_actuales = res_mat.data or []
     
     if not matriculas_actuales:
@@ -97,22 +108,34 @@ def promover_ano():
     else:
         promovidos = 0
         egresados = 0
-        
+        omitidos = 0
+
         for mat in matriculas_actuales:
             seccion_vieja = mat.get("codigo_seccion") # ej: "1A"
             cedula = mat.get("cedula_estudiante")
-            
+            id_matricula_vieja = mat.get("id")
+
             if not seccion_vieja or len(seccion_vieja) < 2:
                 continue
-                
+
             grado_num = int(seccion_vieja[0])
             letra = seccion_vieja[1:]
-            
+
             if grado_num < 5:
                 # Promover
                 nuevo_grado = grado_num + 1
                 nueva_seccion = f"{nuevo_grado}{letra}"
-                
+
+                # ── Evita duplicados: si el estudiante YA tiene una matrícula en el año
+                # nuevo (por ejemplo, porque el script se corrió antes parcialmente), se
+                # omite en vez de insertar otra fila igual.
+                res_dup = supabase.table("matricula").select("id") \
+                    .eq("cedula_estudiante", cedula) \
+                    .eq("codigo_ano_escolar", nuevo_codigo).execute()
+                if res_dup.data:
+                    omitidos += 1
+                    continue
+
                 nueva_matricula = {
                     "cedula_estudiante": cedula,
                     "codigo_ano_escolar": nuevo_codigo,
@@ -122,26 +145,37 @@ def promover_ano():
                 try:
                     supabase.table("matricula").insert(nueva_matricula).execute()
                     promovidos += 1
-                except:
-                    pass
+                    # Cierra la matrícula vieja para que deje de aparecer como "activa"
+                    # en la sección/año anterior (ej: NOTA: se asume 'I' de Inactivo,
+                    # revisar con el equipo si el sistema usa otro valor para esto).
+                    if id_matricula_vieja:
+                        supabase.table("matricula").update({"estado_matricula": "I"}) \
+                            .eq("id", id_matricula_vieja).execute()
+                except Exception as e:
+                    log(f"   [ERROR] No se pudo promover a {cedula}: {str(e)}")
             else:
-                # 5to Año -> Egresado. Aquí deberíamos actualizar al estudiante o dejar un registro.
-                # Para simplificar, cambiaremos su "estado_estudiante" en la tabla estudiante a 'E' (Egresado)
+                # 5to Año -> Egresado.
                 try:
                     supabase.table("estudiante").update({"estado_estudiante": "E"}).eq("cedula", cedula).execute()
                     egresados += 1
-                except:
-                    pass
-                    
+                    if id_matricula_vieja:
+                        supabase.table("matricula").update({"estado_matricula": "I"}) \
+                            .eq("id", id_matricula_vieja).execute()
+                except Exception as e:
+                    log(f"   [ERROR] No se pudo marcar como egresado a {cedula}: {str(e)}")
+
         log(f"   [OK] {promovidos} estudiantes promovidos exitosamente.")
-        log(f"   [INFO] {egresados} estudiantes egresados (5to Ano).")
+        log(f"   [INFO] {egresados} estudiantes egresados (5to Año).")
+        if omitidos:
+            log(f"   [INFO] {omitidos} estudiantes ya tenían matrícula en {nuevo_codigo}, se omitieron para evitar duplicados.")
         
-    log("\n5. Cerrando el año anterior...")
+    log("\n5. Cerrando el año anterior y activando el nuevo...")
     try:
-        supabase.table("ano_escolar").update({"activo": False}).eq("codigo", codigo_actual).execute()
-        log(f"   [OK] Ano {codigo_actual} marcado como inactivo.")
+        supabase.table("ano_escolar").update({"activo": False, "estado": "I"}).eq("codigo", codigo_actual).execute()
+        supabase.table("ano_escolar").update({"activo": True, "estado": "A"}).eq("codigo", nuevo_codigo).execute()
+        log(f"   [OK] {codigo_actual} -> Inactivo | {nuevo_codigo} -> ACTIVO VIGENTE.")
     except Exception as e:
-        log(f"   [ERROR] Error desactivando ano viejo: {str(e)}")
+        log(f"   [ERROR] Error en el cambio de año activo: {str(e)}")
 
     log("\n[PROCESO COMPLETADO EXITOSAMENTE]")
     return "\n".join(mensajes)

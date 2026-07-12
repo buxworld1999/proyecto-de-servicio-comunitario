@@ -11,93 +11,96 @@
 </head>
 
 <body>
-        <div class="contenedor">
-            <a href="{{ url_for('menu') }}" class="btn-volver" target="_top">
-                <i class="fa-solid fa-arrow-left"></i> Volver al Menú
-            </a>
+    <div class="contenedor">
+        <a href="{{ url_for('menu') }}" class="btn-volver" target="_top">
+            <i class="fa-solid fa-arrow-left"></i> Volver al Menú
+        </a>
 
-            {% with mensajes = get_flashed_messages(with_categories=true) %}
-            {% if mensajes %}
-            {% for categoria, mensaje in mensajes %}
-            <div class="alerta alerta-{{ 'exito' if categoria == 'success' else 'error' }}">
-                <i class="fa-solid {{ 'fa-circle-check' if categoria == 'success' else 'fa-circle-exclamation' }}"></i>
-                {{ mensaje }}
-            </div>
-            {% endfor %}
-            {% endif %}
-            {% endwith %}
-
-
-            <div class="card card-promo" style="border-top-color: #e53e3e; margin-top: 20px;">
-                <h2><i class="fa-solid fa-rocket" class="promo-icon"></i> Promoción Automática de Fin de Año</h2>
-                <p class="promo-text" style="margin-bottom: 15px; font-size: 14px;">
-                    <strong>¡Atención!</strong> Esta acción creará automáticamente el siguiente año escolar, promoverá a todos los estudiantes regulares a su siguiente grado, egresará a los estudiantes de 5to año y cerrará el año actual. 
-                </p>
-                <form action="{{ url_for('ejecutar_promocion') }}" method="POST" onsubmit="return confirm('¿Estás SEGURO de querer ejecutar la Promoción Automática? Esto modificará las secciones y el grado de todos los estudiantes.');">
-                    <button type="submit" class="btn-submit" style="background-color: #e53e3e; border-color: #c53030;">
-                        <i class="fa-solid fa-forward-step"></i> Ejecutar Promoción Automática
-                    </button>
-                </form>
-            </div>
-
-            <div class="card" style="border-top-color: #4a5568; margin-top: 20px;">
-                <h2><i class="fa-solid fa-clock-rotate-left" style="color: #4a5568;"></i> Historial de Periodos
-                    Escolares
-                </h2>
-                <table class="tabla-datos">
-                    <thead>
-                        <tr>
-                            <th>Código</th>
-                            <th>Descripción</th>
-                            <th>Duración</th>
-                            <th>Fechas de Lapso</th>
-                            <th>Estatus</th>
-                            <th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for periodo in periodos %}
-                        <tr>
-                            <td><strong>{{ periodo.codigo }}</strong></td>
-                            <td>{{ periodo.descripcion }}</td>
-                            <td>{{ periodo.ano_inicio }} al {{ periodo.ano_fin }}</td>
-                            <td>{{ periodo.fecha_inicio }} / {{ periodo.fecha_fin }}</td>
-                            <td>
-                                {% if periodo.activo %}
-                                <span class="badge badge-activo"><i class="fa-solid fa-circle-check"></i> Activo</span>
-                                {% else %}
-                                <span class="badge badge-inactivo"><i class="fa-solid fa-circle-minus"></i>
-                                    Inactivo</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if not periodo.activo %}
-                                <form action="{{ url_for('activar_ano', codigo_ano=periodo.codigo) }}" method="POST"
-                                    style="margin:0;">
-                                    <button type="submit" class="btn-status">
-                                        <i class="fa-solid fa-bolt"></i> Activar
-                                    </button>
-                                </form>
-                                {% else %}
-                                <span style="color: #38a169; font-weight: 700; font-size: 13px;">
-                                    <i class="fa-solid fa-circle-dot"></i> Año Vigente
-                                </span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="6" style="text-align: center; color: #a0aec0; padding: 20px;">
-                                <i class="fa-solid fa-folder-open"
-                                    style="font-size: 24px; display:block; margin-bottom:10px;"></i>
-                                No hay periodos escolares registrados.
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+        {% with mensajes = get_flashed_messages(with_categories=true) %}
+        {% if mensajes %}
+        {% for categoria, mensaje in mensajes %}
+        <div class="alerta alerta-{{ 'exito' if categoria == 'success' else 'error' }}">
+            <i class="fa-solid {{ 'fa-circle-check' if categoria == 'success' else 'fa-circle-exclamation' }}"></i>
+            {{ mensaje }}
         </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+
+        <div class="card card-promo" style="border-top-color: #e53e3e; margin-top: 20px;">
+            <h2><i class="fa-solid fa-rocket" class="promo-icon"></i> Promoción Automática de Fin de Año</h2>
+            <p class="promo-text" style="margin-bottom: 15px; font-size: 14px;">
+                <strong>¡Atención!</strong> Esta acción creará automáticamente el siguiente año escolar, promoverá a
+                todos los estudiantes regulares a su siguiente grado, egresará a los estudiantes de 5to año y cerrará el
+                año actual.
+            </p>
+            <form action="{{ url_for('ejecutar_promocion') }}" method="POST"
+                onsubmit="if(!confirm('¿Estás SEGURO de querer ejecutar la Promoción Automática? Esto modificará las secciones y el grado de todos los estudiantes.')){return false;} this.querySelector('button').disabled = true; this.querySelector('button').innerHTML = '<i class=\'fa-solid fa-spinner fa-spin\'></i> Procesando...'; return true;">
+                <button type="submit" class="btn-submit" style="background-color: #e53e3e; border-color: #c53030;">
+                    <i class="fa-solid fa-forward-step"></i> Ejecutar Promoción Automática
+                </button>
+            </form>
+        </div>
+
+        <div class="card" style="border-top-color: #4a5568; margin-top: 20px;">
+            <h2><i class="fa-solid fa-clock-rotate-left" style="color: #4a5568;"></i> Historial de Periodos
+                Escolares
+            </h2>
+            <table class="tabla-datos">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Descripción</th>
+                        <th>Duración</th>
+                        <th>Fechas de Lapso</th>
+                        <th>Estatus</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for periodo in periodos %}
+                    <tr>
+                        <td><strong>{{ periodo.codigo }}</strong></td>
+                        <td>{{ periodo.descripcion }}</td>
+                        <td>{{ periodo.ano_inicio }} al {{ periodo.ano_fin }}</td>
+                        <td>{{ periodo.fecha_inicio }} / {{ periodo.fecha_fin }}</td>
+                        <td>
+                            {% if periodo.activo %}
+                            <span class="badge badge-activo"><i class="fa-solid fa-circle-check"></i> Activo</span>
+                            {% else %}
+                            <span class="badge badge-inactivo"><i class="fa-solid fa-circle-minus"></i>
+                                Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if not periodo.activo %}
+                            <form action="{{ url_for('activar_ano', codigo_ano=periodo.codigo) }}" method="POST"
+                                style="margin:0;">
+                                <button type="submit" class="btn-status">
+                                    <i class="fa-solid fa-bolt"></i> Activar
+                                </button>
+                            </form>
+                            {% else %}
+                            <span style="color: #38a169; font-weight: 700; font-size: 13px;">
+                                <i class="fa-solid fa-circle-dot"></i> Año Vigente
+                            </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #a0aec0; padding: 20px;">
+                            <i class="fa-solid fa-folder-open"
+                                style="font-size: 24px; display:block; margin-bottom:10px;"></i>
+                            No hay periodos escolares registrados.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </body>
 
 </html>

@@ -8,29 +8,39 @@ class SabanaExcelParser:
     Extrae TODAS las materias simultáneamente para una sección completa de forma segura.
     """
 
-    # Diccionario oficial de traducción: Acrónimos MPPE -> Códigos de Materia del Sistema
+    # Diccionario oficial de traducción: Acrónimos MPPE -> PREFIJO real de materia en la BD.
+    # OJO: estos son solo el prefijo. El código real en la tabla `materia` lleva además
+    # el número de año pegado al final (ej: "CAST3", "MAT4", "ING1"), por eso el número
+    # de grado se agrega después, dentro de parse(), usando el parámetro `codigo_grado`.
     MPPE_TO_SISTEMA = {
         "CA": "CAST",      # Castellano
         "ILE": "ING",      # Inglés
         "MA": "MAT",       # Matemática
-        "EF": "EDF",       # Educación Física
-        "AP": "ART",       # Arte y Patrimonio
-        "CN": "NAT",       # Ciencias Naturales
+        "EF": "EDFI",      # Educación Física
+        "AP": "ARTE",      # Arte y Patrimonio
+        "CN": "CNAT",      # Ciencias Naturales
         "GHC": "GHC",      # Geografía, Historia y Ciudadanía
-        "OC": "ORC",       # Orientación y Convivencia
-        "PGCRP": "PGCRP",  # Grupos de Creación, Recreación y Producción
+        "OC": "OC",        # Orientación y Convivencia
+        "PGCRP": "GCRP",   # Grupos de Creación, Recreación y Producción
         "FIS": "FIS",      # Física
-        "QMC": "QMC",      # Química
+        "QMC": "QUI",      # Química
         "BIO": "BIO",      # Biología
-        "CT": "CIT",       # Ciencias de la Tierra
-        "FSM": "FSM",      # Formación para la Soberanía Nacional
+        "CT": "CT",        # Ciencias de la Tierra
+        "FSM": "FSN",      # Formación para la Soberanía Nacional
     }
 
     @classmethod
-    def parse(cls, file_stream):
+    def parse(cls, file_stream, codigo_grado=None):
         """
         Lee el Excel tipo Sábana y extrae las notas de múltiples materias sin caerse por out-of-bounds.
+
+        codigo_grado: número de año/grado de la sección que se está cargando (ej: "3" para 3er año).
+        Es OBLIGATORIO para poder armar el código real de materia (ej: "CAST" + "3" = "CAST3"),
+        ya que en la BD cada materia tiene un código distinto por cada grado.
         """
+        if not codigo_grado:
+            return {"error": "No se pudo determinar el grado/año de la sección seleccionada. "
+                              "No es posible construir los códigos de materia sin esto."}
         try:
             # Leer todo el excel sin header, forzando todas las columnas a string para evitar errores de tipo
             df = pd.read_excel(file_stream, header=None, dtype=str)
@@ -66,7 +76,8 @@ class SabanaExcelParser:
                 elif "NOMBRE" in val:
                     col_nombres_idx = col_idx
                 elif val in cls.MPPE_TO_SISTEMA:
-                    found_subjects[col_idx] = cls.MPPE_TO_SISTEMA[val]
+                    # Código real = prefijo + número de grado (ej: "CAST" + "3" = "CAST3")
+                    found_subjects[col_idx] = f"{cls.MPPE_TO_SISTEMA[val]}{codigo_grado}"
             
             # Si encontramos al menos 3 materias conocidas, asumimos que es la fila correcta
             if len(found_subjects) >= 3:
@@ -115,7 +126,14 @@ class SabanaExcelParser:
                         break
 
             # Limpiar cédula dejando solo dígitos numéricos
-            cedula = re.sub(r'[^0-9]', '', str(cedula_raw))
+            # IMPORTANTE: primero se descarta la parte decimal (ej: "31000389.0" -> "31000389")
+            # antes de eliminar caracteres no numéricos. Si se hace al revés, el "0" que
+            # queda después del punto se pega al final y corrompe la cédula
+            # (ej: "31000389.0" -> "310003890", un número totalmente distinto).
+            cedula_raw_str = str(cedula_raw).strip()
+            if '.' in cedula_raw_str:
+                cedula_raw_str = cedula_raw_str.split('.')[0]
+            cedula = re.sub(r'[^0-9]', '', cedula_raw_str)
 
             # Si sigue sin tener una cédula válida, saltamos la línea de forma segura (totales, firmas, etc.)
             if not cedula or len(cedula) < 5:
