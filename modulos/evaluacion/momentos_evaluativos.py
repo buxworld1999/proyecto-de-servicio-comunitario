@@ -95,11 +95,13 @@ def momentos_view():
         elif accion == 'cambiar_estado':
             try:
                 num           = int(request.form.get('numero'))
+                ano_escolar   = request.form.get('codigo_ano_escolar', ano_form)
                 estado_actual = request.form.get('estado_actual', 'A')
                 nuevo_estado  = 'C' if estado_actual == 'A' else 'A'
                 supabase.table("momento_evaluativo") \
                     .update({"estado": nuevo_estado}) \
-                    .eq("numero", num).execute()
+                    .eq("numero", num) \
+                    .eq("codigo_ano_escolar", ano_escolar).execute()
                 txt = "cerrado" if nuevo_estado == 'C' else "reabierto"
                 flash(f"Momento {num} {txt} correctamente.", "success")
             except Exception as e:

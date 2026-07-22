@@ -122,7 +122,7 @@
                                     <div style="font-size:11px; color:#64748b;">{{ a.cedula_docente }}</div>
                                 </td>
                                 <td>
-                                    <span style="font-size:13px; color:#1e293b;">{{ mat.get('nombre', a.codigo_materia) }}</span>
+                                    <span style="font-size:13px;">{{ mat.get('nombre', a.codigo_materia) }}</span>
                                     {% if mat.get('codigo_grado') %}
                                     <span class="badge badge-neutral" style="margin-left:4px; font-size:10px;">
                                         {{ mat.codigo_grado }}° Año

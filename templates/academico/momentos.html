@@ -81,6 +81,19 @@
             Configurar Momentos para: <strong style="color:#3b82f6; margin-left:6px;">{{ ano_seleccionado }}</strong>
         </div>
 
+        <!-- FORMS OCULTOS PARA CAMBIO DE ESTADO (Para evitar forms anidados) -->
+        {% for num in [1, 2, 3] %}
+        {% set m = momentos_dict.get(num, {}) %}
+        {% if m %}
+        <form id="form_estado_{{num}}" method="POST" action="{{ url_for('momentos', ano=ano_seleccionado) }}" style="display:none;">
+            <input type="hidden" name="accion" value="cambiar_estado">
+            <input type="hidden" name="codigo_ano_escolar" value="{{ ano_seleccionado }}">
+            <input type="hidden" name="numero" value="{{ num }}">
+            <input type="hidden" name="estado_actual" value="{{ m.estado }}">
+        </form>
+        {% endif %}
+        {% endfor %}
+
         <form method="POST" action="{{ url_for('momentos', ano=ano_seleccionado) }}">
             <input type="hidden" name="accion" value="guardar">
             <input type="hidden" name="codigo_ano_escolar" value="{{ ano_seleccionado }}">
@@ -103,16 +116,11 @@
                             <i class="fa-solid {{ 'fa-lock-open' if m.estado == 'A' else 'fa-lock' }}"></i>
                             {{ 'Abierto' if m.estado == 'A' else 'Cerrado' }}
                         </span>
-                        <form method="POST" action="{{ url_for('momentos', ano=ano_seleccionado) }}" style="margin:0;">
-                            <input type="hidden" name="accion" value="cambiar_estado">
-                            <input type="hidden" name="numero" value="{{ num }}">
-                            <input type="hidden" name="estado_actual" value="{{ m.estado }}">
-                            <button type="submit" class="ac-btn ac-btn-ghost ac-btn-sm"
-                                onclick="return confirm('¿Confirmar cambio de estado del Momento {{ num }}?')">
-                                <i class="fa-solid {{ 'fa-lock' if m.estado == 'A' else 'fa-lock-open' }}"></i>
-                                {{ 'Cerrar' if m.estado == 'A' else 'Abrir' }}
-                            </button>
-                        </form>
+                        <button type="submit" form="form_estado_{{num}}" class="ac-btn ac-btn-ghost ac-btn-sm"
+                            onclick="return confirm('¿Confirmar cambio de estado del Momento {{ num }}?')">
+                            <i class="fa-solid {{ 'fa-lock' if m.estado == 'A' else 'fa-lock-open' }}"></i>
+                            {{ 'Cerrar' if m.estado == 'A' else 'Abrir' }}
+                        </button>
                     </div>
                     {% endif %}
                 </div>
