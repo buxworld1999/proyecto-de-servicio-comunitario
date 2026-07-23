@@ -145,3 +145,26 @@ hr {
 p {
     display: none; /* Removing empty paragraphs used as spacing in original HTML */
 }
+
+.top-left-logo {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    width: 140px;
+    height: auto;
+    z-index: 10;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.6);
+    padding: 12px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    transition: all 0.3s ease;
+}
+
+.top-left-logo:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+    background: rgba(255, 255, 255, 0.8);
+}

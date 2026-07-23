@@ -7,11 +7,13 @@
     <title>PRISMA — Acceso al Sistema</title>
     <meta name="description" content="Sistema de Gestión Escolar PRISMA — Inicio de sesión">
     <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
-    <link rel="icon" href="{{ url_for('static', filename='fondo_escuela.jpg') }}" type="image/jpeg">
+    <link rel="icon" href="{{ url_for('static', filename='img/fondo_escuela.jpg') }}?v=3" type="image/jpeg">
 </head>
 
 <body>
 
+    <img src="{{ url_for('static', filename='img/antonio-jose-de-sucre-logo.png') }}" class="top-left-logo" alt="Logo Antonio José de Sucre">
+    
     {% if error %}
     <div class="error-message" role="alert">{{ error }}</div>
     {% endif %}
