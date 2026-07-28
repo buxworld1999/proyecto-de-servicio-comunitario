@@ -68,7 +68,7 @@ h2 {
 .form-control {
     width: 100%;
     padding: 14px;
-    background-color: rgba(15, 23, 42, 0.6);
+    background-color: var(--bg-principal);
     border: 1px solid var(--borde);
     border-radius: 8px;
     font-family: inherit;
@@ -79,13 +79,13 @@ h2 {
 }
 
 .form-control::placeholder {
-    color: #64748b;
+    color: var(--subtexto);
 }
 
 .form-control:focus {
     outline: none;
     border-color: var(--primario);
-    background-color: rgba(15, 23, 42, 0.8);
+    background-color: var(--surface-hover);
 }
 
 .btn-submit {
