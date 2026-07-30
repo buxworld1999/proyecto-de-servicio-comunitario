@@ -36,8 +36,8 @@
                     <input type="text" name="propietario" placeholder="¿A quién pertenece?" required>
                 </div>
                 <div class="form-group">
-                    <label>Encargado</label>
-                    <input type="text" name="encargado" placeholder="¿Quién es el encargado?" required>
+                    <label>Ubicacion</label>
+                    <input type="text" name="ubicacion" placeholder="¿Dónde se ubica?" required>
                 </div>
                 <div class="form-group">
                     <label>Cantidad</label>
@@ -65,7 +65,7 @@
                 <tr>
                     <th>Activo</th>
                     <th>Propietario</th>
-                    <th>Encargado</th>
+                    <th>ubicacion</th>
                     <th class="text-right">Cantidad</th>
                     <th class="text-right">Valor Unit.</th>
                     <th class="text-right">Subtotal</th>
@@ -76,7 +76,7 @@
                 <tr>
                     <td>{{ item.nombre }}</td>
                     <td>{{ item.propietario }}</td>
-                    <td>{{ item.encargado }}</td>
+                    <td>{{ item.ubicacion }}</td>
                     <td class="text-right">{{ item.cantidad }}</td>
                     <td class="text-right">${{ "%.2f"|format(item.valor_unitario) }}</td>
                     <td class="text-right">${{ "%.2f"|format(item.cantidad * item.valor_unitario) }}</td>
