@@ -66,7 +66,7 @@ def nota_en_letras(nota: float) -> str:
 # Se busca por coincidencia parcial (case-insensitive).
 MAPA_AREA_31059 = {
     'castellano':          'Castellano',
-    'lengua':              'Castellano',
+    'lengua y literatura': 'Castellano',
     'inglés':              'Inglés y otras Lenguas Extranjeras',
     'ingles':              'Inglés y otras Lenguas Extranjeras',
     'idiomas':             'Inglés y otras Lenguas Extranjeras',
@@ -85,10 +85,16 @@ MAPA_AREA_31059 = {
     'ciudadanía':          'Geografía, Historia y Ciudadanía',
     'física':              'Física',
     'fisica':              'Física',
+    'fisic':               'Física',
+    'físic':               'Física',
     'química':             'Química',
     'quimica':             'Química',
+    'quim':                'Química',
+    'quím':                'Química',
     'biología':            'Biología',
     'biologia':            'Biología',
+    'biolog':              'Biología',
+    'biológ':              'Biología',
     'soberanía':           'Formación para la Soberanía Nacional',
     'soberania':           'Formación para la Soberanía Nacional',
     'orientación':         'Orientación y Convivencia',
@@ -96,7 +102,7 @@ MAPA_AREA_31059 = {
 }
 
 MAPA_AREA_31060 = {
-    'lengua':              'Lengua y Literatura',
+    'lengua y literatura': 'Lengua y Literatura',
     'castellano':          'Lengua y Literatura',
     'inglés':              'Idiomas',
     'ingles':              'Idiomas',

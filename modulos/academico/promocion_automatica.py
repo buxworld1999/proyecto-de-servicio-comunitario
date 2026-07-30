@@ -145,6 +145,21 @@ def promover_ano():
                 try:
                     supabase.table("matricula").insert(nueva_matricula).execute()
                     promovidos += 1
+                    
+                    # Actualizar el año y sección base en el perfil del estudiante
+                    mapa_nombres_anio = {
+                        1: "1er Año",
+                        2: "2do Año",
+                        3: "3er Año",
+                        4: "4to Año",
+                        5: "5to Año"
+                    }
+                    nombre_nuevo_anio = mapa_nombres_anio.get(nuevo_grado, f"{nuevo_grado} Año")
+                    supabase.table("estudiante").update({
+                        "anio": nombre_nuevo_anio,
+                        "seccion": letra
+                    }).eq("cedula", cedula).execute()
+                    
                     # Cierra la matrícula vieja para que deje de aparecer como "activa"
                     # en la sección/año anterior (ej: NOTA: se asume 'I' de Inactivo,
                     # revisar con el equipo si el sistema usa otro valor para esto).

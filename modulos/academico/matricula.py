@@ -30,6 +30,16 @@ def matricula_view():
         
         try:
             supabase.table("matricula").insert(datos_matricula).execute()
+            
+            # Actualizar perfil base del estudiante
+            if codigo_seccion and len(codigo_seccion) >= 2:
+                grado = codigo_seccion[0]
+                letra = codigo_seccion[1:]
+                mapa = {'1': '1er Año', '2': '2do Año', '3': '3er Año', '4': '4to Año', '5': '5to Año'}
+                nombre_anio = mapa.get(grado)
+                if nombre_anio:
+                    supabase.table("estudiante").update({"anio": nombre_anio, "seccion": letra}).eq("cedula", cedula).execute()
+
             flash("Matrícula procesada correctamente", "success")
         except Exception as e:
             flash(f"Error al matricular: {str(e)}", "danger")

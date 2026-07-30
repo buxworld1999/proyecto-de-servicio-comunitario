@@ -259,19 +259,19 @@ from modulos.estudiantes.regis_estudiante import registro_estudiantes as registr
 
 @app.route('/registro_estu', methods=['GET', 'POST'])
 @login_required
-@rol_required('admin', 'director', 'coordinador', 'secretaria')
+@rol_required('admin', 'director', 'coordinador', 'secretaria', 'docente')
 def registro_estudiantes():
     return registrar_estudiantes_func()
 
 @app.route('/descargar_plantilla_estudiantes', methods=['GET'])
 @login_required
-@rol_required('admin', 'director', 'coordinador', 'secretaria')
+@rol_required('admin', 'director', 'coordinador', 'secretaria', 'docente')
 def descargar_plantilla_estudiantes():
     return descargar_plantilla_estudiantes_view()
 
 @app.route('/cargar_estudiantes_masivo', methods=['POST'])
 @login_required
-@rol_required('admin', 'director', 'coordinador', 'secretaria')
+@rol_required('admin', 'director', 'coordinador', 'secretaria', 'docente')
 def cargar_estudiantes_masivo():
     return cargar_estudiantes_masivo_view()
 
@@ -280,13 +280,13 @@ from modulos.estudiantes.regis_estudiante import editar_estudiante_view
 
 @app.route('/directorio_estudiantil', methods=['GET'])
 @login_required
-@rol_required('admin', 'director', 'coordinador', 'secretaria')
+@rol_required('admin', 'director', 'coordinador', 'secretaria', 'docente')
 def directorio_estudiantil():
     return directorio_estudiantil_view()
 
 @app.route('/editar_estu/<cedula>', methods=['GET', 'POST'])
 @login_required
-@rol_required('admin', 'director', 'coordinador', 'secretaria')
+@rol_required('admin', 'director', 'coordinador', 'secretaria', 'docente')
 def editar_estu(cedula):
     return editar_estudiante_view(cedula)
 from modulos.personal.registrar_personal import personal as registrar_personal_func
@@ -302,7 +302,7 @@ from modulos.estudiantes.buscar_estu import buscar_estu as buscar_estu_func
 
 @app.route('/buscar_estu', methods=['GET', 'POST'])
 @login_required
-@rol_required('admin', 'director', 'coordinador', 'secretaria')
+@rol_required('admin', 'director', 'coordinador', 'secretaria', 'docente')
 def ruta_buscar_estu():
     return buscar_estu_func()
 

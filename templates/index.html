@@ -8,7 +8,7 @@
     <meta name="description" content="Sistema de Gestión Escolar PRISMA — Inicio de sesión">
     <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
     <link rel="icon" href="{{ url_for('static', filename='img/fondo_escuela.jpg') }}?v=3" type="image/jpeg">
-</head>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></head>
 
 <body>
 
@@ -31,12 +31,15 @@
                    required
                    autocomplete="username">
 
-            <input type="password"
-                   placeholder="Contraseña"
-                   id="clave_login"
-                   name="clave"
-                   required
-                   autocomplete="current-password">
+            <div class="password-container">
+                <input type="password"
+                       placeholder="Contraseña"
+                       id="clave_login"
+                       name="clave"
+                       required
+                       autocomplete="current-password">
+                <i class="fa-solid fa-eye" id="toggle-password"></i>
+            </div>
 
             <button type="submit"
                     class="accept-button"
@@ -52,5 +55,16 @@
 
     </div>
 
+    <script>
+        const togglePassword = document.querySelector('#toggle-password');
+        const password = document.querySelector('#clave_login');
+
+        togglePassword.addEventListener('click', function () {
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+    </script>
 </body>
 </html>

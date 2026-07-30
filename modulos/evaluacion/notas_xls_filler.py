@@ -9,6 +9,7 @@ del estudiante, institución y notas por año, y retorna un BytesIO.
 import os
 import io
 import xlrd
+import unicodedata
 from xlutils.copy import copy
 
 # Ruta base de la carpeta de plantillas (relativa a la raíz del proyecto)
@@ -18,6 +19,13 @@ _BASE_PROYECTO = os.path.abspath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
 )
 _RUTA_FORMATOS = os.path.join(_BASE_PROYECTO, 'formato notas')
+
+def _normalize_text(text: str) -> str:
+    """Elimina acentos y pasa a minúscula para una comparación robusta."""
+    if not text:
+        return ""
+    return unicodedata.normalize('NFKD', str(text)).encode('ASCII', 'ignore').decode('utf-8').lower().strip()
+
 
 
 # ─── Conversión nota → letras ─────────────────────────────────────────────────
@@ -53,12 +61,21 @@ def _nota_a_letras(nota) -> str:
 # NOTA: Si el XLS exacto tiene otra distribución, el sistema simplemente
 # no sobreescribirá esas celdas (no corrompe el archivo).
 _BLOQUES_ANOS_31059 = {
-    '1': {'fila_inicio': 14, 'fila_fin': 22},
-    '2': {'fila_inicio': 23, 'fila_fin': 31},
-    '3': {'fila_inicio': 32, 'fila_fin': 40},
-    '4': {'fila_inicio': 41, 'fila_fin': 49},
-    '5': {'fila_inicio': 50, 'fila_fin': 58},
+    '1': {'fila_inicio': 21, 'fila_fin': 27, 'col_area': 0, 'col_nota': 3, 'col_letra': 4},
+    '2': {'fila_inicio': 21, 'fila_fin': 27, 'col_area': 12, 'col_nota': 14, 'col_letra': 15},
+    '3': {'fila_inicio': 31, 'fila_fin': 38, 'col_area': 0, 'col_nota': 3, 'col_letra': 4},
+    '4': {'fila_inicio': 31, 'fila_fin': 39, 'col_area': 12, 'col_nota': 14, 'col_letra': 15},
+    '5': {'fila_inicio': 42, 'fila_fin': 52, 'col_area': 0, 'col_nota': 3, 'col_letra': 4},
 }
+
+_BLOQUES_ANOS_31060 = {
+    '1': {'fila_inicio': 23, 'fila_fin': 30, 'col_area': 0, 'col_nota': 3, 'col_letra': 4},
+    '2': {'fila_inicio': 23, 'fila_fin': 30, 'col_area': 12, 'col_nota': 14, 'col_letra': 15},
+    '3': {'fila_inicio': 34, 'fila_fin': 41, 'col_area': 0, 'col_nota': 3, 'col_letra': 4},
+    '4': {'fila_inicio': 34, 'fila_fin': 41, 'col_area': 12, 'col_nota': 14, 'col_letra': 15},
+    '5': {'fila_inicio': 45, 'fila_fin': 52, 'col_area': 0, 'col_nota': 3, 'col_letra': 4},
+}
+
 
 
 def _encontrar_plantilla(tipo: str, ruta_base: str = None) -> str:
@@ -137,18 +154,19 @@ def llenar_xls_mppe(tipo, estudiante, institucion, notas_por_anio,
     # Para cada año, leemos las celdas de la columna de áreas (col 1 para 31059)
     # y buscamos si hay nota para esa área en notas_por_anio.
     if notas_por_anio:
-        bloques = _BLOQUES_ANOS_31059  # Usar el mismo mapa para ambos tipos (ajustar si difieren)
-        col_area  = 1   # columna donde está el nombre del área de formación
-        col_nota  = 5   # columna donde va el número
-        col_letra = 8   # columna donde va la nota en letras
+        bloques = _BLOQUES_ANOS_31060 if tipo == '31060' else _BLOQUES_ANOS_31059
 
         for ano_str, bloque in bloques.items():
             notas_ano = notas_por_anio.get(ano_str, {})
             if not notas_ano:
                 continue
+            
+            col_area = bloque['col_area']
+            col_nota = bloque['col_nota']
+            col_letra = bloque['col_letra']
 
-            for fila in range(bloque['fila_inicio'] + offset,
-                              bloque['fila_fin']   + offset + 1):
+            for fila in range(bloque['fila_inicio'],
+                              bloque['fila_fin'] + 1):
                 try:
                     # Leer el área de formación que ya está en la plantilla
                     celda_area = rb.sheets()[0].cell_value(fila, col_area)
@@ -156,11 +174,13 @@ def llenar_xls_mppe(tipo, estudiante, institucion, notas_por_anio,
                     if not area_txt:
                         continue
 
-                    # Buscar nota para esta área (coincidencia parcial case-insensitive)
+                    # Buscar nota para esta área (coincidencia parcial robusta)
                     nota_val = None
+                    area_txt_norm = _normalize_text(area_txt)
+                    
                     for area_key, nota in notas_ano.items():
-                        if (area_key.lower() in area_txt.lower() or
-                                area_txt.lower() in area_key.lower()):
+                        area_key_norm = _normalize_text(area_key)
+                        if (area_key_norm in area_txt_norm or area_txt_norm in area_key_norm):
                             nota_val = nota
                             break
 

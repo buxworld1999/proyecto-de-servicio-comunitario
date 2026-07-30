@@ -33,7 +33,7 @@
                         <select name="cedula_personal" id="cedula_personal" required>
                             <option value="">— Seleccionar trabajador —</option>
                             {% for p in personal_disponible %}
-                            <option value="{{ p.cedula }}">{{ p.nombres }} {{ p.apellidos }} ({{ p.cedula }})</option>
+                            <option value="{{ p.cedula }}" data-cargo="{{ (p.cargo or '')|lower }} {{ (p.especialidad or '')|lower }}">{{ p.nombres }} {{ p.apellidos }} ({{ p.cedula }})</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -196,6 +196,24 @@
 
             rolSelect.addEventListener('change', toggleAdminFields);
             toggleAdminFields();
+
+            // Auto-seleccionar el rol basado en el cargo del personal seleccionado
+            selectPersonal.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                const cargo = (selectedOption.getAttribute('data-cargo') || '').toLowerCase();
+                
+                if (cargo.includes('coordinador')) {
+                    rolSelect.value = 'coordinador';
+                } else if (cargo.includes('director') || cargo.includes('directora')) {
+                    rolSelect.value = 'director';
+                } else if (cargo.includes('secretari')) {
+                    rolSelect.value = 'secretaria';
+                } else if (cargo.includes('docente') || cargo.includes('profesor') || cargo.includes('maestro')) {
+                    rolSelect.value = 'docente';
+                }
+                
+                toggleAdminFields();
+            });
         });
     </script>
 </body>
