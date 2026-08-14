@@ -25,13 +25,13 @@ PERMISOS = {
         'personal', 'estudiantes', 'matricula',
         'evaluaciones', 'momentos', 'notas_certificadas',
         'citaciones', 'labor_social',
-        'materias', 'asignacion_docente', 'reportes', 'configuracion', 'activos', 'usuarios'
+        'materias', 'asignacion_docente', 'reportes', 'configuracion', 'activos', 'usuarios', 'bitacora'
     ],
     'coordinador': [
         'personal', 'estudiantes', 'matricula',
         'evaluaciones', 'notas_certificadas',
         'citaciones', 'labor_social',
-        'materias', 'asignacion_docente', 'reportes', 'activos'
+        'materias', 'asignacion_docente', 'reportes', 'activos', 'bitacora'
     ],
     'secretaria': [
         'personal', 'estudiantes', 'matricula',

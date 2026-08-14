@@ -127,6 +127,10 @@ def bitacora_view():
 
     try:
         query = supabase.table('bitacora').select('*').order('fecha_hora', desc=True)
+        
+        # Ocultar acciones de administrador para roles que no sean admin
+        if session.get('rol') != 'admin':
+            query = query.neq('usuario_rol', 'admin')
 
         if filtro_usuario:
             query = query.ilike('usuario_nombre', f'%{filtro_usuario}%')
@@ -142,6 +146,8 @@ def bitacora_view():
 
         # Conteo total para paginación
         count_q = supabase.table('bitacora').select('id', count='exact')
+        if session.get('rol') != 'admin':
+            count_q = count_q.neq('usuario_rol', 'admin')
         if filtro_usuario:
             count_q = count_q.ilike('usuario_nombre', f'%{filtro_usuario}%')
         if filtro_cat:
