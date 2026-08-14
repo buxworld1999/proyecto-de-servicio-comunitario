@@ -203,14 +203,16 @@ def menu():
         }
     # ──────────────────────────────────────────────────────────────────────────
 
-    # ── Actividad Reciente (solo si es admin) ──────────────────────────────────
+    # ── Actividad Reciente ──────────────────────────────────
     actividad_reciente = []
-    if session.get('rol') == 'admin':
+    if session.get('rol') in ['admin', 'director', 'coordinador']:
         try:
             from datetime import datetime, timezone, timedelta
-            r_act = supabase.table('bitacora').select(
-                'usuario_nombre, usuario_rol, accion, icono, categoria, fecha_hora'
-            ).order('fecha_hora', desc=True).limit(8).execute()
+            q_act = supabase.table('bitacora').select('usuario_nombre, usuario_rol, accion, icono, categoria, fecha_hora')
+            if session.get('rol') != 'admin':
+                q_act = q_act.neq('usuario_rol', 'admin')
+            
+            r_act = q_act.order('fecha_hora', desc=True).limit(8).execute()
 
             ahora = datetime.now(timezone.utc)
             for item in (r_act.data or []):
@@ -552,7 +554,7 @@ def admin_terminal_stream():
 
 @app.route('/bitacora')
 @login_required
-@rol_required('admin')
+@rol_required('admin', 'director', 'coordinador')
 def bitacora():
     """Bitácora de actividad del sistema — solo administradores."""
     return bitacora_view()
