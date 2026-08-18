@@ -1,185 +1,168 @@
 # gestion_usuarios.py
 # Módulo de Gestión de Usuarios para PRISMA
 # Unidad Educativa Carmen Ruíz
+#
+# Acceso: exclusivo para el rol 'admin'.
+# Toda la lógica de restricción por rol director fue eliminada —
+# el decorador @rol_required('admin') en principal.py garantiza que
+# SOLO el administrador llega a este módulo.
 
 from flask import render_template, request, redirect, url_for, flash, session
 from db import supabase
+from auth import ROLES_VALIDOS, ROLES_ETIQUETAS
+from werkzeug.security import generate_password_hash
+
+
+# Roles que pueden asignarse desde la interfaz (excluye 'admin' para seguridad)
+# El administrador puede crear admins directamente en la base de datos si es necesario.
+ROLES_ASIGNABLES = [
+    'director',
+    'subdirector_academico',
+    'secretaria_direccion',
+    'coordinador_evaluacion',
+    'coordinador_registro',
+    'secretaria_registro',
+    'coordinador_seccional',
+    'secretaria_seccional',
+    'docente',
+    'admin',  # Solo un admin puede crear otro admin
+]
+
 
 def gestion_usuarios():
-    # ── CARGAR DATOS ──
-    # 1. Obtener la lista de usuarios desde la base de datos
+
+    # ── CARGAR DATOS ──────────────────────────────────────────────────────────
     try:
         usuarios_resp = supabase.table("usuario").select("*").execute()
         usuarios_lista = usuarios_resp.data or []
-        
-        # 3. Calcular qué personal ya tiene cuenta ANTES de filtrar la lista visual para el director
         cedulas_con_usuario = {u['cedula_personal'] for u in usuarios_lista if u.get('cedula_personal')}
-
-        #rol director vea el panel de usuarios menos lo de admin
-        rol_actual = session.get('rol', '')
-        if rol_actual == 'director':
-            #que vea menos lo del admin (ignorando mayúsculas)
-            usuarios_lista = [u for u in usuarios_lista if str(u.get('rol') or '').strip().lower() != 'admin']
     except Exception as e:
-        flash(f"Error al obtener usuarios: {str(e)}")
+        flash(f"Error al obtener usuarios: {str(e)}", "danger")
         usuarios_lista = []
         cedulas_con_usuario = set()
 
-    # 2. Obtener todo el personal para mapear los nombres reales de los usuarios
+    # Obtener personal para mapear nombres reales
     try:
-        personal_resp = supabase.table("personal").select("cedula, nombres, apellidos, cargo, especialidad").execute()
+        personal_resp = supabase.table("personal").select(
+            "cedula, nombres, apellidos, cargo, especialidad"
+        ).execute()
         personal_lista = personal_resp.data or []
     except Exception as e:
-        flash(f"Error al obtener personal: {str(e)}")
+        flash(f"Error al obtener personal: {str(e)}", "danger")
         personal_lista = []
 
-    # Mapear cédula a nombre completo en un diccionario
     personal_dict = {p['cedula']: f"{p['nombres']} {p['apellidos']}" for p in personal_lista}
 
-    # Cruzar datos de personal con los usuarios
+    # Enriquecer usuarios con nombre de personal y etiqueta de rol
     for u in usuarios_lista:
         u['nombre_personal'] = personal_dict.get(u['cedula_personal'], "No asociado")
+        u['etiqueta_rol'] = ROLES_ETIQUETAS.get(u.get('rol', ''), u.get('rol', ''))
 
-    # 3. Filtrar personal que NO tiene un usuario creado aún y que cumpla con el perfil (docente, secretaria, etc.)
-    personal_disponible = []
-    palabras_clave = ['docente', 'profesor', 'profesora', 'maestro', 'maestra', 'secretaria', 'secretario', 'coordinador', 'coordinadora', 'director', 'directora', 'admin']
+    # Personal disponible para crear cuenta (sin usuario aún)
+    personal_disponible = [p for p in personal_lista if p['cedula'] not in cedulas_con_usuario]
 
-    for p in personal_lista:
-        if p['cedula'] not in cedulas_con_usuario:
-            cargo = str(p.get('cargo') or '').lower()
-            especialidad = str(p.get('especialidad') or '').lower()
-            
-            if any(palabra in cargo for palabra in palabras_clave) or any(palabra in especialidad for palabra in palabras_clave):
-                personal_disponible.append(p)
-
-    # ── PROCESAR ACCIONES (POST) ──
+    # ── PROCESAR ACCIONES (POST) ──────────────────────────────────────────────
     if request.method == 'POST':
         accion = request.form.get('accion')
 
-        # Acción A: Crear un nuevo usuario
+        # ── Acción A: Crear nuevo usuario ────────────────────────────────────
         if accion == 'crear':
-            v_rol = request.form.get('rol', 'docente').strip().lower()
-            
-            rol_actual = session.get('rol', '')
-            if rol_actual == 'director' and v_rol == 'admin':
-                flash("No tienes permisos para crear un usuario administrador.")
-                return redirect(url_for('usuarios'))
-
+            v_rol    = request.form.get('rol', 'docente').strip().lower()
             v_codigo = request.form.get('codigo_usuario', '').strip()
-            v_clave = request.form.get('clave', '').strip()
+            v_clave  = request.form.get('clave', '').strip()
             v_estado = request.form.get('estado', 'A')
+            v_cedula = request.form.get('cedula_personal', '').strip()
 
-            v_cedula = request.form.get('cedula_personal')
-
-            # Si es admin, puede que estemos usando cedula_admin y nombre_admin
-            if v_rol == 'admin' and request.form.get('cedula_admin') and request.form.get('nombre_admin'):
-                v_cedula = request.form.get('cedula_admin').strip()
-                v_nombre = request.form.get('nombre_admin').strip()
-                
-                # Verificar si ya existe en personal, si no, lo creamos
-                try:
-                    per_exist = supabase.table("personal").select("cedula").eq("cedula", v_cedula).execute()
-                    if not per_exist.data:
-                        # Insertar como nuevo personal
-                        supabase.table("personal").insert({
-                            "cedula": v_cedula,
-                            "nombres": v_nombre,
-                            "apellidos": "",
-                            "estado": "A"
-                        }).execute()
-                except Exception as e:
-                    flash(f"Error al verificar/crear personal para el admin: {str(e)}")
-                    return redirect(url_for('usuarios'))
+            # Validar rol
+            if v_rol not in ROLES_VALIDOS:
+                flash(f"Rol '{v_rol}' no es válido.", "danger")
+                return redirect(url_for('usuarios'))
 
             if not v_cedula or not v_codigo or not v_clave:
-                flash("Todos los campos obligatorios son requeridos.")
+                flash("Todos los campos obligatorios son requeridos.", "danger")
                 return redirect(url_for('usuarios'))
+
+            # Hashear la contraseña antes de guardar
+            clave_hash = generate_password_hash(v_clave)
 
             datos_nuevo = {
                 "cedula_personal": v_cedula,
-                "codigo_usuario": v_codigo,
-                "clave_hash": v_clave,
-                "rol": v_rol,
-                "estado": v_estado
+                "codigo_usuario":  v_codigo,
+                "clave_hash":      clave_hash,
+                "rol":             v_rol,
+                "estado":          v_estado,
             }
             try:
                 supabase.table("usuario").insert(datos_nuevo).execute()
-                flash(f"Usuario '{v_codigo}' creado correctamente.")
+                flash(f"Usuario '{v_codigo}' creado correctamente con rol '{ROLES_ETIQUETAS.get(v_rol, v_rol)}'.", "success")
             except Exception as e:
-                flash(f"Error al crear usuario: {str(e)}")
+                flash(f"Error al crear usuario: {str(e)}", "danger")
 
-        # Acción B: Cambiar el estado (Activar/Desactivar)
+        # ── Acción B: Cambiar estado (Activar/Desactivar) ────────────────────
         elif accion == 'cambiar_estado':
-            v_usuario_id = request.form.get('usuario_id')
+            v_usuario_id   = request.form.get('usuario_id')
             v_estado_actual = request.form.get('estado_actual')
             nuevo_estado = 'I' if v_estado_actual == 'A' else 'A'
-
-            rol_actual = session.get('rol', '')
-            if rol_actual == 'director':
-                try:
-                    user_resp = supabase.table("usuario").select("rol").eq("id", v_usuario_id).execute()
-                    if user_resp.data and str(user_resp.data[0].get('rol') or '').strip().lower() == 'admin':
-                        flash("No tienes permisos para modificar a un usuario administrador.")
-                        return redirect(url_for('usuarios'))
-                except Exception:
-                    pass
-
             try:
                 supabase.table("usuario").update({"estado": nuevo_estado}).eq("id", v_usuario_id).execute()
-                flash("Estado del usuario actualizado.")
+                flash("Estado del usuario actualizado.", "success")
             except Exception as e:
-                flash(f"Error al cambiar estado: {str(e)}")
+                flash(f"Error al cambiar estado: {str(e)}", "danger")
 
-        # Acción C: Cambiar la contraseña
+        # ── Acción C: Cambiar contraseña ─────────────────────────────────────
         elif accion == 'cambiar_clave':
-            v_usuario_id = request.form.get('usuario_id')
+            v_usuario_id  = request.form.get('usuario_id')
             v_nueva_clave = request.form.get('nueva_clave', '').strip()
 
-            rol_actual = session.get('rol', '')
-            if rol_actual == 'director':
-                try:
-                    user_resp = supabase.table("usuario").select("rol").eq("id", v_usuario_id).execute()
-                    if user_resp.data and str(user_resp.data[0].get('rol') or '').strip().lower() == 'admin':
-                        flash("No tienes permisos para cambiar la contraseña de un usuario administrador.")
-                        return redirect(url_for('usuarios'))
-                except Exception:
-                    pass
-
             if not v_nueva_clave:
-                flash("La contraseña no puede estar vacía.")
+                flash("La contraseña no puede estar vacía.", "danger")
+                return redirect(url_for('usuarios'))
+
+            # Guardar siempre con hash seguro
+            nuevo_hash = generate_password_hash(v_nueva_clave)
+            try:
+                supabase.table("usuario").update({"clave_hash": nuevo_hash}).eq("id", v_usuario_id).execute()
+                flash("Contraseña actualizada correctamente.", "success")
+            except Exception as e:
+                flash(f"Error al actualizar la contraseña: {str(e)}", "danger")
+
+        # ── Acción D: Cambiar rol ────────────────────────────────────────────
+        elif accion == 'cambiar_rol':
+            v_usuario_id = request.form.get('usuario_id')
+            v_nuevo_rol  = request.form.get('nuevo_rol', '').strip().lower()
+
+            if v_nuevo_rol not in ROLES_VALIDOS:
+                flash(f"Rol '{v_nuevo_rol}' no es válido.", "danger")
                 return redirect(url_for('usuarios'))
 
             try:
-                supabase.table("usuario").update({"clave_hash": v_nueva_clave}).eq("id", v_usuario_id).execute()
-                flash("Contraseña actualizada correctamente.")
+                supabase.table("usuario").update({"rol": v_nuevo_rol}).eq("id", v_usuario_id).execute()
+                flash(f"Rol actualizado a '{ROLES_ETIQUETAS.get(v_nuevo_rol, v_nuevo_rol)}'.", "success")
             except Exception as e:
-                flash(f"Error al actualizar la contraseña: {str(e)}")
+                flash(f"Error al cambiar el rol: {str(e)}", "danger")
 
-        # Acción D: Eliminar usuario
+        # ── Acción E: Eliminar usuario ───────────────────────────────────────
         elif accion == 'eliminar':
             v_usuario_id = request.form.get('usuario_id')
 
-            rol_actual = session.get('rol', '')
-            if rol_actual == 'director':
-                try:
-                    user_resp = supabase.table("usuario").select("rol").eq("id", v_usuario_id).execute()
-                    if user_resp.data and str(user_resp.data[0].get('rol') or '').strip().lower() == 'admin':
-                        flash("No tienes permisos para eliminar a un usuario administrador.")
-                        return redirect(url_for('usuarios'))
-                except Exception:
-                    pass
+            # Protección: no se puede eliminar la propia cuenta
+            if str(v_usuario_id) == str(session.get('usuario_id')):
+                flash("No puedes eliminar tu propio usuario.", "warning")
+                return redirect(url_for('usuarios'))
 
             try:
                 supabase.table("usuario").delete().eq("id", v_usuario_id).execute()
-                flash("Usuario eliminado correctamente.")
+                flash("Usuario eliminado correctamente.", "success")
             except Exception as e:
-                flash(f"Error al eliminar usuario: {str(e)}")
+                flash(f"Error al eliminar usuario: {str(e)}", "danger")
 
         return redirect(url_for('usuarios'))
 
     return render_template(
         'admin/usuarios.html',
-        usuarios=usuarios_lista,
-        personal_disponible=personal_disponible,
-        rol_usuario=session.get('rol', '')
+        usuarios           = usuarios_lista,
+        personal_disponible = personal_disponible,
+        roles_asignables   = ROLES_ASIGNABLES,
+        roles_etiquetas    = ROLES_ETIQUETAS,
+        rol_usuario        = session.get('rol', ''),
     )

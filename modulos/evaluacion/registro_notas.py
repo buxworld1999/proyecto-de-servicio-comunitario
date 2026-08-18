@@ -17,6 +17,7 @@ Tabla: evaluacion(id, cedula_estudiante, codigo_materia, codigo_ano_escolar,
 from datetime import date
 from flask import render_template, request, redirect, url_for, flash, session, jsonify
 from db import supabase
+from auth import puede
 
 
 # ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -298,36 +299,87 @@ def registro_notas_view():
 
                 cedula_docente_form = request.form.get('cedula_docente_evaluador', '').strip()
                 docente_evaluador_final = cedula_personal
-                
-                # Si es un administrativo, buscar el docente asignado a la materia o usar el que escriba
-                if rol in ('admin', 'director', 'coordinador', 'secretaria'):
+
+                # Si es un administrativo/coordinador, asignar el docente de la materia
+                ROLES_ADMINISTRATIVOS = (
+                    'admin', 'coordinador_evaluacion',
+                    'coordinador_registro', 'secretaria_registro',
+                )
+                if rol in ROLES_ADMINISTRATIVOS:
                     if cedula_docente_form:
                         docente_evaluador_final = cedula_docente_form
                     else:
                         docente_evaluador_final = docente_asignado_global
 
                 dato = {
-                    "cedula_estudiante":       cedula,
-                    "codigo_materia":          materia_form,
-                    "codigo_ano_escolar":      ano_form,
-                    "numero_momento":          num_mom,
-                    "nota":                    nota_float,
-                    "resultado":               resultado,
-                    "fecha_evaluacion":        hoy,
-                    "observaciones":           obs_str,
+                    "cedula_estudiante":        cedula,
+                    "codigo_materia":           materia_form,
+                    "codigo_ano_escolar":       ano_form,
+                    "numero_momento":           num_mom,
+                    "nota":                     nota_float,
+                    "resultado":                resultado,
+                    "fecha_evaluacion":         hoy,
+                    "observaciones":            obs_str,
                     "cedula_docente_evaluador": docente_evaluador_final,
                 }
 
                 try:
                     if eval_id:
-                        # Actualizar registro existente
+                        # ── VERIFICACIÓN CRÍTICA: ¿puede MODIFICAR una nota ya registrada? ──
+                        if not puede('evaluaciones', 'modificar_notas'):
+                            flash(
+                                f"⛔ Sin permiso: no puedes modificar una nota ya registrada "
+                                f"(cédula {cedula}). Solo el Coordinador de Evaluación puede hacerlo.",
+                                "danger"
+                            )
+                            errores += 1
+                            continue
+
+                        # Obtener nota anterior para auditoría
+                        nota_anterior = None
+                        try:
+                            resp_ant = supabase.table("evaluacion") \
+                                .select("nota") \
+                                .eq("id", int(eval_id)) \
+                                .limit(1).execute()
+                            if resp_ant.data:
+                                nota_anterior = resp_ant.data[0].get('nota')
+                        except Exception:
+                            pass
+
+                        # Guardar el motivo de modificación
+                        motivo_mod = request.form.get('motivo_modificacion', '').strip()
                         dato['fecha_modificacion'] = hoy
+                        if motivo_mod:
+                            dato['motivo_modificacion'] = motivo_mod
+
                         supabase.table("evaluacion").update(dato).eq("id", int(eval_id)).execute()
                         actualizados += 1
+
+                        # Registrar cambio en auditoría detallada
+                        try:
+                            from modulos.admin.bitacora import registrar_cambio_detalle
+                            registrar_cambio_detalle(
+                                entidad='evaluacion',
+                                entidad_id=cedula,
+                                campo='nota',
+                                valor_anterior=nota_anterior,
+                                valor_nuevo=nota_float,
+                                detalle_extra=(
+                                    f"Materia: {materia_form} | "
+                                    f"Sección: {seccion_form} | "
+                                    f"Momento: {num_mom} | "
+                                    f"Motivo: {motivo_mod or 'No especificado'}"
+                                )
+                            )
+                        except Exception as audit_err:
+                            print(f"[NOTAS] Error en auditoría de cambio: {audit_err}")
+
                     else:
-                        # Insertar nuevo
+                        # ── Insertar nueva nota (solo requiere registrar_notas) ──
                         supabase.table("evaluacion").insert(dato).execute()
                         guardados += 1
+
                 except Exception as e:
                     errores += 1
                     flash(f"Error al guardar nota para {cedula}: {str(e)}", "danger")
